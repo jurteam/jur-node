@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Rustup
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source ~/.cargo/env
+        rustup default stable
+        rustup update nightly
+        rustup update stable
+        rustup target add wasm32-unknown-unknown --toolchain nightly
+          
+    - name: Build
+      run: SKIP_WASM_BUILD= cargo check --all-targets --features runtime-benchmarks
+      
+    - name: Test
+      run: SKIP_WASM_BUILD= cargo test --workspace --features runtime-benchmarks -- --nocapture
