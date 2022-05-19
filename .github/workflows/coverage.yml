@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        rust: [ nightly-2022-04-24 ]
+        rust: [ nightly ]
 
     steps:
       - name: Checkout Repository
