@@ -464,8 +464,8 @@ impl pallet_treasury::Config for Runtime {
 
 parameter_types! {
     pub const PreimageMaxSize: u32 = 4096 * 1024;
-    pub const PreimageBaseDeposit: Balance = deposit(2, 64);
-    pub const PreimageByteDeposit: Balance = deposit(0, 1);
+    pub const PreimageBaseDeposit: Balance = 1;
+    pub const PreimageByteDeposit: Balance = 1;
 }
 
 impl pallet_preimage::Config for Runtime {
