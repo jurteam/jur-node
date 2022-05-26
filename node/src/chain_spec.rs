@@ -1,7 +1,7 @@
 use jur_node_runtime::{
-	AccountId, AuraConfig, Balance, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY, CouncilConfig, DemocracyConfig, DOLLARS, ElectionsConfig,
-	TechnicalCommitteeConfig, CouncilMembershipConfig, TechnicalMembershipConfig,
+	AccountId, AuraConfig, Balance, BalancesConfig, CouncilConfig, CouncilMembershipConfig,
+	DemocracyConfig, ElectionsConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	SystemConfig, TechnicalCommitteeConfig, TechnicalMembershipConfig, DOLLARS, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -133,7 +133,6 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
-
 	let num_endowed_accounts = endowed_accounts.len();
 	const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
 	const STASH: Balance = ENDOWMENT / 1000;
@@ -193,13 +192,13 @@ fn testnet_genesis(
 			phantom: Default::default(),
 		},
 		treasury: Default::default(),
-        elections: ElectionsConfig {
-            members: endowed_accounts
-                .iter()
-                .take((num_endowed_accounts + 1) / 2)
-                .cloned()
-                .map(|member| (member, STASH))
-                .collect(),
-        },
+		elections: ElectionsConfig {
+			members: endowed_accounts
+				.iter()
+				.take((num_endowed_accounts + 1) / 2)
+				.cloned()
+				.map(|member| (member, STASH))
+				.collect(),
+		},
 	}
 }
