@@ -478,6 +478,32 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+impl pallet_membership::Config<pallet_membership::Instance1> for Runtime {
+	type Event = Event;
+	type AddOrigin = ApproveOrigin;
+	type RemoveOrigin = ApproveOrigin;
+	type SwapOrigin = ApproveOrigin;
+	type ResetOrigin = ApproveOrigin;
+	type PrimeOrigin = ApproveOrigin;
+	type MembershipInitialized = Council;
+	type MembershipChanged = Council;
+	type MaxMembers = CouncilMaxMembers;
+	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_membership::Config<pallet_membership::Instance2> for Runtime {
+	type Event = Event;
+	type AddOrigin = ApproveOrigin;
+	type RemoveOrigin = ApproveOrigin;
+	type SwapOrigin = ApproveOrigin;
+	type ResetOrigin = ApproveOrigin;
+	type PrimeOrigin = ApproveOrigin;
+	type MembershipInitialized = TechnicalCommittee;
+	type MembershipChanged = TechnicalCommittee;
+	type MaxMembers = TechnicalMaxMembers;
+	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -503,6 +529,8 @@ construct_runtime!(
         Treasury: pallet_treasury,
         Scheduler: pallet_scheduler,
 		Preimage: pallet_preimage,
+		CouncilMembership: pallet_membership::<Instance1>,
+		TechnicalMembership: pallet_membership::<Instance2>,
 	}
 );
 

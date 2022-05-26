@@ -1,7 +1,7 @@
 use jur_node_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY, CouncilConfig, DemocracyConfig,
-	TechnicalCommitteeConfig,
+	TechnicalCommitteeConfig, CouncilMembershipConfig, TechnicalMembershipConfig,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -165,7 +165,24 @@ fn testnet_genesis(
 			],
 			phantom: Default::default(),
 		},
+		council_membership: CouncilMembershipConfig {
+			members: vec![
+				// add Alice and Bob as initial council members
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			],
+			phantom: Default::default(),
+		},
 		technical_committee: TechnicalCommitteeConfig {
+			members: endowed_accounts
+				.iter()
+				.take((num_endowed_accounts + 1) / 2)
+				.cloned()
+				.collect(),
+			phantom: Default::default(),
+		},
+		technical_membership: TechnicalMembershipConfig {
 			members: endowed_accounts
 				.iter()
 				.take((num_endowed_accounts + 1) / 2)
