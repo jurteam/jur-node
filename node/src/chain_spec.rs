@@ -1,6 +1,6 @@
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY, CouncilConfig, DemocracyConfig,
+	AccountId, AuraConfig, Balance, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	SystemConfig, WASM_BINARY, CouncilConfig, DemocracyConfig, DOLLARS, ElectionsConfig,
 	TechnicalCommitteeConfig, CouncilMembershipConfig, TechnicalMembershipConfig,
 };
 use sc_service::ChainType;
@@ -135,6 +135,8 @@ fn testnet_genesis(
 ) -> GenesisConfig {
 
 	let num_endowed_accounts = endowed_accounts.len();
+	const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
+	const STASH: Balance = ENDOWMENT / 1000;
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -191,5 +193,13 @@ fn testnet_genesis(
 			phantom: Default::default(),
 		},
 		treasury: Default::default(),
+        elections: ElectionsConfig {
+            members: endowed_accounts
+                .iter()
+                .take((num_endowed_accounts + 1) / 2)
+                .cloned()
+                .map(|member| (member, STASH))
+                .collect(),
+        },
 	}
 }

@@ -18,6 +18,8 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
+use frame_support::traits::LockIdentifier;
+use frame_support::traits::U128CurrencyToVote;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -27,7 +29,7 @@ use frame_system::{
 	EnsureRoot,
 };
 use frame_support::pallet_prelude::DispatchClass;
-
+use static_assertions::const_assert;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
@@ -303,13 +305,13 @@ impl pallet_template::Config for Runtime {
 }
 
 parameter_types! {
-    pub const LaunchPeriod: BlockNumber = 50;
-	pub const VotingPeriod: BlockNumber = 50;
-	pub const FastTrackVotingPeriod: BlockNumber = 20;
+    pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
 	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 50;
-	pub const CooloffPeriod: BlockNumber = 50;
+	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
+	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
 }
@@ -366,7 +368,7 @@ impl pallet_democracy::Config for Runtime {
 }
 
 parameter_types! {
-    pub const CouncilMotionDuration: BlockNumber = 50;
+    pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
     pub const CouncilMaxProposals: u32 = 100;
     pub const CouncilMaxMembers: u32 = 100;
 }
@@ -385,7 +387,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 }
 
 parameter_types! {
-    pub const TechnicalMotionDuration: BlockNumber = 50;
+    pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
     pub const TechnicalMaxProposals: u32 = 100;
     pub const TechnicalMaxMembers: u32 = 100;
 }
@@ -428,8 +430,8 @@ parameter_types! {
     pub const ProposalBond: Permill = Permill::from_percent(5);
     pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
 	pub const ProposalBondMaximum: Balance = 5 * DOLLARS;
-    pub const SpendPeriod: BlockNumber = 50;
-    pub const Burn: Permill = Permill::from_percent(1);
+    pub const SpendPeriod: BlockNumber = 1 * DAYS;
+    pub const Burn: Permill = Permill::from_percent(50);
     pub const TipCountdown: BlockNumber = 1 * DAYS;
     pub const TipFindersFee: Percent = Percent::from_percent(20);
     pub const TipReportDepositBase: Balance = 1 * DOLLARS;
@@ -464,8 +466,9 @@ impl pallet_treasury::Config for Runtime {
 
 parameter_types! {
     pub const PreimageMaxSize: u32 = 4096 * 1024;
-    pub const PreimageBaseDeposit: Balance = 1;
-    pub const PreimageByteDeposit: Balance = 1;
+	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
+	// One cent: $10,000 / MB
+	pub const PreimageByteDeposit: Balance = 1 * CENTS;
 }
 
 impl pallet_preimage::Config for Runtime {
@@ -504,6 +507,41 @@ impl pallet_membership::Config<pallet_membership::Instance2> for Runtime {
 	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	pub const CandidacyBond: Balance = 10 * DOLLARS;
+	// 1 storage item created, key size is 32 bytes, value size is 16+16.
+	pub const VotingBondBase: Balance = deposit(1, 64);
+	// additional data per vote is 32 bytes (account id).
+	pub const VotingBondFactor: Balance = deposit(0, 32);
+	pub const TermDuration: BlockNumber = 7 * DAYS;
+	pub const DesiredMembers: u32 = 13;
+	pub const DesiredRunnersUp: u32 = 7;
+	pub const ElectionsPhragmenPalletId: LockIdentifier = *b"phrelect";
+}
+
+// Make sure that there are no more than `MaxMembers` members elected via elections-phragmen.
+const_assert!(DesiredMembers::get() <= CouncilMaxMembers::get());
+
+impl pallet_elections_phragmen::Config for Runtime {
+	type Event = Event;
+	type PalletId = ElectionsPhragmenPalletId;
+	type Currency = Balances;
+	type ChangeMembers = Council;
+	// NOTE: this implies that council's genesis members cannot be set directly and must come from
+	// this module.
+	type InitializeMembers = Council;
+	type CurrencyToVote = U128CurrencyToVote;
+	type CandidacyBond = CandidacyBond;
+	type VotingBondBase = VotingBondBase;
+	type VotingBondFactor = VotingBondFactor;
+	type LoserCandidate = ();
+	type KickedMember = ();
+	type DesiredMembers = DesiredMembers;
+	type DesiredRunnersUp = DesiredRunnersUp;
+	type TermDuration = TermDuration;
+	type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -531,6 +569,7 @@ construct_runtime!(
 		Preimage: pallet_preimage,
 		CouncilMembership: pallet_membership::<Instance1>,
 		TechnicalMembership: pallet_membership::<Instance2>,
+		Elections: pallet_elections_phragmen,
 	}
 );
 
