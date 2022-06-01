@@ -1,7 +1,7 @@
 use jur_node_runtime::{
-	AccountId, AuraConfig, Balance, BalancesConfig, CouncilConfig, CouncilMembershipConfig,
-	DemocracyConfig, ElectionsConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, TechnicalCommitteeConfig, TechnicalMembershipConfig, DOLLARS, WASM_BINARY,
+	AccountId, AuraConfig, BalancesConfig, CouncilConfig, CouncilMembershipConfig,
+	DemocracyConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	SystemConfig, TechnicalMembershipConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -57,8 +57,16 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				vec![
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
 					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
 				true,
 			)
@@ -133,9 +141,17 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
-	let num_endowed_accounts = endowed_accounts.len();
-	const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
-	const STASH: Balance = ENDOWMENT / 1000;
+
+	let council = vec![
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		get_account_id_from_seed::<sr25519::Public>("Bob"),
+		get_account_id_from_seed::<sr25519::Public>("Charlie"),
+	];
+	let technical_committee = vec![
+		get_account_id_from_seed::<sr25519::Public>("Dave"),
+		get_account_id_from_seed::<sr25519::Public>("Eve"),
+		get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+	];
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -157,48 +173,17 @@ fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		democracy: DemocracyConfig::default(),
-		council: CouncilConfig {
-			members: vec![
-				// add Alice and Bob as initial council members
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			],
-			phantom: Default::default(),
-		},
+		council: CouncilConfig::default(),
 		council_membership: CouncilMembershipConfig {
-			members: vec![
-				// add Alice and Bob as initial council members
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			],
+			members: council,
 			phantom: Default::default(),
 		},
-		technical_committee: TechnicalCommitteeConfig {
-			members: endowed_accounts
-				.iter()
-				.take((num_endowed_accounts + 1) / 2)
-				.cloned()
-				.collect(),
-			phantom: Default::default(),
-		},
+		technical_committee: Default::default(),
 		technical_membership: TechnicalMembershipConfig {
-			members: endowed_accounts
-				.iter()
-				.take((num_endowed_accounts + 1) / 2)
-				.cloned()
-				.collect(),
+			members: technical_committee,
 			phantom: Default::default(),
 		},
 		treasury: Default::default(),
-		elections: ElectionsConfig {
-			members: endowed_accounts
-				.iter()
-				.take((num_endowed_accounts + 1) / 2)
-				.cloned()
-				.map(|member| (member, STASH))
-				.collect(),
-		},
+		elections: Default::default(),
 	}
 }
