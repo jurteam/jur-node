@@ -34,6 +34,8 @@ sp-session = { version = "4.0.0-dev", default-features = false, git = "https://g
 sp-std = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 sp-version = { version = "5.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+pallet-multisig = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.20" }
+
 
 # Used for Governance
 pallet-collective  = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
@@ -95,6 +97,7 @@ std = [
 	"pallet-democracy/std",
 	"pallet-scheduler/std",
 	"pallet-preimage/std",
+	"pallet-multisig/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -121,4 +124,5 @@ try-runtime = [
 	"pallet-transaction-payment/try-runtime",
 	"pallet-collective/try-runtime",
 	"pallet-membership/try-runtime",
+	"pallet-multisig/try-runtime",
 ]
