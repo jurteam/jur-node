@@ -52,8 +52,8 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
 
-/// Import the template pallet.
-pub use pallet_template;
+/// Import the token-swap pallet.
+pub use pallet_token_swap;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -302,8 +302,8 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+/// Configure the pallet-token-swap in pallets/token-swap.
+impl pallet_token_swap::Config for Runtime {
 	type Event = Event;
 }
 
@@ -560,8 +560,8 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
-		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
+		// Include the custom logic from the pallet-token-swap in the runtime.
+		TokenSwap: pallet_token_swap,
 
 		// Governance Integration
 		Democracy: pallet_democracy,
@@ -617,7 +617,6 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_template, TemplateModule]
 	);
 }
 
