@@ -1,0 +1,27 @@
+[package]
+authors = ["Jur Team <https://github.com/jurteam>"]
+edition = '2021'
+name    = 'jur-primitives'
+version = '1.0.0'
+
+[dependencies]
+parity-scale-codec = { version = "3.1.2", default-features = false, features = ["derive"] }
+scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
+serde = { version = "1.0.137", default-features = false }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+rustc-hex = { version = "2.1.0", default-features = false }
+serde_derive = { version = "1.0.117", optional = true }
+
+[features]
+default = ["std"]
+std = [
+  "parity-scale-codec/std",
+  "scale-info/std",
+  "sp-std/std",
+  "sp-runtime/std",
+  "rustc-hex/std",
+  "serde_derive",
+  "serde/std",
+]
+

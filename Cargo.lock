@@ -2745,6 +2745,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "jur-primitives"
+version = "1.0.0"
+dependencies = [
+ "parity-scale-codec",
+ "rustc-hex",
+ "scale-info",
+ "serde",
+ "serde_derive",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "keccak"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4251,6 +4264,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "jur-primitives",
  "parity-scale-codec",
  "rustc-hex",
  "scale-info",

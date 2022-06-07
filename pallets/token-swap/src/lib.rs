@@ -3,49 +3,30 @@
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_std::{fmt::Debug, prelude::*};
+use primitives::{Balance, EthereumAddress};
+use frame_support::traits::Get;
+use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
 use sp_runtime::RuntimeDebug;
-#[cfg(feature = "std")]
-use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
-/// An Ethereum address (i.e. 20 bytes, used to represent an Ethereum account).
-///
-/// This gets serialized to the 0x-prefixed hex representation.
-#[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, Default, RuntimeDebug, TypeInfo)]
-pub struct EthereumAddress([u8; 20]);
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
-impl Serialize for EthereumAddress {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-		where
-			S: Serializer,
-	{
-		let hex: String = rustc_hex::ToHex::to_hex(&self.0[..]);
-		serializer.serialize_str(&format!("0x{}", hex))
-	}
+use serde::{self, Deserialize, Serialize};
+
+/// The kind of statement an account needs to make for a claim to be valid.
+#[derive(Encode, Decode, Clone, Copy, Eq, PartialEq, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum StatementKind {
+	/// Statement required to be made by non-SAFT holders.
+	Regular,
+	/// Statement required to be made by SAFT holders.
+	Saft,
 }
 
-#[cfg(feature = "std")]
-impl<'de> Deserialize<'de> for EthereumAddress {
-	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-		where
-			D: Deserializer<'de>,
-	{
-		let base_string = String::deserialize(deserializer)?;
-		let offset = if base_string.starts_with("0x") { 2 } else { 0 };
-		let s = &base_string[offset..];
-		if s.len() != 40 {
-			Err(serde::de::Error::custom(
-				"Bad length of Ethereum address (should be 42 including '0x')",
-			))?;
-		}
-		let raw: Vec<u8> = rustc_hex::FromHex::from_hex(s)
-			.map_err(|e| serde::de::Error::custom(format!("{:?}", e)))?;
-		let mut r = Self::default();
-		r.0.copy_from_slice(&raw);
-		Ok(r)
+impl Default for StatementKind {
+	fn default() -> Self {
+		StatementKind::Regular
 	}
 }
-
 
 #[derive(Encode, Decode, Clone, TypeInfo)]
 pub struct EcdsaSignature(pub [u8; 65]);
@@ -62,8 +43,6 @@ impl sp_std::fmt::Debug for EcdsaSignature {
 	}
 }
 
-type Balance = u32;
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -77,11 +56,11 @@ pub mod pallet {
 
 		/// The pallet needs to keep track of a Vechain state root hash
 		#[pallet::constant]
-		type VechainRootHash: Get<H256>;
+		type VechainRootHash: Get<Self::Hash>;
 
 		/// eth address of the deposit contract
 		#[pallet::constant]
-		type EthAddress: Get<u32>;
+		type EthAddress: Get<EthereumAddress>;
 
 		/// Have an unverified block number as metadata for users
 		#[pallet::constant]
@@ -89,11 +68,15 @@ pub mod pallet {
 
 		/// Maximum number of prices.
 		#[pallet::constant]
-		type IPFSPath: Get<[u8]>;
+		type IPFSPath: Get<Vec<u8>>;
+
+		#[pallet::constant]
+		type Prefix: Get<&'static [u8]>;
 	}
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
@@ -126,7 +109,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn claim(
 			origin: OriginFor<T>,
-			proof: H256,
+			dest: T::AccountId,
+			_proof: Balance,
 			ethereum_signature: EcdsaSignature,
 		) -> DispatchResult {
 			ensure_none(origin)?;
@@ -141,6 +125,17 @@ pub mod pallet {
 		}
 
 	}
+}
+
+/// Converts the given binary data into ASCII-encoded hex. It will be twice the length.
+fn to_ascii_hex(data: &[u8]) -> Vec<u8> {
+	let mut r = Vec::with_capacity(data.len() * 2);
+	let mut push_nibble = |n| r.push(if n < 10 { b'0' + n } else { b'a' - 10 + n });
+	for &b in data.iter() {
+		push_nibble(b / 16);
+		push_nibble(b % 16);
+	}
+	r
 }
 
 impl<T: Config> Pallet<T> {

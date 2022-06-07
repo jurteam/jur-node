@@ -302,9 +302,19 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub Prefix: &'static [u8] = b"Pay Jur to the account:";
+	pub const MetaBlockNumber: BlockNumber = 1;
+}
+
 /// Configure the pallet-token-swap in pallets/token-swap.
 impl pallet_token_swap::Config for Runtime {
 	type Event = Event;
+	type VechainRootHash = ();
+	type EthAddress = ();
+	type MetaBlockNumber = MetaBlockNumber;
+	type IPFSPath = ();
+	type Prefix = Prefix;
 }
 
 parameter_types! {
