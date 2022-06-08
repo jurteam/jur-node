@@ -1,10 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::traits::Get;
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
-use scale_info::TypeInfo;
 use primitives::{Balance, EthereumAddress};
-use frame_support::traits::Get;
+use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
@@ -90,8 +90,8 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Stored claimed balance [balance, who]
-		ClaimedBalanceStored(u32, T::AccountId),
+		/// Stored claimed balance [balance]
+		ClaimedBalanceStored(Balance),
 	}
 
 	#[pallet::error]
@@ -100,17 +100,17 @@ pub mod pallet {
 		InvalidStatement,
 		/// Invalid Ethereum signature.
 		InvalidEthereumSignature,
+		/// Not Sufficient locked balance.
+		NotSufficientLockedBalance,
 	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-
-
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn claim(
 			origin: OriginFor<T>,
 			dest: T::AccountId,
-			_proof: Balance,
+			locked_balance: Balance,
 			ethereum_signature: EcdsaSignature,
 		) -> DispatchResult {
 			ensure_none(origin)?;
@@ -120,10 +120,16 @@ pub mod pallet {
 				.ok_or(Error::<T>::InvalidEthereumSignature)?;
 			ensure!(Signing::<T>::get(&signer).is_none(), Error::<T>::InvalidStatement);
 
-			//Self::process_claim(signer, dest)?;
+			let latest_claimed_balance = Self::latest_claimed_balance();
+			ensure!(
+				locked_balance > latest_claimed_balance,
+				Error::<T>::NotSufficientLockedBalance
+			);
+
+			LatestClaimedBalance::<T>::put(locked_balance.clone());
+			Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
 			Ok(())
 		}
-
 	}
 }
 
