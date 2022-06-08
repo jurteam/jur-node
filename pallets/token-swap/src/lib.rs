@@ -1,9 +1,19 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::Get;
+use frame_support::{
+	dispatch::DispatchResult,
+	pallet_prelude::*,
+	traits::{
+		tokens::{
+			fungible::{Inspect, Mutate, Transfer},
+			fungibles::{Inspect as Inspects, Mutate as Mutates, Transfer as Transfers},
+		},
+		Get
+	},
+};
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
-use primitives::{Balance, EthereumAddress};
+use primitives::{Balance, CurrencyId, EthereumAddress};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
 use sp_runtime::RuntimeDebug;
@@ -43,10 +53,15 @@ impl sp_std::fmt::Debug for EcdsaSignature {
 	}
 }
 
+type AssetIdOf<T> =
+<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::AssetId;
+type BalanceOf<T> =
+<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::Balance;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::traits::LockableCurrency;
 	use frame_system::pallet_prelude::*;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -72,6 +87,18 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type Prefix: Get<&'static [u8]>;
+
+		type Assets: Transfers<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
+		+ Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
+		+ Mutates<Self::AccountId, AssetId = CurrencyId, Balance = Balance>;
+
+		type Balances: Inspect<Self::AccountId, Balance = Balance>
+		+ Mutate<Self::AccountId, Balance = Balance>
+		+ Transfer<Self::AccountId, Balance = Balance>
+		+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
+
+		#[pallet::constant]
+		type NativeCurrencyId: Get<AssetIdOf<Self>>;
 	}
 
 	#[pallet::pallet]
@@ -81,7 +108,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn latest_claimed_balance)]
-	pub type LatestClaimedBalance<T> = StorageValue<_, Balance, ValueQuery>;
+	pub type LatestClaimedBalance<T> = StorageValue<_, BalanceOf<T>, ValueQuery>;
 
 	/// The statement kind that must be signed, if any.
 	#[pallet::storage]
@@ -91,7 +118,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Stored claimed balance [balance]
-		ClaimedBalanceStored(Balance),
+		ClaimedBalanceStored(BalanceOf<T>),
 	}
 
 	#[pallet::error]
@@ -110,7 +137,7 @@ pub mod pallet {
 		pub fn claim(
 			origin: OriginFor<T>,
 			dest: T::AccountId,
-			locked_balance: Balance,
+			locked_balance: BalanceOf<T>,
 			ethereum_signature: EcdsaSignature,
 		) -> DispatchResult {
 			ensure_none(origin)?;
@@ -125,6 +152,9 @@ pub mod pallet {
 				locked_balance > latest_claimed_balance,
 				Error::<T>::NotSufficientLockedBalance
 			);
+
+			let mint_amount = locked_balance - latest_claimed_balance;
+			T::Balances::mint_into(&dest, mint_amount)?;
 
 			LatestClaimedBalance::<T>::put(locked_balance.clone());
 			Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));

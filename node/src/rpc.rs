@@ -6,8 +6,8 @@
 #![warn(missing_docs)]
 
 use std::sync::Arc;
-
-use jur_node_runtime::{opaque::Block, AccountId, Balance, Index};
+use primitives::Balance;
+use jur_node_runtime::{opaque::Block, AccountId, Index};
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;

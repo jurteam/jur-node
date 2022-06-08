@@ -185,5 +185,6 @@ fn testnet_genesis(
 		},
 		treasury: Default::default(),
 		elections: Default::default(),
+		assets: Default::default(),
 	}
 }

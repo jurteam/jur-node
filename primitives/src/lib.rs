@@ -9,6 +9,10 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 /// Balance of an account.
 pub type Balance = u128;
 
+pub type CurrencyId = u32;
+
+// Native Token
+pub const JUR: CurrencyId = 0;
 
 /// An Ethereum address (i.e. 20 bytes, used to represent an Ethereum account).
 ///
