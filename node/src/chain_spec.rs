@@ -1,7 +1,7 @@
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, CouncilConfig, CouncilMembershipConfig,
-	DemocracyConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, TechnicalMembershipConfig, WASM_BINARY,
+	AccountId, AuraConfig, BalancesConfig, CouncilConfig, CouncilMembershipConfig, DemocracyConfig,
+	GenesisConfig, GrandpaConfig, Signature, SudoConfig, SystemConfig, TechnicalMembershipConfig,
+	WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -141,7 +141,6 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
-
 	let council = vec![
 		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		get_account_id_from_seed::<sr25519::Public>("Bob"),

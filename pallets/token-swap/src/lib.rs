@@ -8,7 +8,7 @@ use frame_support::{
 			fungible::{Inspect, Mutate, Transfer},
 			fungibles::{Inspect as Inspects, Mutate as Mutates, Transfer as Transfers},
 		},
-		Get
+		Get,
 	},
 };
 pub use pallet::*;
@@ -16,27 +16,7 @@ use parity_scale_codec::{Decode, Encode};
 use primitives::{Balance, CurrencyId, EthereumAddress};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
-use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
-
-#[cfg(feature = "std")]
-use serde::{self, Deserialize, Serialize};
-
-/// The kind of statement an account needs to make for a claim to be valid.
-#[derive(Encode, Decode, Clone, Copy, Eq, PartialEq, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum StatementKind {
-	/// Statement required to be made by non-SAFT holders.
-	Regular,
-	/// Statement required to be made by SAFT holders.
-	Saft,
-}
-
-impl Default for StatementKind {
-	fn default() -> Self {
-		StatementKind::Regular
-	}
-}
 
 #[derive(Encode, Decode, Clone, TypeInfo)]
 pub struct EcdsaSignature(pub [u8; 65]);
@@ -54,9 +34,9 @@ impl sp_std::fmt::Debug for EcdsaSignature {
 }
 
 type AssetIdOf<T> =
-<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::AssetId;
+	<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::AssetId;
 type BalanceOf<T> =
-<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -89,13 +69,13 @@ pub mod pallet {
 		type Prefix: Get<&'static [u8]>;
 
 		type Assets: Transfers<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
-		+ Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
-		+ Mutates<Self::AccountId, AssetId = CurrencyId, Balance = Balance>;
+			+ Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
+			+ Mutates<Self::AccountId, AssetId = CurrencyId, Balance = Balance>;
 
 		type Balances: Inspect<Self::AccountId, Balance = Balance>
-		+ Mutate<Self::AccountId, Balance = Balance>
-		+ Transfer<Self::AccountId, Balance = Balance>
-		+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
+			+ Mutate<Self::AccountId, Balance = Balance>
+			+ Transfer<Self::AccountId, Balance = Balance>
+			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
 
 		#[pallet::constant]
 		type NativeCurrencyId: Get<AssetIdOf<Self>>;
@@ -108,11 +88,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn latest_claimed_balance)]
-	pub type LatestClaimedBalance<T> = StorageValue<_, BalanceOf<T>, ValueQuery>;
-
-	/// The statement kind that must be signed, if any.
-	#[pallet::storage]
-	pub(super) type Signing<T> = StorageMap<_, Identity, EthereumAddress, StatementKind>;
+	pub type LatestClaimedBalance<T> = StorageMap<_, Identity, EthereumAddress, BalanceOf<T>>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -145,19 +121,17 @@ pub mod pallet {
 			let data = dest.using_encoded(to_ascii_hex);
 			let signer = Self::eth_recover(&ethereum_signature, &data, &[][..])
 				.ok_or(Error::<T>::InvalidEthereumSignature)?;
-			ensure!(Signing::<T>::get(&signer).is_none(), Error::<T>::InvalidStatement);
 
-			let latest_claimed_balance = Self::latest_claimed_balance();
-			ensure!(
-				locked_balance > latest_claimed_balance,
-				Error::<T>::NotSufficientLockedBalance
-			);
+			if let Some(balance) = Self::latest_claimed_balance(&signer) {
+				ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
-			let mint_amount = locked_balance - latest_claimed_balance;
-			T::Balances::mint_into(&dest, mint_amount)?;
+				let mint_amount = locked_balance - balance;
+				T::Balances::mint_into(&dest, mint_amount)?;
 
-			LatestClaimedBalance::<T>::put(locked_balance.clone());
-			Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
+				LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
+				Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
+			}
+
 			Ok(())
 		}
 	}
