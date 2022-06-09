@@ -16,7 +16,14 @@ use parity_scale_codec::{Decode, Encode};
 use primitives::{Balance, CurrencyId, EthereumAddress};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
+use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
+
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Encode, Decode, Clone, TypeInfo)]
 pub struct EcdsaSignature(pub [u8; 65]);
@@ -122,15 +129,14 @@ pub mod pallet {
 			let signer = Self::eth_recover(&ethereum_signature, &data, &[][..])
 				.ok_or(Error::<T>::InvalidEthereumSignature)?;
 
-			if let Some(balance) = Self::latest_claimed_balance(&signer) {
-				ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
+			let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
+			ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
-				let mint_amount = locked_balance - balance;
-				T::Balances::mint_into(&dest, mint_amount)?;
+			let mint_amount = locked_balance - balance;
+			T::Balances::mint_into(&dest, mint_amount)?;
 
-				LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
-				Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
-			}
+			LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
+			Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
 
 			Ok(())
 		}
