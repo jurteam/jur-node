@@ -13,11 +13,13 @@ use frame_support::{
 };
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
-use primitives::{Balance, CurrencyId, EthereumAddress};
+use rlp::DecoderError;
+use primitives::{Balance, CurrencyId, EthereumAddress, RootHash};
 use scale_info::TypeInfo;
-use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
+use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
+use crate::Error::InvalidProof;
 
 #[cfg(test)]
 mod mock;
@@ -58,7 +60,7 @@ pub mod pallet {
 
 		/// The pallet needs to keep track of a Vechain state root hash
 		#[pallet::constant]
-		type VechainRootHash: Get<Self::Hash>;
+		type VechainRootHash: Get<RootHash>;
 
 		/// eth address of the deposit contract
 		#[pallet::constant]
@@ -112,6 +114,9 @@ pub mod pallet {
 		InvalidEthereumSignature,
 		/// Not Sufficient locked balance.
 		NotSufficientLockedBalance,
+		/// Invalid proof
+		InvalidProof,
+		NotImplemented,
 	}
 
 	#[pallet::call]
@@ -122,12 +127,21 @@ pub mod pallet {
 			dest: T::AccountId,
 			locked_balance: BalanceOf<T>,
 			ethereum_signature: EcdsaSignature,
+			signed_json: Vec<u8>,
+			// account_proof: Vec<Vec<u8>>,
+			// storage_proof: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			let data = dest.using_encoded(to_ascii_hex);
-			let signer = Self::eth_recover(&ethereum_signature, &data, &[][..])
+			// Step: 1 Recover signer from signed json
+			let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
+
+			let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
 				.ok_or(Error::<T>::InvalidEthereumSignature)?;
+
+			/// TODO Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
+
+			/// TODO Step-3: Proof Verification
 
 			let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
 			ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
@@ -154,31 +168,85 @@ fn to_ascii_hex(data: &[u8]) -> Vec<u8> {
 	r
 }
 
-impl<T: Config> Pallet<T> {
-	// Constructs the message that Ethereum RPC's `personal_sign` and `eth_sign` would sign.
-	fn ethereum_signable_message(what: &[u8], extra: &[u8]) -> Vec<u8> {
-		let prefix = T::Prefix::get();
-		let mut l = prefix.len() + what.len() + extra.len();
-		let mut rev = Vec::new();
-		while l > 0 {
-			rev.push(b'0' + (l % 10) as u8);
-			l /= 10;
-		}
-		let mut v = b"\x19Ethereum Signed Message:\n".to_vec();
-		v.extend(rev.into_iter().rev());
-		v.extend_from_slice(&prefix[..]);
-		v.extend_from_slice(what);
-		v.extend_from_slice(extra);
-		v
+impl<T> From<rlp::DecoderError> for Error<T> {
+	fn from(_: DecoderError) -> Self {
+		Error::<T>::InvalidProof
 	}
+}
 
+impl<T: Config> Pallet<T> {
+
+	fn verify_proof(root: RootHash, proof: Vec<Vec<u8>>, key: Vec<u8>) -> Result<Vec<u8>, Error<T>>{
+
+
+		let mut nibbles = vec![];
+
+		for (i, k) in key.iter().enumerate() {
+				nibbles.push(k >>4);
+				nibbles.push(k%16);
+		}
+
+		let nibbles_iter = nibbles.iter();
+
+		for proof_step in proof.iter() {
+			let blake2_256_hash: RootHash = blake2_256(proof_step);
+
+			ensure!(blake2_256_hash == root, Error::<T>::InvalidProof);
+
+			let rlp = rlp::Rlp::new(proof_step);
+			match rlp.item_count()? {
+				2 => {
+					let mut node = rlp.iter();
+					let prefix: Vec<u8> = match node.next() {
+						Some(n) => n.as_val()?,
+						None => return Err(Error::<T>::InvalidProof)
+					};
+
+					let value: Vec<u8> = match node.next() {
+						Some(n) => n.as_val()?,
+						None => return Err(Error::<T>::InvalidProof)
+					};
+
+					let odd = prefix[0] & 16 != 0;
+					let terminal = prefix[0] & 32 != 0;
+
+					let mut prefix_nibbles = vec![];
+
+					for (i, p) in prefix.iter().enumerate() {
+
+						if i !=0 {
+							prefix_nibbles.push(p >>4);
+						}
+
+						if i!=0 || odd {
+							prefix_nibbles.push(p%16);
+						}
+					}
+
+					let prefix_nibbles_len = prefix_nibbles.len();
+
+					let n = nibbles_iter.take(prefix_nibbles_len);
+
+					//assert_eq!(Some(prefix_nibbles), None);
+					/// TODO This is to removed
+					return Ok(vec![])
+				},
+				17 => return Err(Error::<T>::NotImplemented),
+				_ => return Err(Error::<T>::InvalidProof)
+			}
+
+			return Err(Error::<T>::NotImplemented)
+
+		}
+
+		Err(Error::<T>::InvalidProof)
+	}
 	// Attempts to recover the Ethereum address from a message signature signed by using
 	// the Ethereum RPC's `personal_sign` and `eth_sign`.
-	fn eth_recover(s: &EcdsaSignature, what: &[u8], extra: &[u8]) -> Option<EthereumAddress> {
-		let msg = keccak_256(&Self::ethereum_signable_message(what, extra));
+	fn eth_recover(s: &EcdsaSignature, blake2_256_hash: [u8; 32]) -> Option<EthereumAddress> {
 		let mut res = EthereumAddress::default();
 		res.0
-			.copy_from_slice(&keccak_256(&secp256k1_ecdsa_recover(&s.0, &msg).ok()?[..])[12..]);
+			.copy_from_slice(&keccak_256(&secp256k1_ecdsa_recover(&s.0, &blake2_256_hash).ok()?[..])[12..]);
 		Some(res)
 	}
 }

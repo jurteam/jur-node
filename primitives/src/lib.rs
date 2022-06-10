@@ -11,6 +11,8 @@ pub type Balance = u128;
 
 pub type CurrencyId = u32;
 
+pub type RootHash = [u8; 32];
+
 // Native Token
 pub const JUR: CurrencyId = 0;
 

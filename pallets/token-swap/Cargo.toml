@@ -25,17 +25,19 @@ serde = { version = "1.0.137", default-features = false }
 serde_derive = { version = "1.0.117", optional = true }
 rustc-hex = { version = "2.1.0", default-features = false }
 sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
-
+sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+rlp = {default-features = false, version ="0.5.1"}
 
 [dev-dependencies]
-sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-assets = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 libsecp256k1 = { version = "0.7.0", default-features = false }
+hex-literal = "0.3.4"
 
 [features]
 default = ["std"]
 std = [
+	"rlp/std",
 	"parity-scale-codec/std",
 	"scale-info/std",
 	"frame-support/std",
@@ -48,6 +50,7 @@ std = [
 	"serde/std",
 	"primitives/std",
 	"sp-io/std",
+	"sp-core/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]

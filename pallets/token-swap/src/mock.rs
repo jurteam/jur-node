@@ -7,7 +7,6 @@ use frame_support::{
 use frame_system::{self as system, EnsureRoot};
 use primitives::{Balance, CurrencyId, JUR};
 use sp_core::H256;
-use sp_io::hashing::keccak_256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -117,24 +116,6 @@ impl pallet_token_swap::Config for Test {
 	type Assets = Assets;
 	type Balances = Balances;
 	type NativeCurrencyId = NativeCurrencyId;
-}
-
-pub fn alice() -> libsecp256k1::SecretKey {
-	libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
-}
-
-pub fn sig<T: Config>(
-	secret: &libsecp256k1::SecretKey,
-	what: &[u8],
-	extra: &[u8],
-) -> EcdsaSignature {
-	let msg =
-		keccak_256(&<super::Pallet<T>>::ethereum_signable_message(&to_ascii_hex(what)[..], extra));
-	let (sig, recovery_id) = libsecp256k1::sign(&libsecp256k1::Message::parse(&msg), secret);
-	let mut r = [0u8; 65];
-	r[0..64].copy_from_slice(&sig.serialize()[..]);
-	r[64] = recovery_id.serialize();
-	EcdsaSignature(r)
 }
 
 // Build genesis storage according to the mock runtime.
