@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use crate::Error::InvalidProof;
 use frame_support::{
 	dispatch::DispatchResult,
 	pallet_prelude::*,
@@ -13,13 +14,12 @@ use frame_support::{
 };
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
-use rlp::DecoderError;
 use primitives::{Balance, CurrencyId, EthereumAddress, RootHash};
+use rlp::DecoderError;
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use crate::Error::InvalidProof;
 
 #[cfg(test)]
 mod mock;
@@ -128,8 +128,6 @@ pub mod pallet {
 			locked_balance: BalanceOf<T>,
 			ethereum_signature: EcdsaSignature,
 			signed_json: Vec<u8>,
-			// account_proof: Vec<Vec<u8>>,
-			// storage_proof: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
@@ -142,7 +140,6 @@ pub mod pallet {
 			/// TODO Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
 
 			/// TODO Step-3: Proof Verification
-
 			let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
 			ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
@@ -157,17 +154,6 @@ pub mod pallet {
 	}
 }
 
-/// Converts the given binary data into ASCII-encoded hex. It will be twice the length.
-fn to_ascii_hex(data: &[u8]) -> Vec<u8> {
-	let mut r = Vec::with_capacity(data.len() * 2);
-	let mut push_nibble = |n| r.push(if n < 10 { b'0' + n } else { b'a' - 10 + n });
-	for &b in data.iter() {
-		push_nibble(b / 16);
-		push_nibble(b % 16);
-	}
-	r
-}
-
 impl<T> From<rlp::DecoderError> for Error<T> {
 	fn from(_: DecoderError) -> Self {
 		Error::<T>::InvalidProof
@@ -175,15 +161,16 @@ impl<T> From<rlp::DecoderError> for Error<T> {
 }
 
 impl<T: Config> Pallet<T> {
-
-	fn verify_proof(root: RootHash, proof: Vec<Vec<u8>>, key: Vec<u8>) -> Result<Vec<u8>, Error<T>>{
-
-
+	fn verify_proof(
+		root: RootHash,
+		proof: Vec<Vec<u8>>,
+		key: Vec<u8>,
+	) -> Result<Vec<u8>, Error<T>> {
 		let mut nibbles = vec![];
 
 		for (i, k) in key.iter().enumerate() {
-				nibbles.push(k >>4);
-				nibbles.push(k%16);
+			nibbles.push(k >> 4);
+			nibbles.push(k % 16);
 		}
 
 		let nibbles_iter = nibbles.iter();
@@ -199,12 +186,12 @@ impl<T: Config> Pallet<T> {
 					let mut node = rlp.iter();
 					let prefix: Vec<u8> = match node.next() {
 						Some(n) => n.as_val()?,
-						None => return Err(Error::<T>::InvalidProof)
+						None => return Err(Error::<T>::InvalidProof),
 					};
 
 					let value: Vec<u8> = match node.next() {
 						Some(n) => n.as_val()?,
-						None => return Err(Error::<T>::InvalidProof)
+						None => return Err(Error::<T>::InvalidProof),
 					};
 
 					let odd = prefix[0] & 16 != 0;
@@ -213,13 +200,12 @@ impl<T: Config> Pallet<T> {
 					let mut prefix_nibbles = vec![];
 
 					for (i, p) in prefix.iter().enumerate() {
-
-						if i !=0 {
-							prefix_nibbles.push(p >>4);
+						if i != 0 {
+							prefix_nibbles.push(p >> 4);
 						}
 
-						if i!=0 || odd {
-							prefix_nibbles.push(p%16);
+						if i != 0 || odd {
+							prefix_nibbles.push(p % 16);
 						}
 					}
 
@@ -229,14 +215,13 @@ impl<T: Config> Pallet<T> {
 
 					//assert_eq!(Some(prefix_nibbles), None);
 					/// TODO This is to removed
-					return Ok(vec![])
+					return Ok(vec![]);
 				},
 				17 => return Err(Error::<T>::NotImplemented),
-				_ => return Err(Error::<T>::InvalidProof)
+				_ => return Err(Error::<T>::InvalidProof),
 			}
 
-			return Err(Error::<T>::NotImplemented)
-
+			return Err(Error::<T>::NotImplemented);
 		}
 
 		Err(Error::<T>::InvalidProof)
@@ -245,8 +230,9 @@ impl<T: Config> Pallet<T> {
 	// the Ethereum RPC's `personal_sign` and `eth_sign`.
 	fn eth_recover(s: &EcdsaSignature, blake2_256_hash: [u8; 32]) -> Option<EthereumAddress> {
 		let mut res = EthereumAddress::default();
-		res.0
-			.copy_from_slice(&keccak_256(&secp256k1_ecdsa_recover(&s.0, &blake2_256_hash).ok()?[..])[12..]);
+		res.0.copy_from_slice(
+			&keccak_256(&secp256k1_ecdsa_recover(&s.0, &blake2_256_hash).ok()?[..])[12..],
+		);
 		Some(res)
 	}
 }
