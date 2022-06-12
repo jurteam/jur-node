@@ -12,7 +12,6 @@ fn claim_works() {
 
 		assert_ok!(TokenSwap::claim(
 			Origin::none(),
-			42,
 			100,
 			EcdsaSignature(signature),
 			signed_json
@@ -60,8 +59,34 @@ fn claim_with_invalid_ethereum_address_does_not_work() {
 		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"My JUR address is 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
 
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), 42, 1, EcdsaSignature([0; 65]), signed_json),
+			TokenSwap::claim(Origin::none(), 1, EcdsaSignature([0; 65]), signed_json),
 			Error::<Test>::InvalidEthereumSignature
+		);
+	});
+}
+
+#[test]
+fn claim_with_invalid_json_does_not_work() {
+	new_test_ext().execute_with(|| {
+		let signed_json = r#"{payload":{"content":"My JUR address is 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
+
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), 1, EcdsaSignature(signature), signed_json),
+			Error::<Test>::InvalidJson
+		);
+	});
+}
+
+#[test]
+fn claim_with_no_json_content_does_not_work() {
+	new_test_ext().execute_with(|| {
+		let signed_json = r#"{"domain":"localhost:3000","payload":{"type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
+
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), 1, EcdsaSignature(signature), signed_json),
+			Error::<Test>::ContentNotFound
 		);
 	});
 }
@@ -75,7 +100,6 @@ fn claim_with_invalid_locked_balance_does_not_work() {
 		assert_ok!(
 			TokenSwap::claim(
 				Origin::none(),
-				42,
 				100,
 				EcdsaSignature(signature),
 				signed_json.clone()
@@ -84,7 +108,6 @@ fn claim_with_invalid_locked_balance_does_not_work() {
 		assert_noop!(
 			TokenSwap::claim(
 				Origin::none(),
-				42,
 				1,
 				EcdsaSignature(signature),
 				signed_json

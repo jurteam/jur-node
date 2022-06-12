@@ -101,7 +101,7 @@ impl pallet_assets::Config for Test {
 }
 
 parameter_types! {
-	pub Prefix: &'static [u8] = b"Pay Jur to the test account:";
+	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const MetaBlockNumber: u64 = 1;
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
 }

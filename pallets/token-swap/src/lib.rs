@@ -1,6 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use crate::Error::InvalidProof;
 use frame_support::{
 	dispatch::DispatchResult,
 	pallet_prelude::*,
@@ -108,6 +107,10 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Invalid JSON
+		InvalidJson,
+		/// Content Not Found
+		ContentNotFound,
 		/// A needed statement was not included.
 		InvalidStatement,
 		/// Invalid Ethereum signature.
@@ -124,31 +127,13 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn claim(
 			origin: OriginFor<T>,
-			dest: T::AccountId,
 			locked_balance: BalanceOf<T>,
 			ethereum_signature: EcdsaSignature,
 			signed_json: Vec<u8>,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			// Step: 1 Recover signer from signed json
-			let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
-
-			let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
-				.ok_or(Error::<T>::InvalidEthereumSignature)?;
-
-			/// TODO Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
-
-			/// TODO Step-3: Proof Verification
-			let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
-			ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
-
-			let mint_amount = locked_balance - balance;
-			T::Balances::mint_into(&dest, mint_amount)?;
-
-			LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
-			Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
-
+			Self::process_claim(locked_balance, ethereum_signature, signed_json)?;
 			Ok(())
 		}
 	}
@@ -161,6 +146,226 @@ impl<T> From<rlp::DecoderError> for Error<T> {
 }
 
 impl<T: Config> Pallet<T> {
+	fn process_claim(
+		locked_balance: BalanceOf<T>,
+		ethereum_signature: EcdsaSignature,
+		signed_json: Vec<u8>,
+	) -> DispatchResult {
+		// Step: 1 Recover signer from signed json
+		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
+
+		let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
+			.ok_or(Error::<T>::InvalidEthereumSignature)?;
+
+		// Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
+
+		ensure!(Self::json_validation(signed_json.clone()), Error::<T>::InvalidJson);
+
+		let payload = Self::get_nested_json(signed_json, "payload".as_bytes().to_vec());
+		let content = Self::get_json_value(payload, "content".as_bytes().to_vec());
+		let content = sp_std::str::from_utf8(&content).unwrap_or("");
+
+		ensure!(!content.is_empty(), Error::<T>::ContentNotFound);
+
+		let substrate_address = &content[T::Prefix::get().len()..];
+		let address = bs58::decode(substrate_address).into_vec().unwrap();
+		let account_id =
+			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
+
+		/// TODO Step-3: Proof Verification
+		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
+		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
+
+		let mint_amount = locked_balance - balance;
+		T::Balances::mint_into(&account_id, mint_amount)?;
+
+		LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
+		Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
+		Ok(())
+	}
+
+	fn get_nested_json(j: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+		let mut result = Vec::new();
+		let mut k = Vec::new();
+		let keyl = key.len();
+		let jl = j.len();
+		k.push(b'"');
+		for xk in 0..keyl {
+			k.push(*key.get(xk).unwrap());
+		}
+		k.push(b'"');
+		k.push(b':');
+		let kl = k.len();
+		for x in 0..jl {
+			let mut m = 0;
+			if x + kl > jl {
+				break;
+			}
+			for (xx, i) in (x..x + kl).enumerate() {
+				if *j.get(i).unwrap() == *k.get(xx).unwrap() {
+					m += 1;
+				}
+			}
+			if m == kl {
+				let mut os = true;
+				for i in x + kl..jl - 1 {
+					if *j.get(i).unwrap() == b'{' && os {
+						os = false;
+					}
+					result.push(*j.get(i).unwrap());
+					if *j.get(i).unwrap() == b'}' && !os {
+						break;
+					}
+				}
+				break;
+			}
+		}
+		result
+	}
+
+	fn json_validation(j: Vec<u8>) -> bool {
+		// minimum lenght of 2
+		if j.len() < 2 {
+			return false;
+		}
+		// checks star/end with {}
+		if *j.get(0).unwrap() == b'{' && *j.last().unwrap() != b'}' {
+			return false;
+		}
+		// checks start/end with []
+		if *j.get(0).unwrap() == b'[' && *j.last().unwrap() != b']' {
+			return false;
+		}
+		// check that the start is { or [
+		if *j.get(0).unwrap() != b'{' && *j.get(0).unwrap() != b'[' {
+			return false;
+		}
+		//checks that end is } or ]
+		if *j.last().unwrap() != b'}' && *j.last().unwrap() != b']' {
+			return false;
+		}
+		//checks " opening/closing and : as separator between name and values
+		let mut s: bool = true;
+		let mut d: bool = true;
+		let mut pg: bool = true;
+		let mut ps: bool = true;
+		let mut bp = b' ';
+		for b in j {
+			if b == b'[' && s {
+				ps = false;
+			}
+			if b == b']' && s && !ps {
+				ps = true;
+			}
+
+			if b == b'{' && s {
+				pg = false;
+			}
+			if b == b'}' && s && !pg {
+				pg = true;
+			}
+
+			if b == b'"' && s && bp != b'\\' {
+				s = false;
+				bp = b;
+				d = false;
+				continue;
+			}
+			if b == b':' && s {
+				d = true;
+				bp = b;
+				continue;
+			}
+			if b == b'"' && !s && bp != b'\\' {
+				s = true;
+				bp = b;
+				d = true;
+				continue;
+			}
+			bp = b;
+		}
+
+		//fields are not closed properly
+		if !s {
+			return false;
+		}
+		//fields are not closed properly
+		if !d {
+			return false;
+		}
+		//fields are not closed properly
+		if !ps {
+			return false;
+		}
+		//fields are not closed properly
+		if !pg {
+			return false;
+		}
+		// every ok returns true
+		true
+	}
+
+	fn get_json_value(j: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+		let mut result = Vec::new();
+		let mut k = Vec::new();
+		let keyl = key.len();
+		let jl = j.len();
+		k.push(b'"');
+		for xk in 0..keyl {
+			k.push(*key.get(xk).unwrap());
+		}
+		k.push(b'"');
+		k.push(b':');
+		let kl = k.len();
+		for x in 0..jl {
+			let mut m = 0;
+			if x + kl > jl {
+				break;
+			}
+			for (xx, i) in (x..x + kl).enumerate() {
+				if *j.get(i).unwrap() == *k.get(xx).unwrap() {
+					m += 1;
+				}
+			}
+			if m == kl {
+				let mut lb = b' ';
+				let mut op = true;
+				let mut os = true;
+				for i in x + kl..jl - 1 {
+					if *j.get(i).unwrap() == b'[' && op && os {
+						os = false;
+					}
+					if *j.get(i).unwrap() == b'}' && op && !os {
+						os = true;
+					}
+					if *j.get(i).unwrap() == b':' && op {
+						continue;
+					}
+					if *j.get(i).unwrap() == b'"' && op && lb != b'\\' {
+						op = false;
+						continue;
+					}
+					if *j.get(i).unwrap() == b'"' && !op && lb != b'\\' {
+						break;
+					}
+					if *j.get(i).unwrap() == b'}' && op {
+						break;
+					}
+					if *j.get(i).unwrap() == b']' && op {
+						break;
+					}
+					if *j.get(i).unwrap() == b',' && op && os {
+						break;
+					}
+					result.push(*j.get(i).unwrap());
+					lb = *j.get(i).unwrap();
+				}
+				break;
+			}
+		}
+		result
+	}
+
 	fn verify_proof(
 		root: RootHash,
 		proof: Vec<Vec<u8>>,
