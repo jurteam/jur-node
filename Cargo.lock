@@ -2752,11 +2752,15 @@ dependencies = [
 name = "jur-primitives"
 version = "1.0.0"
 dependencies = [
+ "frame-support",
+ "hex-literal",
  "parity-scale-codec",
+ "rlp",
  "rustc-hex",
  "scale-info",
  "serde",
  "serde_derive",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -4303,7 +4307,6 @@ dependencies = [
  "pallet-assets",
  "pallet-balances",
  "parity-scale-codec",
- "rlp",
  "rustc-hex",
  "scale-info",
  "serde",

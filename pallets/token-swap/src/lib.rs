@@ -14,7 +14,6 @@ use frame_support::{
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
 use primitives::{Balance, CurrencyId, EthereumAddress, RootHash};
-use rlp::DecoderError;
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
@@ -136,12 +135,6 @@ pub mod pallet {
 			Self::process_claim(locked_balance, ethereum_signature, signed_json)?;
 			Ok(())
 		}
-	}
-}
-
-impl<T> From<rlp::DecoderError> for Error<T> {
-	fn from(_: DecoderError) -> Self {
-		Error::<T>::InvalidProof
 	}
 }
 
@@ -366,71 +359,7 @@ impl<T: Config> Pallet<T> {
 		result
 	}
 
-	fn verify_proof(
-		root: RootHash,
-		proof: Vec<Vec<u8>>,
-		key: Vec<u8>,
-	) -> Result<Vec<u8>, Error<T>> {
-		let mut nibbles = vec![];
 
-		for (i, k) in key.iter().enumerate() {
-			nibbles.push(k >> 4);
-			nibbles.push(k % 16);
-		}
-
-		let nibbles_iter = nibbles.iter();
-
-		for proof_step in proof.iter() {
-			let blake2_256_hash: RootHash = blake2_256(proof_step);
-
-			ensure!(blake2_256_hash == root, Error::<T>::InvalidProof);
-
-			let rlp = rlp::Rlp::new(proof_step);
-			match rlp.item_count()? {
-				2 => {
-					let mut node = rlp.iter();
-					let prefix: Vec<u8> = match node.next() {
-						Some(n) => n.as_val()?,
-						None => return Err(Error::<T>::InvalidProof),
-					};
-
-					let value: Vec<u8> = match node.next() {
-						Some(n) => n.as_val()?,
-						None => return Err(Error::<T>::InvalidProof),
-					};
-
-					let odd = prefix[0] & 16 != 0;
-					let terminal = prefix[0] & 32 != 0;
-
-					let mut prefix_nibbles = vec![];
-
-					for (i, p) in prefix.iter().enumerate() {
-						if i != 0 {
-							prefix_nibbles.push(p >> 4);
-						}
-
-						if i != 0 || odd {
-							prefix_nibbles.push(p % 16);
-						}
-					}
-
-					let prefix_nibbles_len = prefix_nibbles.len();
-
-					let n = nibbles_iter.take(prefix_nibbles_len);
-
-					//assert_eq!(Some(prefix_nibbles), None);
-					/// TODO This is to removed
-					return Ok(vec![]);
-				},
-				17 => return Err(Error::<T>::NotImplemented),
-				_ => return Err(Error::<T>::InvalidProof),
-			}
-
-			return Err(Error::<T>::NotImplemented);
-		}
-
-		Err(Error::<T>::InvalidProof)
-	}
 	// Attempts to recover the Ethereum address from a message signature signed by using
 	// the Ethereum RPC's `personal_sign` and `eth_sign`.
 	fn eth_recover(s: &EcdsaSignature, blake2_256_hash: [u8; 32]) -> Option<EthereumAddress> {
