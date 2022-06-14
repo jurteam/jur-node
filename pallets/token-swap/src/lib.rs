@@ -18,6 +18,7 @@ use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
+use primitives::proof::verify_proof;
 
 #[cfg(test)]
 mod mock;
@@ -129,10 +130,12 @@ pub mod pallet {
 			locked_balance: BalanceOf<T>,
 			ethereum_signature: EcdsaSignature,
 			signed_json: Vec<u8>,
+			account_proof: Vec<Vec<u8>>,
+			storage_proof: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			Self::process_claim(locked_balance, ethereum_signature, signed_json)?;
+			Self::process_claim(locked_balance, ethereum_signature, signed_json, account_proof, storage_proof)?;
 			Ok(())
 		}
 	}
@@ -143,6 +146,8 @@ impl<T: Config> Pallet<T> {
 		locked_balance: BalanceOf<T>,
 		ethereum_signature: EcdsaSignature,
 		signed_json: Vec<u8>,
+		account_proof: Vec<Vec<u8>>,
+		storage_proof: Vec<Vec<u8>>,
 	) -> DispatchResult {
 		// Step: 1 Recover signer from signed json
 		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
@@ -161,6 +166,10 @@ impl<T: Config> Pallet<T> {
 			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
 
 		/// TODO Step-3: Proof Verification
+
+		let signer_hash: Vec<u8> = blake2_256(&signer.0).to_vec();
+		verify_proof(T::VechainRootHash::get(), account_proof, signer_hash);
+
 		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
 		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
