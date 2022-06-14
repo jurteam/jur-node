@@ -21,18 +21,18 @@ impl From<rlp::DecoderError> for InvalidProof {
 }
 
 pub fn verify_proof(
-    root: RootHash,
+    mut root: RootHash,
     proof: Vec<Vec<u8>>,
     key: Vec<u8>,
 ) -> Result<Vec<u8>, InvalidProof> {
     let mut nibbles = vec![];
 
-    for (i, k) in key.iter().enumerate() {
+    for (_i, k) in key.iter().enumerate() {
         nibbles.push(k >> 4);
         nibbles.push(k % 16);
     }
 
-    let nibbles_iter = nibbles.iter();
+    let mut nibbles_iter = nibbles.iter();
 
     for proof_step in proof.iter() {
         let blake2_256_hash: RootHash = blake2_256(proof_step);
@@ -70,18 +70,47 @@ pub fn verify_proof(
 
                 let prefix_nibbles_len = prefix_nibbles.len();
 
-                let n = nibbles_iter.take(prefix_nibbles_len);
+                let n = nibbles_iter.by_ref().take(prefix_nibbles_len);
 
+                if !n.eq(&prefix_nibbles) {
+                    return Err(InvalidProof::Call);
+                }
+
+                if terminal {
+                   if nibbles_iter.count()!=0 {
+                       return Err(InvalidProof::Call);
+                   } else {
+                       return Ok(value);
+                   }
+                }
                 //assert_eq!(Some(prefix_nibbles), None);
                 /// TODO This is to removed
-                return Ok(vec![]);
+                return Err(InvalidProof::NotImplemented);
             },
-            17 => return Err(InvalidProof::NotImplemented),
-            _ => return Err(InvalidProof::Call),
-        }
+            17 => {
+                let key_nibble = match nibbles_iter.next() {
+                     None => return Err(InvalidProof::NotImplemented),
+                    Some(value) => *value
+                };
 
-        return Err(InvalidProof::NotImplemented)
+                let mut node = rlp.iter();
+                let branch: Vec<u8> = match node.nth(key_nibble as usize) {
+                    None => return Err(InvalidProof::Call),
+                    Some(value) => value.as_val()?
+                };
+
+
+                root = convert(branch);
+
+            },
+            _ => return Err(InvalidProof::Call),
+        };
     }
 
     Err(InvalidProof::Call)
+}
+
+fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
+    v.try_into()
+        .unwrap_or_else(|v: Vec<T>| panic!("Expected a valid proof {}", v.len()))
 }
