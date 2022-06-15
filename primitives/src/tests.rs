@@ -1,9 +1,9 @@
-use crate::proof::{extract_storage_root, verify_proof};
+use crate::proof::{compute_key, decode_rlp, extract_storage_root, verify_proof};
 use hex_literal::hex;
+use crate::EthereumAddress;
 
 #[test]
 fn verify_proof_works() {
-
 
     let proof =
         hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
@@ -49,6 +49,20 @@ fn extract_storage_root_works() {
 		hex!("e0b61f539a7fc1a6603092ab102bef7cc8c495ef7174c4668ac9b6c884cdc701").to_vec()
 	).unwrap();
 
-
 	assert_eq!(extract_storage_root(account_rlp).unwrap(), hex!("072fbb05700cf818d7d3f6de8bb4d0d18cdfed173106b2b5af87ee06fe801d39"));
+}
+
+#[test]
+fn compute_key_works() {
+
+	let eth_address = EthereumAddress([
+		161, 139, 129, 135, 158, 153, 57, 77, 244, 185, 155, 120, 207, 113, 3, 120, 54, 112, 109, 178,
+	]);
+	assert_eq!(compute_key(eth_address), hex!("13614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a611499221"));
+}
+
+#[test]
+fn decode_rlp_works() {
+
+	assert_eq!(decode_rlp(vec![129, 200]).unwrap(), 200);
 }

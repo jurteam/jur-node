@@ -26,6 +26,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
+use hex_literal::hex;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -54,7 +55,7 @@ pub use sp_runtime::{Perbill, Percent, Permill};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
-use primitives::{Balance, CurrencyId, JUR};
+use primitives::{Balance, CurrencyId, EthereumAddress, RootHash, JUR};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -328,16 +329,18 @@ impl pallet_sudo::Config for Runtime {
 }
 
 parameter_types! {
-	pub Prefix: &'static [u8] = b"Pay Jur to the account:";
+	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const MetaBlockNumber: BlockNumber = 1;
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("876e6d95b8fca0a1adeef7fd5a6b521b16bc6969"));
+	pub const VechainRootHash: RootHash = hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
 }
 
 /// Configure the pallet-token-swap in pallets/token-swap.
 impl pallet_token_swap::Config for Runtime {
 	type Event = Event;
-	type VechainRootHash = ();
-	type EthAddress = ();
+	type VechainRootHash = VechainRootHash;
+	type EthAddress = EthAddress;
 	type MetaBlockNumber = MetaBlockNumber;
 	type IPFSPath = ();
 	type Prefix = Prefix;

@@ -18,7 +18,7 @@ use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use primitives::proof::{extract_storage_root, InvalidProof, verify_proof};
+use primitives::proof::{compute_key, convert, decode_rlp, extract_storage_root, verify_proof};
 
 #[cfg(test)]
 mod mock;
@@ -127,7 +127,6 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn claim(
 			origin: OriginFor<T>,
-			locked_balance: BalanceOf<T>,
 			ethereum_signature: EcdsaSignature,
 			signed_json: Vec<u8>,
 			account_proof: Vec<Vec<u8>>,
@@ -135,7 +134,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			Self::process_claim(locked_balance, ethereum_signature, signed_json, account_proof, storage_proof)?;
+			Self::process_claim(ethereum_signature, signed_json, account_proof, storage_proof)?;
 			Ok(())
 		}
 	}
@@ -143,12 +142,12 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T> {
 	fn process_claim(
-		locked_balance: BalanceOf<T>,
 		ethereum_signature: EcdsaSignature,
 		signed_json: Vec<u8>,
 		account_proof: Vec<Vec<u8>>,
 		storage_proof: Vec<Vec<u8>>,
 	) -> DispatchResult {
+
 		// Step: 1 Recover signer from signed json
 		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
 
@@ -165,16 +164,15 @@ impl<T: Config> Pallet<T> {
 		let account_id =
 			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
 
-		/// TODO Step-3: Proof Verification
+		// Step-3: Proof Verification
 
 		let signer_hash: Vec<u8> = blake2_256(&T::EthAddress::get().0).to_vec();
-
 		let account_rlp = verify_proof(T::VechainRootHash::get(), account_proof, signer_hash).ok().ok_or(Error::<T>::InvalidProof)?;
+		let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
+		let storage_key = compute_key(signer);
+		let storage_rlp = verify_proof(convert(storage_root), storage_proof, storage_key).ok().ok_or(Error::<T>::InvalidProof)?;
 
-		//let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
-
-		assert_eq!(Some(account_rlp), None);
-
+		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
 		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 

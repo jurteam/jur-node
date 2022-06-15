@@ -1,5 +1,6 @@
-use crate::RootHash;
-use sp_io::hashing::blake2_256;
+use super::*;
+use crate::{EthereumAddress, RootHash};
+use sp_io::hashing::{blake2_256, keccak_256};
 use sp_std::{vec, vec::Vec};
 use rlp::DecoderError;
 use frame_support::pallet_prelude::*;
@@ -10,14 +11,18 @@ use sp_runtime::RuntimeDebug;
 pub enum InvalidProof {
     /// Invalid Proof Call
     Call,
-    /// TODO Need to be removed
-    NotImplemented
 }
 
 impl From<rlp::DecoderError> for InvalidProof {
     fn from(_: DecoderError) -> Self {
         InvalidProof::Call
     }
+}
+
+pub fn decode_rlp(value: Vec<u8>) -> Result<Balance, InvalidProof>{
+    let rlp = rlp::Rlp::new(&value);
+    let balance: Balance= rlp.as_val()?;
+    Ok(balance)
 }
 
 pub fn verify_proof(
@@ -83,17 +88,21 @@ pub fn verify_proof(
                        return Ok(value);
                    }
                 }
-                //assert_eq!(Some(prefix_nibbles), None);
-                /// TODO This is to removed
-                return Err(InvalidProof::NotImplemented);
+                root = convert(value);
             },
             17 => {
+                let mut node = rlp.iter();
                 let key_nibble = match nibbles_iter.next() {
-                     None => return Err(InvalidProof::NotImplemented),
+                     None => {
+                         match node.nth(16 as usize) {
+                             None => return Err(InvalidProof::Call),
+                             Some(value) => return Ok(value.as_val()?)
+                         }
+                     },
                     Some(value) => *value
                 };
 
-                let mut node = rlp.iter();
+
                 let branch: Vec<u8> = match node.nth(key_nibble as usize) {
                     None => return Err(InvalidProof::Call),
                     Some(value) => value.as_val()?
@@ -109,7 +118,7 @@ pub fn verify_proof(
     Err(InvalidProof::Call)
 }
 
-fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
+pub fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
     v.try_into()
         .unwrap_or_else(|v: Vec<T>| panic!("Expected a valid proof {}", v.len()))
 }
@@ -117,17 +126,28 @@ fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
 pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, InvalidProof> {
     let rlp = rlp::Rlp::new(&account_rlp);
 
-    match rlp.item_count()? {
-    	6 => {
-    		let mut node = rlp.iter();
+    return match rlp.item_count()? {
+        6 => {
+            let mut node = rlp.iter();
 
-    		let branch: Vec<u8> = match node.nth(5 as usize) {
-    			None =>  return Err(InvalidProof::Call),
-    			Some(value) =>return Ok(value.as_val()?)
-    		};
-
-
-    	},
-    	_ => return Err(InvalidProof::Call)
+            match node.nth(5 as usize) {
+                None => Err(InvalidProof::Call),
+                Some(value) => Ok(value.as_val()?)
+            }
+        },
+        _ => Err(InvalidProof::Call)
     }
+}
+
+pub fn compute_key(eth_address: EthereumAddress) -> Vec<u8>{
+
+    let mut x: Vec<u8> = vec![];
+    x.extend_from_slice(&[0; 12]);
+    x.extend_from_slice(&eth_address.0);
+    x.extend_from_slice(&[0; 32]);
+
+    let kec_256 =  keccak_256(x.as_slice());
+
+    blake2_256(&kec_256).to_vec()
+
 }
