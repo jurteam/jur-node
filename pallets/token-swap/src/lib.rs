@@ -18,7 +18,7 @@ use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use primitives::proof::verify_proof;
+use primitives::proof::{extract_storage_root, InvalidProof, verify_proof};
 
 #[cfg(test)]
 mod mock;
@@ -167,8 +167,13 @@ impl<T: Config> Pallet<T> {
 
 		/// TODO Step-3: Proof Verification
 
-		let signer_hash: Vec<u8> = blake2_256(&signer.0).to_vec();
-		verify_proof(T::VechainRootHash::get(), account_proof, signer_hash);
+		let signer_hash: Vec<u8> = blake2_256(&T::EthAddress::get().0).to_vec();
+
+		let account_rlp = verify_proof(T::VechainRootHash::get(), account_proof, signer_hash).ok().ok_or(Error::<T>::InvalidProof)?;
+
+		//let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
+
+		assert_eq!(Some(account_rlp), None);
 
 		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
 		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);

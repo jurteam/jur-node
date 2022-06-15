@@ -11,6 +11,7 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
+use hex_literal::hex;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -104,12 +105,14 @@ parameter_types! {
 	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const MetaBlockNumber: u64 = 1;
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("876e6d95b8fca0a1adeef7fd5a6b521b16bc6969"));
+	pub const VechainRootHash: RootHash = hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
 }
 
 impl pallet_token_swap::Config for Test {
 	type Event = Event;
-	type VechainRootHash = ();
-	type EthAddress = ();
+	type VechainRootHash = VechainRootHash;
+	type EthAddress = EthAddress;
 	type MetaBlockNumber = MetaBlockNumber;
 	type IPFSPath = ();
 	type Prefix = Prefix;

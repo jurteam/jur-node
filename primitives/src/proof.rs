@@ -99,7 +99,6 @@ pub fn verify_proof(
                     Some(value) => value.as_val()?
                 };
 
-
                 root = convert(branch);
 
             },
@@ -113,4 +112,22 @@ pub fn verify_proof(
 fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
     v.try_into()
         .unwrap_or_else(|v: Vec<T>| panic!("Expected a valid proof {}", v.len()))
+}
+
+pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, InvalidProof> {
+    let rlp = rlp::Rlp::new(&account_rlp);
+
+    match rlp.item_count()? {
+    	6 => {
+    		let mut node = rlp.iter();
+
+    		let branch: Vec<u8> = match node.nth(5 as usize) {
+    			None =>  return Err(InvalidProof::Call),
+    			Some(value) =>return Ok(value.as_val()?)
+    		};
+
+
+    	},
+    	_ => return Err(InvalidProof::Call)
+    }
 }
