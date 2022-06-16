@@ -111,15 +111,12 @@ pub mod pallet {
 		InvalidJson,
 		/// Content Not Found
 		ContentNotFound,
-		/// A needed statement was not included.
-		InvalidStatement,
 		/// Invalid Ethereum signature.
 		InvalidEthereumSignature,
 		/// Not Sufficient locked balance.
 		NotSufficientLockedBalance,
 		/// Invalid proof
 		InvalidProof,
-		NotImplemented,
 	}
 
 	#[pallet::call]

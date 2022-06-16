@@ -3,7 +3,7 @@ use hex_literal::hex;
 use crate::EthereumAddress;
 
 #[test]
-fn verify_proof_works() {
+fn verify_storage_proof_works() {
 
     let proof =
         hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
