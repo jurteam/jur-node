@@ -41,6 +41,14 @@ impl sp_std::fmt::Debug for EcdsaSignature {
 	}
 }
 
+#[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
+pub struct RootInfo<BlockNumber> {
+	pub storage_root: Vec<u8>,
+	pub meta_block_number: BlockNumber,
+	pub ipfs_path: Vec<u8>
+}
+
+
 type AssetIdOf<T> =
 	<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::AssetId;
 type BalanceOf<T> =
@@ -57,21 +65,9 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		/// The pallet needs to keep track of a Vechain state root hash
-		#[pallet::constant]
-		type VechainRootHash: Get<RootHash>;
-
 		/// eth address of the deposit contract
 		#[pallet::constant]
 		type EthAddress: Get<EthereumAddress>;
-
-		/// Have an unverified block number as metadata for users
-		#[pallet::constant]
-		type MetaBlockNumber: Get<Self::BlockNumber>;
-
-		/// Maximum number of prices.
-		#[pallet::constant]
-		type IPFSPath: Get<Vec<u8>>;
 
 		#[pallet::constant]
 		type Prefix: Get<&'static [u8]>;
@@ -87,6 +83,9 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type NativeCurrencyId: Get<AssetIdOf<Self>>;
+
+		/// Specify which origin is allowed to update storage root.
+		type StorageRootOrigin: EnsureOrigin<Self::Origin>;
 	}
 
 	#[pallet::pallet]
@@ -98,11 +97,17 @@ pub mod pallet {
 	#[pallet::getter(fn latest_claimed_balance)]
 	pub type LatestClaimedBalance<T> = StorageMap<_, Identity, EthereumAddress, BalanceOf<T>>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn root_information)]
+	pub type RootInformation<T: Config> = StorageValue<_, RootInfo<T::BlockNumber>, ValueQuery>;
+
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Stored claimed balance [balance]
-		ClaimedBalanceStored(BalanceOf<T>),
+		/// Stored claimed balance [account_id, balance]
+		ClaimedToken(T::AccountId, BalanceOf<T>),
+		/// Updated Storage Root
+		UpdatedStorageRoot
 	}
 
 	#[pallet::error]
@@ -126,12 +131,32 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			ethereum_signature: EcdsaSignature,
 			signed_json: Vec<u8>,
-			account_proof: Vec<Vec<u8>>,
 			storage_proof: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			ensure_none(origin)?;
 
-			Self::process_claim(ethereum_signature, signed_json, account_proof, storage_proof)?;
+			Self::process_claim(ethereum_signature, signed_json, storage_proof)?;
+			Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn update_state_root(
+			origin: OriginFor<T>,
+			vechain_root_hash: RootHash,
+			meta_block_number: T::BlockNumber,
+			ipfs_path: Vec<u8>,
+			account_proof: Vec<Vec<u8>>,
+		) -> DispatchResult {
+			T::StorageRootOrigin::ensure_origin(origin)?;
+
+			let signer_hash: Vec<u8> = blake2_256(&T::EthAddress::get().0).to_vec();
+			let account_rlp = verify_proof(vechain_root_hash, account_proof, signer_hash).ok().ok_or(Error::<T>::InvalidProof)?;
+			let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
+
+			let root_information = RootInfo { storage_root, meta_block_number, ipfs_path};
+
+			RootInformation::<T>::put(root_information);
+			Self::deposit_event(Event::<T>::UpdatedStorageRoot);
 			Ok(())
 		}
 	}
@@ -141,7 +166,6 @@ impl<T: Config> Pallet<T> {
 	fn process_claim(
 		ethereum_signature: EcdsaSignature,
 		signed_json: Vec<u8>,
-		account_proof: Vec<Vec<u8>>,
 		storage_proof: Vec<Vec<u8>>,
 	) -> DispatchResult {
 
@@ -163,11 +187,8 @@ impl<T: Config> Pallet<T> {
 
 		// Step-3: Proof Verification
 
-		let signer_hash: Vec<u8> = blake2_256(&T::EthAddress::get().0).to_vec();
-		let account_rlp = verify_proof(T::VechainRootHash::get(), account_proof, signer_hash).ok().ok_or(Error::<T>::InvalidProof)?;
-		let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 		let storage_key = compute_key(signer);
-		let storage_rlp = verify_proof(convert(storage_root), storage_proof, storage_key).ok().ok_or(Error::<T>::InvalidProof)?;
+		let storage_rlp = verify_proof(convert(Self::root_information().storage_root), storage_proof, storage_key).ok().ok_or(Error::<T>::InvalidProof)?;
 
 		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
@@ -177,7 +198,7 @@ impl<T: Config> Pallet<T> {
 		T::Balances::mint_into(&account_id, mint_amount)?;
 
 		LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
-		Self::deposit_event(Event::<T>::ClaimedBalanceStored(locked_balance));
+		Self::deposit_event(Event::<T>::ClaimedToken(account_id, locked_balance));
 		Ok(())
 	}
 
