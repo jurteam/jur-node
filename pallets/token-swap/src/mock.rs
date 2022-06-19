@@ -16,6 +16,7 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = JUR;
+pub const VECHAIN_ROOT_HASH: RootHash = hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -106,19 +107,17 @@ parameter_types! {
 	pub const MetaBlockNumber: u64 = 1;
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
 	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("876e6d95b8fca0a1adeef7fd5a6b521b16bc6969"));
-	pub const VechainRootHash: RootHash = hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
+
 }
 
 impl pallet_token_swap::Config for Test {
 	type Event = Event;
-	type VechainRootHash = VechainRootHash;
 	type EthAddress = EthAddress;
-	type MetaBlockNumber = MetaBlockNumber;
-	type IPFSPath = ();
 	type Prefix = Prefix;
 	type Assets = Assets;
 	type Balances = Balances;
 	type NativeCurrencyId = NativeCurrencyId;
+	type StorageRootOrigin = EnsureRoot<u64>;
 }
 
 // Build genesis storage according to the mock runtime.
