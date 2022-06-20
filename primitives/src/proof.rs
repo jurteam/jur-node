@@ -1,5 +1,5 @@
 use super::*;
-use crate::{EthereumAddress, RootHash};
+use crate::{EthereumAddress, VechainHash};
 use sp_io::hashing::{blake2_256, keccak_256};
 use sp_std::{vec, vec::Vec};
 use rlp::DecoderError;
@@ -9,13 +9,23 @@ use sp_runtime::RuntimeDebug;
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, Copy, RuntimeDebug)]
 pub enum ErrorMessage {
-    /// Invalid Proof Call
-    InvalidProof,
+    /// Invalid Proof RLP
+    InvalidRLP,
+    /// Invalid Proof Data
+    InvalidProofData,
+    /// Invalid Key
+    InvalidKey,
+    /// Proof Too Short
+    ProofTooShort,
+    /// Invalid Node
+    InvalidNode,
+    /// Invalid Account
+    InvalidAccount
 }
 
 impl From<rlp::DecoderError> for ErrorMessage {
     fn from(_: DecoderError) -> Self {
-        ErrorMessage::InvalidProof
+        ErrorMessage::InvalidRLP
     }
 }
 
@@ -26,7 +36,7 @@ pub fn decode_rlp(value: Vec<u8>) -> Result<Balance, ErrorMessage>{
 }
 
 pub fn verify_proof(
-    mut root: RootHash,
+    mut root: VechainHash,
     proof: Vec<Vec<u8>>,
     key: Vec<u8>,
 ) -> Result<Vec<u8>, ErrorMessage> {
@@ -40,9 +50,9 @@ pub fn verify_proof(
     let mut nibbles_iter = nibbles.iter();
 
     for proof_step in proof.iter() {
-        let blake2_256_hash: RootHash = blake2_256(proof_step);
+        let blake2_256_hash: VechainHash = blake2_256(proof_step);
 
-        ensure!(blake2_256_hash == root, ErrorMessage::InvalidProof);
+        ensure!(blake2_256_hash == root, ErrorMessage::InvalidProofData);
 
         let rlp = rlp::Rlp::new(proof_step);
         match rlp.item_count()? {
@@ -50,12 +60,12 @@ pub fn verify_proof(
                 let mut node = rlp.iter();
                 let prefix: Vec<u8> = match node.next() {
                     Some(n) => n.as_val()?,
-                    None => return Err(ErrorMessage::InvalidProof),
+                    None => return Err(ErrorMessage::InvalidRLP),
                 };
 
                 let value: Vec<u8> = match node.next() {
                     Some(n) => n.as_val()?,
-                    None => return Err(ErrorMessage::InvalidProof),
+                    None => return Err(ErrorMessage::InvalidRLP),
                 };
 
                 let odd = prefix[0] & 16 != 0;
@@ -78,12 +88,12 @@ pub fn verify_proof(
                 let n = nibbles_iter.by_ref().take(prefix_nibbles_len);
 
                 if !n.eq(&prefix_nibbles) {
-                    return Err(ErrorMessage::InvalidProof);
+                    return Err(ErrorMessage::InvalidKey);
                 }
 
                 if terminal {
                    if nibbles_iter.count()!=0 {
-                       return Err(ErrorMessage::InvalidProof);
+                       return Err(ErrorMessage::ProofTooShort);
                    } else {
                        return Ok(value);
                    }
@@ -95,7 +105,7 @@ pub fn verify_proof(
                 let key_nibble = match nibbles_iter.next() {
                      None => {
                          match node.nth(16 as usize) {
-                             None => return Err(ErrorMessage::InvalidProof),
+                             None => return Err(ErrorMessage::InvalidRLP),
                              Some(value) => return Ok(value.as_val()?)
                          }
                      },
@@ -104,18 +114,18 @@ pub fn verify_proof(
 
 
                 let branch: Vec<u8> = match node.nth(key_nibble as usize) {
-                    None => return Err(ErrorMessage::InvalidProof),
+                    None => return Err(ErrorMessage::InvalidNode),
                     Some(value) => value.as_val()?
                 };
 
                 root = convert(branch);
 
             },
-            _ => return Err(ErrorMessage::InvalidProof),
+            _ => return Err(ErrorMessage::ProofTooShort),
         };
     }
 
-    Err(ErrorMessage::InvalidProof)
+    Err(ErrorMessage::InvalidRLP)
 }
 
 pub fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
@@ -131,15 +141,15 @@ pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, ErrorMessag
             let mut node = rlp.iter();
 
             match node.nth(5 as usize) {
-                None => Err(ErrorMessage::InvalidProof),
+                None => Err(ErrorMessage::InvalidRLP),
                 Some(value) => Ok(value.as_val()?)
             }
         },
-        _ => Err(ErrorMessage::InvalidProof)
+        _ => Err(ErrorMessage::InvalidAccount)
     }
 }
 
-pub fn compute_key(eth_address: EthereumAddress) -> Vec<u8>{
+pub fn compute_storage_key_for_depositor(eth_address: EthereumAddress) -> Vec<u8>{
 
     let mut x: Vec<u8> = vec![];
     x.extend_from_slice(&[0; 12]);

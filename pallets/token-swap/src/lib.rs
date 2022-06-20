@@ -13,12 +13,12 @@ use frame_support::{
 };
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
-use primitives::{Balance, CurrencyId, EthereumAddress, RootHash};
+use primitives::{Balance, CurrencyId, EthereumAddress, VechainHash};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use primitives::proof::{compute_key, convert, decode_rlp, extract_storage_root, verify_proof};
+use primitives::proof::{compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof};
 
 #[cfg(test)]
 mod mock;
@@ -142,7 +142,7 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn update_state_root(
 			origin: OriginFor<T>,
-			vechain_root_hash: RootHash,
+			vechain_root_hash: VechainHash,
 			meta_block_number: T::BlockNumber,
 			ipfs_path: Vec<u8>,
 			account_proof: Vec<Vec<u8>>,
@@ -187,7 +187,7 @@ impl<T: Config> Pallet<T> {
 
 		// Step-3: Proof Verification
 
-		let storage_key = compute_key(signer);
+		let storage_key = compute_storage_key_for_depositor(signer);
 		let storage_rlp = verify_proof(convert(Self::root_information().storage_root), storage_proof, storage_key).ok().ok_or(Error::<T>::InvalidProof)?;
 
 		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;

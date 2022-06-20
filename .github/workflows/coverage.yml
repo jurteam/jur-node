@@ -44,7 +44,7 @@ jobs:
 
       - name: Generate code coverage
         run: |
-          cargo +nightly tarpaulin --verbose --no-fail-fast --all-features --line -p pallet-template --timeout 300 --out Xml
+          cargo +nightly tarpaulin --verbose --no-fail-fast -p pallet-token-swap --timeout 300 --out Xml
       - name: Upload To Codecov
         uses: codecov/codecov-action@v1
         with:

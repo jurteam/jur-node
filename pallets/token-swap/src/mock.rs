@@ -16,7 +16,7 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = JUR;
-pub const VECHAIN_ROOT_HASH: RootHash = hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
+pub const VECHAIN_ROOT_HASH: VechainHash = hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(

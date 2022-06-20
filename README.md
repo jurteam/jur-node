@@ -44,7 +44,7 @@ Once the project has been built, the following command can be used to explore al
 subcommands:
 
 ```sh
-./target/release/node-token-swap -h
+./target/release/jur-node -h
 ```
 
 ## Run
