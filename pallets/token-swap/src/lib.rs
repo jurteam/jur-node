@@ -13,12 +13,14 @@ use frame_support::{
 };
 pub use pallet::*;
 use parity_scale_codec::{Decode, Encode};
+use primitives::proof::{
+	compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof,
+};
 use primitives::{Balance, CurrencyId, EthereumAddress, VechainHash};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
 use sp_std::prelude::*;
-use primitives::proof::{compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof};
 
 #[cfg(test)]
 mod mock;
@@ -45,9 +47,8 @@ impl sp_std::fmt::Debug for EcdsaSignature {
 pub struct RootInfo<BlockNumber> {
 	pub storage_root: Vec<u8>,
 	pub meta_block_number: BlockNumber,
-	pub ipfs_path: Vec<u8>
+	pub ipfs_path: Vec<u8>,
 }
-
 
 type AssetIdOf<T> =
 	<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::AssetId;
@@ -149,11 +150,16 @@ pub mod pallet {
 		) -> DispatchResult {
 			T::StorageRootOrigin::ensure_origin(origin)?;
 
-			let deposit_contract_hash: Vec<u8> = blake2_256(&T::DepositContractAddress::get().0).to_vec();
-			let account_rlp = verify_proof(vechain_root_hash, account_proof, deposit_contract_hash).ok().ok_or(Error::<T>::InvalidProof)?;
-			let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
+			let deposit_contract_hash: Vec<u8> =
+				blake2_256(&T::DepositContractAddress::get().0).to_vec();
+			let account_rlp = verify_proof(vechain_root_hash, account_proof, deposit_contract_hash)
+				.ok()
+				.ok_or(Error::<T>::InvalidProof)?;
+			let storage_root =
+				extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 
-			let root_information = RootInfo { storage_root: storage_root.clone(), meta_block_number, ipfs_path};
+			let root_information =
+				RootInfo { storage_root: storage_root.clone(), meta_block_number, ipfs_path };
 
 			RootInformation::<T>::put(root_information);
 			Self::deposit_event(Event::<T>::UpdatedStorageRoot(storage_root));
@@ -168,7 +174,6 @@ impl<T: Config> Pallet<T> {
 		signed_json: Vec<u8>,
 		storage_proof: Vec<Vec<u8>>,
 	) -> DispatchResult {
-
 		// Step: 1 Recover signer from signed json
 		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
 
@@ -177,7 +182,8 @@ impl<T: Config> Pallet<T> {
 
 		// Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
 
-		let vs: serde_json::Value = serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
+		let vs: serde_json::Value =
+			serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
 		let content_str = vs["payload"]["content"].as_str().ok_or(Error::<T>::ContentNotFound)?;
 		let substrate_address = &content_str[T::Prefix::get().len()..];
 
@@ -188,7 +194,13 @@ impl<T: Config> Pallet<T> {
 		// Step-3: Proof Verification
 
 		let storage_key = compute_storage_key_for_depositor(signer);
-		let storage_rlp = verify_proof(convert(Self::root_information().storage_root), storage_proof, storage_key).ok().ok_or(Error::<T>::InvalidProof)?;
+		let storage_rlp = verify_proof(
+			convert(Self::root_information().storage_root),
+			storage_proof,
+			storage_key,
+		)
+		.ok()
+		.ok_or(Error::<T>::InvalidProof)?;
 
 		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
