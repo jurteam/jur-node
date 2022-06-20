@@ -67,7 +67,7 @@ pub mod pallet {
 
 		/// eth address of the deposit contract
 		#[pallet::constant]
-		type EthAddress: Get<EthereumAddress>;
+		type DepositContractAddress: Get<EthereumAddress>;
 
 		#[pallet::constant]
 		type Prefix: Get<&'static [u8]>;
@@ -104,10 +104,10 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Stored claimed balance [account_id, balance]
-		ClaimedToken(T::AccountId, BalanceOf<T>),
-		/// Updated Storage Root
-		UpdatedStorageRoot
+		/// Stored claimed balance [account_id, balance, ethereum_address]
+		ClaimedToken(T::AccountId, BalanceOf<T>, [u8; 20]),
+		/// Updated Storage Root [storage_root]
+		UpdatedStorageRoot(Vec<u8>),
 	}
 
 	#[pallet::error]
@@ -149,14 +149,14 @@ pub mod pallet {
 		) -> DispatchResult {
 			T::StorageRootOrigin::ensure_origin(origin)?;
 
-			let signer_hash: Vec<u8> = blake2_256(&T::EthAddress::get().0).to_vec();
-			let account_rlp = verify_proof(vechain_root_hash, account_proof, signer_hash).ok().ok_or(Error::<T>::InvalidProof)?;
+			let deposit_contract_hash: Vec<u8> = blake2_256(&T::DepositContractAddress::get().0).to_vec();
+			let account_rlp = verify_proof(vechain_root_hash, account_proof, deposit_contract_hash).ok().ok_or(Error::<T>::InvalidProof)?;
 			let storage_root = extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 
-			let root_information = RootInfo { storage_root, meta_block_number, ipfs_path};
+			let root_information = RootInfo { storage_root: storage_root.clone(), meta_block_number, ipfs_path};
 
 			RootInformation::<T>::put(root_information);
-			Self::deposit_event(Event::<T>::UpdatedStorageRoot);
+			Self::deposit_event(Event::<T>::UpdatedStorageRoot(storage_root));
 			Ok(())
 		}
 	}
@@ -198,7 +198,7 @@ impl<T: Config> Pallet<T> {
 		T::Balances::mint_into(&account_id, mint_amount)?;
 
 		LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
-		Self::deposit_event(Event::<T>::ClaimedToken(account_id, locked_balance));
+		Self::deposit_event(Event::<T>::ClaimedToken(account_id, locked_balance, signer.0));
 		Ok(())
 	}
 

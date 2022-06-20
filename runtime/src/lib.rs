@@ -337,7 +337,7 @@ parameter_types! {
 /// Configure the pallet-token-swap in pallets/token-swap.
 impl pallet_token_swap::Config for Runtime {
 	type Event = Event;
-	type EthAddress = EthAddress;
+	type DepositContractAddress = EthAddress;
 	type Prefix = Prefix;
 	type Assets = Assets;
 	type Balances = Balances;
