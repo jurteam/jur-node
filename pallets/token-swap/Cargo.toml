@@ -29,8 +29,8 @@ sp-core = { default-features = false, version = "6.0.0", git = "https://github.c
 bs58 = { default-features = false, version = '0.4.0',features=['alloc']}
 
 [dev-dependencies]
-pallet-assets = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
-pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+pallet-assets = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+pallet-balances = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 libsecp256k1 = { version = "0.7.0", default-features = false }
 hex-literal = "0.3.4"
 
