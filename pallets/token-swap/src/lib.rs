@@ -196,7 +196,7 @@ impl<T: Config> Pallet<T> {
 
 		let substrate_address = &content_str[T::Prefix::get().len()..];
 		let address = bs58::decode(substrate_address).into_vec().ok().ok_or(Error::<T>::InvalidSubstrateAddress)?;
-		ensure!(address.len() == 33, Error::<T>::InvalidSubstrateAddress);
+		ensure!(address.len() == 35, Error::<T>::InvalidSubstrateAddress);
 		let account_id =
 			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
 

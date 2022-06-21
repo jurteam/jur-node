@@ -75,7 +75,7 @@ RUST_BACKTRACE=1 ./target/release/node-token-swap -ldebug --dev
 
 > Development chain means that the state of our chain will be in a tmp folder while the nodes are
 > running. Also, **alice** account will be authority and sudo account as declared in the
-> [genesis state](https://github.com/substrate-developer-hub/substrate-node-template/blob/main/node/src/chain_spec.rs#L49).
+> [genesis state](https://github.com/jurteam/jur-node/blob/main/node/src/chain_spec.rs#L50).
 > At the same time the following accounts will be pre-funded:
 > - Alice
 > - Bob
@@ -220,7 +220,7 @@ Then run the following command to start a single node development chain.
 
 This command will firstly compile your code, and then start a local development network. You can
 also replace the default command
-(`cargo build --release && ./target/release/node-template --dev --ws-external`)
+(`cargo build --release && ./target/release/jur-node --dev --ws-external`)
 by appending your own. A few useful ones are as follow.
 
 ```bash
