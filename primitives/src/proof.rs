@@ -21,6 +21,8 @@ pub enum ErrorMessage {
 	InvalidNode,
 	/// Invalid Account
 	InvalidAccount,
+	/// Invalid Input
+	InvalidInput
 }
 
 impl From<rlp::DecoderError> for ErrorMessage {
@@ -98,7 +100,7 @@ pub fn verify_proof(
 						return Ok(value);
 					}
 				}
-				root = convert(value);
+				root = convert(value)?;
 			},
 			17 => {
 				let mut node = rlp.iter();
@@ -115,7 +117,7 @@ pub fn verify_proof(
 					Some(value) => value.as_val()?,
 				};
 
-				root = convert(branch);
+				root = convert(branch)?;
 			},
 			_ => return Err(ErrorMessage::ProofTooShort),
 		};
@@ -124,9 +126,8 @@ pub fn verify_proof(
 	Err(ErrorMessage::InvalidRLP)
 }
 
-pub fn convert<T, const N: usize>(v: Vec<T>) -> [T; N] {
-	v.try_into()
-		.unwrap_or_else(|v: Vec<T>| panic!("Expected a valid proof {}", v.len()))
+pub fn convert<T, const N: usize>(v: Vec<T>) -> Result<[T; N], ErrorMessage> {
+	v.try_into().ok().ok_or(ErrorMessage::InvalidInput)
 }
 
 pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, ErrorMessage> {

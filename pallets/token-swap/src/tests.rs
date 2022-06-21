@@ -77,6 +77,58 @@ fn claim_with_invalid_json_does_not_work() {
 }
 
 #[test]
+fn claim_with_invalid_proof_does_not_work() {
+	new_test_ext().execute_with(|| {
+		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
+		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"My JUR address is 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+
+		let storage_proof: Vec<Vec<u8>> =
+			vec![hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c9")
+				.to_vec()];
+		update_root();
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			Error::<Test>::InvalidProof
+		);
+	});
+}
+
+#[test]
+fn claim_with_invalid_input_does_not_work() {
+	new_test_ext().execute_with(|| {
+		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
+		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"My JUR address is 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+
+		let storage_proof: Vec<Vec<u8>> =
+			vec![hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c9")
+				.to_vec()];
+
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			Error::<Test>::InvalidInput
+		);
+	});
+}
+
+
+#[test]
+fn claim_with_invalid_substrate_address_does_not_work() {
+	new_test_ext().execute_with(|| {
+		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
+		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"My JUR address is ","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+
+		let storage_proof: Vec<Vec<u8>> =
+			vec![hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
+				.to_vec()];
+		update_root();
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			Error::<Test>::InvalidSubstrateAddress
+		);
+	});
+}
+
+#[test]
 fn claim_with_no_json_content_does_not_work() {
 	new_test_ext().execute_with(|| {
 		let signed_json = r#"{"domain":"localhost:3000","payload":{"type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
@@ -92,6 +144,31 @@ fn claim_with_no_json_content_does_not_work() {
 		);
 	});
 }
+
+#[test]
+fn claim_with_no_prefix_does_not_work() {
+	new_test_ext().execute_with(|| {
+		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
+		let storage_proof: Vec<Vec<u8>> =
+			vec![hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
+				.to_vec()];
+
+
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof.clone()),
+			Error::<Test>::PrefixDoesNotMatch
+		);
+
+		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"Abs    5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
+
+		assert_noop!(
+			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			Error::<Test>::PrefixDoesNotMatch
+		);
+	});
+}
+
 
 #[test]
 fn claim_with_invalid_locked_balance_does_not_work() {

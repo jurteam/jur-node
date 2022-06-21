@@ -123,6 +123,12 @@ pub mod pallet {
 		NotSufficientLockedBalance,
 		/// Invalid proof
 		InvalidProof,
+		/// Invalid Substrate Address
+		InvalidSubstrateAddress,
+		/// Prefix does not match
+		PrefixDoesNotMatch,
+		/// Invalid Input
+		InvalidInput
 	}
 
 	#[pallet::call]
@@ -185,9 +191,12 @@ impl<T: Config> Pallet<T> {
 		let vs: serde_json::Value =
 			serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
 		let content_str = vs["payload"]["content"].as_str().ok_or(Error::<T>::ContentNotFound)?;
-		let substrate_address = &content_str[T::Prefix::get().len()..];
 
-		let address = bs58::decode(substrate_address).into_vec().unwrap();
+		ensure!(content_str.as_bytes().starts_with(T::Prefix::get()), Error::<T>::PrefixDoesNotMatch);
+
+		let substrate_address = &content_str[T::Prefix::get().len()..];
+		let address = bs58::decode(substrate_address).into_vec().ok().ok_or(Error::<T>::InvalidSubstrateAddress)?;
+		ensure!(address.len() == 33, Error::<T>::InvalidSubstrateAddress);
 		let account_id =
 			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
 
@@ -195,7 +204,7 @@ impl<T: Config> Pallet<T> {
 
 		let storage_key = compute_storage_key_for_depositor(signer);
 		let storage_rlp = verify_proof(
-			convert(Self::root_information().storage_root),
+			convert(Self::root_information().storage_root).ok().ok_or(Error::<T>::InvalidInput)?,
 			storage_proof,
 			storage_key,
 		)
