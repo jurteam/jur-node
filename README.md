@@ -58,19 +58,19 @@ node.
 This command will start the single-node development chain with non-persistent state:
 
 ```bash
-./target/release/node-token-swap --dev
+./target/release/jur-node --dev
 ```
 
 Purge the development chain's state:
 
 ```bash
-./target/release/node-token-swap purge-chain --dev
+./target/release/jur-node purge-chain --dev
 ```
 
 Start the development chain with detailed logging:
 
 ```bash
-RUST_BACKTRACE=1 ./target/release/node-token-swap -ldebug --dev
+RUST_BACKTRACE=1 ./target/release/jur-node -ldebug --dev
 ```
 
 > Development chain means that the state of our chain will be in a tmp folder while the nodes are
@@ -92,7 +92,7 @@ is ran. The following commands shows how to use a newly created folder as our db
 $ mkdir my-chain-state
 
 // Use of that folder to store the chain state
-$ ./target/release/node-token-swap --dev --base-path ./my-chain-state/
+$ ./target/release/jur-node --dev --base-path ./my-chain-state/
 
 // Check the folder structure created inside the base path after running the chain
 $ ls ./my-chain-state
@@ -159,7 +159,7 @@ After the node has been [built](#build), refer to the embedded documentation to 
 capabilities and configuration parameters that it exposes:
 
 ```shell
-./target/release/node-token-swap --help
+./target/release/jur-node --help
 ```
 
 ### Runtime
@@ -225,10 +225,10 @@ by appending your own. A few useful ones are as follow.
 
 ```bash
 # Run Substrate node without re-compiling
-./scripts/docker_run.sh ./target/release/node-token-swap --dev --ws-external
+./scripts/docker_run.sh ./target/release/jur-node --dev --ws-external
 
 # Purge the local dev chain
-./scripts/docker_run.sh ./target/release/node-token-swap purge-chain --dev
+./scripts/docker_run.sh ./target/release/jur-node purge-chain --dev
 
 # Check whether the code is compilable
 ./scripts/docker_run.sh cargo check
