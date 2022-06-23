@@ -13,6 +13,7 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
 static_assertions = "1.1.0"
 pallet-aura = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
+pallet-assets = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
@@ -46,17 +47,19 @@ pallet-treasury  = { version = "4.0.0-dev", default-features = false, git = "htt
 pallet-scheduler = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-preimage  = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 
-# Used for the node template's RPCs
+# Used for the node token-swap's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 
 # Used for runtime benchmarking
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20", optional = true }
 frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20", optional = true }
-hex-literal = { version = "0.3.4", optional = true }
+hex-literal = "0.3.4"
 
 # Local Dependencies
-pallet-template = { version = "4.0.0-dev", default-features = false, path = "../pallets/template" }
+pallet-token-swap = { version = "4.0.0-dev", default-features = false, path = "../pallets/token-swap" }
+
+primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
@@ -71,11 +74,12 @@ std = [
 	"frame-system-rpc-runtime-api/std",
 	"frame-system/std",
 	"pallet-aura/std",
+	"pallet-assets/std",
 	"pallet-balances/std",
 	"pallet-grandpa/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
-	"pallet-template/std",
+	"pallet-token-swap/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -98,15 +102,14 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-preimage/std",
 	"pallet-multisig/std",
+	"primitives/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system-benchmarking",
 	"frame-system/runtime-benchmarks",
-	"hex-literal",
 	"pallet-balances/runtime-benchmarks",
-	"pallet-template/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",

@@ -14,6 +14,7 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot,
 };
+use hex_literal::hex;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -52,8 +53,9 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
 
-/// Import the template pallet.
-pub use pallet_template;
+/// Import the token-swap pallet.
+pub use pallet_token_swap;
+use primitives::{Balance, CurrencyId, EthereumAddress, JUR};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -64,9 +66,6 @@ pub type Signature = MultiSignature;
 /// Some way of identifying an account on the chain. We intentionally make it equivalent
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-
-/// Balance of an account.
-pub type Balance = u128;
 
 /// Index of a transaction in the chain.
 pub type Index = u32;
@@ -154,6 +153,8 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 2 seconds of compute with a 6 second average block time.
 const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+
+pub const NATIVE_CURRENCY_ID: CurrencyId = JUR;
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -289,6 +290,31 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	pub const AssetDeposit: Balance = 100 * DOLLARS;
+	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
+	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+}
+
+impl pallet_assets::Config for Runtime {
+	type Event = Event;
+	type Balance = Balance;
+	type AssetId = CurrencyId;
+	type Currency = Balances;
+	type ForceOrigin = ApproveOrigin;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = ConstU128<DOLLARS>;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = StringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+}
+
 impl pallet_transaction_payment::Config for Runtime {
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = ConstU8<5>;
@@ -302,9 +328,21 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
+parameter_types! {
+	pub Prefix: &'static [u8] = b"My JUR address is ";
+	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("876e6d95b8fca0a1adeef7fd5a6b521b16bc6969"));
+}
+
+/// Configure the pallet-token-swap in pallets/token-swap.
+impl pallet_token_swap::Config for Runtime {
 	type Event = Event;
+	type DepositContractAddress = EthAddress;
+	type Prefix = Prefix;
+	type Assets = Assets;
+	type Balances = Balances;
+	type NativeCurrencyId = NativeCurrencyId;
+	type StorageRootOrigin = ApproveOrigin;
 }
 
 parameter_types! {
@@ -576,10 +614,11 @@ construct_runtime!(
 		Aura: pallet_aura,
 		Grandpa: pallet_grandpa,
 		Balances: pallet_balances,
+		Assets: pallet_assets,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
-		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
+		// Include the custom logic from the pallet-token-swap in the runtime.
+		TokenSwap: pallet_token_swap,
 
 		// Governance Integration
 		Democracy: pallet_democracy,
@@ -636,7 +675,6 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_template, TemplateModule]
 	);
 }
 

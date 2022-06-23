@@ -44,7 +44,7 @@ Once the project has been built, the following command can be used to explore al
 subcommands:
 
 ```sh
-./target/release/node-template -h
+./target/release/jur-node -h
 ```
 
 ## Run
@@ -58,24 +58,24 @@ node.
 This command will start the single-node development chain with non-persistent state:
 
 ```bash
-./target/release/node-template --dev
+./target/release/jur-node --dev
 ```
 
 Purge the development chain's state:
 
 ```bash
-./target/release/node-template purge-chain --dev
+./target/release/jur-node purge-chain --dev
 ```
 
 Start the development chain with detailed logging:
 
 ```bash
-RUST_BACKTRACE=1 ./target/release/node-template -ldebug --dev
+RUST_BACKTRACE=1 ./target/release/jur-node -ldebug --dev
 ```
 
 > Development chain means that the state of our chain will be in a tmp folder while the nodes are
 > running. Also, **alice** account will be authority and sudo account as declared in the
-> [genesis state](https://github.com/substrate-developer-hub/substrate-node-template/blob/main/node/src/chain_spec.rs#L49).
+> [genesis state](https://github.com/jurteam/jur-node/blob/main/node/src/chain_spec.rs#L50).
 > At the same time the following accounts will be pre-funded:
 > - Alice
 > - Bob
@@ -92,7 +92,7 @@ is ran. The following commands shows how to use a newly created folder as our db
 $ mkdir my-chain-state
 
 // Use of that folder to store the chain state
-$ ./target/release/node-template --dev --base-path ./my-chain-state/
+$ ./target/release/jur-node --dev --base-path ./my-chain-state/
 
 // Check the folder structure created inside the base path after running the chain
 $ ls ./my-chain-state
@@ -159,7 +159,7 @@ After the node has been [built](#build), refer to the embedded documentation to 
 capabilities and configuration parameters that it exposes:
 
 ```shell
-./target/release/node-template --help
+./target/release/jur-node --help
 ```
 
 ### Runtime
@@ -191,7 +191,7 @@ the following:
 
 The runtime in this project is constructed using many FRAME pallets that ship with the
 [core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a
-template pallet that is [defined in the `pallets`](./pallets/template/src/lib.rs) directory.
+template pallet that is [defined in the `pallets`](pallets/token-swap/src/lib.rs) directory.
 
 A FRAME pallet is comprised of a number of blockchain primitives:
 
@@ -220,15 +220,15 @@ Then run the following command to start a single node development chain.
 
 This command will firstly compile your code, and then start a local development network. You can
 also replace the default command
-(`cargo build --release && ./target/release/node-template --dev --ws-external`)
+(`cargo build --release && ./target/release/jur-node --dev --ws-external`)
 by appending your own. A few useful ones are as follow.
 
 ```bash
 # Run Substrate node without re-compiling
-./scripts/docker_run.sh ./target/release/node-template --dev --ws-external
+./scripts/docker_run.sh ./target/release/jur-node --dev --ws-external
 
 # Purge the local dev chain
-./scripts/docker_run.sh ./target/release/node-template purge-chain --dev
+./scripts/docker_run.sh ./target/release/jur-node purge-chain --dev
 
 # Check whether the code is compilable
 ./scripts/docker_run.sh cargo check

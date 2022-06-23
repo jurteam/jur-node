@@ -2667,6 +2667,7 @@ dependencies = [
  "frame-system",
  "jsonrpc-core",
  "jur-node-runtime",
+ "jur-primitives",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
@@ -2711,6 +2712,8 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "hex-literal",
+ "jur-primitives",
+ "pallet-assets",
  "pallet-aura",
  "pallet-balances",
  "pallet-collective",
@@ -2723,8 +2726,8 @@ dependencies = [
  "pallet-randomness-collective-flip",
  "pallet-scheduler",
  "pallet-sudo",
- "pallet-template",
  "pallet-timestamp",
+ "pallet-token-swap",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
@@ -2743,6 +2746,23 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
+]
+
+[[package]]
+name = "jur-primitives"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "hex-literal",
+ "parity-scale-codec",
+ "rlp",
+ "rustc-hex",
+ "scale-info",
+ "serde",
+ "serde_derive",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -4011,6 +4031,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-assets"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.20#563f4820d8f36d256ada7ea3fef46b2e94c4cd5a"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-aura"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.20#563f4820d8f36d256ada7ea3fef46b2e94c4cd5a"
@@ -4242,20 +4276,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-template"
-version = "4.0.0-dev"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
-]
-
-[[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.20#563f4820d8f36d256ada7ea3fef46b2e94c4cd5a"
@@ -4271,6 +4291,30 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "sp-timestamp",
+]
+
+[[package]]
+name = "pallet-token-swap"
+version = "4.0.0-dev"
+dependencies = [
+ "bs58",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "jur-primitives",
+ "libsecp256k1",
+ "pallet-assets",
+ "pallet-balances",
+ "parity-scale-codec",
+ "rustc-hex",
+ "scale-info",
+ "serde_derive",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5198,6 +5242,16 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "rlp"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "999508abb0ae792aabed2460c45b89106d97fe4adac593bdaef433c2605847b5"
+dependencies = [
+ "bytes 1.1.0",
+ "rustc-hex",
 ]
 
 [[package]]
