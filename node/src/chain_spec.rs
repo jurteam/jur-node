@@ -8,9 +8,16 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::AccountId32;
+use std::str::FromStr;
+use sc_telemetry::TelemetryEndpoints;
+use hex_literal::{
+	hex, // for parsing string literal at compile time use hex!("...");
+};
+use sp_core::crypto::UncheckedInto;
 
 // The URL for the telemetry server.
-// const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
@@ -35,6 +42,10 @@ where
 /// Generate an Aura authority key.
 pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 	(get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
+}
+
+pub fn sudo_account_testnet() -> AccountId {
+	AccountId32::from_str(&"4Jnz8PpQoxfTpFdejpJu7VQUMv5zWeHqJpwXm8uuPuWGwSym".to_string()).expect("Invalid Account Id")
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -69,6 +80,16 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
 				true,
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				],
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				]
 			)
 		},
 		// Bootnodes
@@ -87,47 +108,68 @@ pub fn development_config() -> Result<ChainSpec, String> {
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+	let mut properties = sc_chain_spec::Properties::new();
+	properties.insert("tokenSymbol".into(), "JUR".into());
+	properties.insert("tokenDecimals".into(), 18.into());
+	properties.insert("ss58Format".into(), 33.into());
 
 	Ok(ChainSpec::from_genesis(
 		// Name
-		"Local Testnet",
+		"Jur Local Testnet",
 		// ID
-		"local_testnet",
+		"jur_local_testnet",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
 				wasm_binary,
 				// Initial PoA authorities
-				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
+				vec![
+					(
+						hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].unchecked_into(),
+						hex!["2ad58042777226037081f0c5aa9599b8adb6457177c0d06aeb40bf449f851d61"].unchecked_into()
+					),
+					(
+						hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"].unchecked_into(),
+						hex!["8c4f3bdaf8d3190bbd51aa09de18fb7fcb4c06d6bad22069ef06b3512d977450"].unchecked_into()
+					)
+
+				],
 				// Sudo account
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				sudo_account_testnet(),
 				// Pre-funded accounts
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+					// Endow the Sudo account
+					sudo_account_testnet(),
+					hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].into(),
+					hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"].into(),
+					hex!["accec13ca659e4eb665dcf13d269a2ae529dcf7eed870453417c745e15e3ad27"].into(),
+					hex!["701584da64f29db0c0eb7bc5892236c9bb40c881ef931a7a63aca77d3923930d"].into(),
+					hex!["dc320380454e4fd8a99b7e789138b6a39bf267a96cc2458582de086a9a3a8b69"].into(),
+					hex!["54003a5867459f5db90540fa993ea2d72deeb44e98644197c524d0c23e0bc951"].into(),
 				],
 				true,
+				vec![
+					sudo_account_testnet(),
+					hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].into(),
+				],
+				vec![
+					sudo_account_testnet(),
+					hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].into(),
+				]
 			)
 		},
 		// Bootnodes
 		vec![],
 		// Telemetry
-		None,
+		Some(
+			TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])
+				.expect("Polkadot telemetry url is valid; qed"),
+		),
 		// Protocol ID
-		None,
+		Some("jur-testnet"),
 		// Properties
 		None,
-		None,
+		Some(properties),
 		// Extensions
 		None,
 	))
@@ -140,17 +182,10 @@ fn testnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
+	council_members: Vec<AccountId>,
+	technical_members: Vec<AccountId>
 ) -> GenesisConfig {
-	let council = vec![
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		get_account_id_from_seed::<sr25519::Public>("Bob"),
-		get_account_id_from_seed::<sr25519::Public>("Charlie"),
-	];
-	let technical_committee = vec![
-		get_account_id_from_seed::<sr25519::Public>("Dave"),
-		get_account_id_from_seed::<sr25519::Public>("Eve"),
-		get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-	];
+
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -174,12 +209,12 @@ fn testnet_genesis(
 		democracy: DemocracyConfig::default(),
 		council: CouncilConfig::default(),
 		council_membership: CouncilMembershipConfig {
-			members: council,
+			members: council_members,
 			phantom: Default::default(),
 		},
 		technical_committee: Default::default(),
 		technical_membership: TechnicalMembershipConfig {
-			members: technical_committee,
+			members: technical_members,
 			phantom: Default::default(),
 		},
 		treasury: Default::default(),
