@@ -126,11 +126,11 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				vec![
 					(
 						hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].unchecked_into(),
-						hex!["2ad58042777226037081f0c5aa9599b8adb6457177c0d06aeb40bf449f851d61"].unchecked_into()
+						hex!["e52e2901ea2bb2795601f1e130e1936c7f861e6375ea70ad7ca92ee9a121a75f"].unchecked_into()
 					),
 					(
 						hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"].unchecked_into(),
-						hex!["8c4f3bdaf8d3190bbd51aa09de18fb7fcb4c06d6bad22069ef06b3512d977450"].unchecked_into()
+						hex!["e9e9d202692f8446f013c0b550e4bb1507d6de60a52cdaee0a4863cc554897f9"].unchecked_into()
 					)
 
 				],
