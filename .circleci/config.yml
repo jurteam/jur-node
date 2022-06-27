@@ -39,3 +39,7 @@ workflows:
   prod-flow:
     jobs:
       - deploy-prod:
+          filters:
+            branches:
+              only:
+                - feat/docker-circleci
