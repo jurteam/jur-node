@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  jur-node:27JUN2022
+  service:
     image: registry.digitalocean.com/jur-jbp/jur-node:27JUN2022
     ports:
       - 30333:30333
