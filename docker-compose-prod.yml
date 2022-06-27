@@ -3,10 +3,9 @@ version: "3.8"
 services:
   service:
     image: registry.digitalocean.com/jur-jbp/jur-node:27JUN2022
-    command: jur-node # add --dev parameter to run in development mode
+    command: jur-node --dev
     ports:
       - 30333:30333
       - 9933:9933
       - 9944:9944
       - 9615:9615
-    restart: unless-stopped
