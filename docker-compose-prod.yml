@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  jur-node:27JUN2022
+    image: registry.digitalocean.com/jur-jbp/jur-node:27JUN2022
+    ports:
+      - 30333:30333
+      - 9933:9933
+      - 9944:9944
+      - 9615:9615
+    restart: unless-stopped
