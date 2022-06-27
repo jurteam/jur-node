@@ -1,0 +1,41 @@
+version: 2.1
+
+orbs:
+  gcp-cli: circleci/gcp-cli@1.0.0
+
+commands:
+  run-deploy-sh:
+    description: "Run deploy.sh on given GCP CE instance"
+    parameters:
+      instance:
+        type: string
+      zone:
+        type: string
+        default: us-central1-a
+    steps:
+      - gcp-cli/initialize
+      - run:
+          name: Prepare SSH metadata for GCP 🦌
+          command: |
+            mkdir -p ~/.ssh && \
+            echo ${SSH_PUB_DEPLOY} > ~/.ssh/google_compute_engine.pub && \
+            echo "-----BEGIN OPENSSH PRIVATE KEY-----" > ~/.ssh/google_compute_engine && \
+            echo ${SSH_PRV_DEPLOY} >> ~/.ssh/google_compute_engine && \
+            echo "-----END OPENSSH PRIVATE KEY-----" >> ~/.ssh/google_compute_engine && \
+            chmod 600 ~/.ssh/google_compute_engine
+      - run:
+          name: Run deploy.sh on << parameters.instance >>
+          command: |
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN}"
+
+jobs:
+  deploy-prod:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - run-deploy-sh:
+          instance: jur-node-prod-us-a
+workflows:
+  prod-flow:
+    jobs:
+      - deploy-prod:
