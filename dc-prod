@@ -1,0 +1,9 @@
+#!/bin/bash
+arch="$(uname -p)"
+
+if [ $arch = "arm" ]; then
+    echo "🦋 Using M1 mods"
+    docker-compose -f docker-compose-prod.yml "$@"; # TODO: add m1 mods
+else
+    docker-compose -f docker-compose-prod.yml "$@";
+fi
