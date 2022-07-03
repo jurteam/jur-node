@@ -45,7 +45,7 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 }
 
 pub fn sudo_account_testnet() -> AccountId {
-	AccountId32::from_str(&"4Jnz8PpQoxfTpFdejpJu7VQUMv5zWeHqJpwXm8uuPuWGwSym".to_string()).expect("Invalid Account Id")
+	AccountId32::from_str(&"5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j".to_string()).expect("Invalid Account Id")
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
