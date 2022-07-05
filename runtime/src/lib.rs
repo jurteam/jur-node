@@ -331,7 +331,7 @@ impl pallet_sudo::Config for Runtime {
 parameter_types! {
 	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
-	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("876e6d95b8fca0a1adeef7fd5a6b521b16bc6969"));
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("A839bb60fa202DDf055Dfd229d6dB2834876329c"));
 }
 
 /// Configure the pallet-token-swap in pallets/token-swap.
@@ -346,12 +346,12 @@ impl pallet_token_swap::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+	pub const LaunchPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
 	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
+	pub const EnactmentPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
