@@ -10,14 +10,10 @@ use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
 use std::str::FromStr;
-use sc_telemetry::TelemetryEndpoints;
 use hex_literal::{
 	hex, // for parsing string literal at compile time use hex!("...");
 };
 use sp_core::crypto::UncheckedInto;
-
-// The URL for the telemetry server.
-const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
@@ -106,7 +102,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 	))
 }
 
-pub fn local_testnet_config() -> Result<ChainSpec, String> {
+pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "JUR".into());
@@ -115,9 +111,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 
 	Ok(ChainSpec::from_genesis(
 		// Name
-		"Jur Local Testnet",
+		"Jur Testnet",
 		// ID
-		"jur_local_testnet",
+		"jur_testnet",
 		ChainType::Local,
 		move || {
 			testnet_genesis(
@@ -131,6 +127,10 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					(
 						hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"].unchecked_into(),
 						hex!["e9e9d202692f8446f013c0b550e4bb1507d6de60a52cdaee0a4863cc554897f9"].unchecked_into()
+					),
+					(
+						hex!["accec13ca659e4eb665dcf13d269a2ae529dcf7eed870453417c745e15e3ad27"].unchecked_into(),
+						hex!["ee1773c391a8d3e404f2b6f1f0ec5e22b9719a753b2a24376ab50113283d49d0"].unchecked_into()
 					)
 
 				],
@@ -161,10 +161,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Bootnodes
 		vec![],
 		// Telemetry
-		Some(
-			TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])
-				.expect("Polkadot telemetry url is valid; qed"),
-		),
+		None,
 		// Protocol ID
 		Some("jur-testnet"),
 		// Properties

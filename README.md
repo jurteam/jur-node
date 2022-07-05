@@ -98,9 +98,9 @@ db keystore network
 Once the node template is running locally, you can connect it with **Polkadot-JS Apps** front-end
 to interact with your chain. [Click
 here](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) connecting the Apps to your
-local node template.
+jur node.
 
-### Multi-Node Local Testnet
+### Multi-Node Jur Testnet
 
 ## Generate Keys
 Generate Aura and Grandpa session keys using this [tutorial](https://docs.substrate.io/tutorials/get-started/trusted-network/#generate-your-account-and-keys)
@@ -109,7 +109,7 @@ Generate Aura and Grandpa session keys using this [tutorial](https://docs.substr
 
 
 ```
-./target/release/jur-node build-spec --disable-default-bootnode --chain local > customSpec.json
+./target/release/jur-node build-spec --disable-default-bootnode --chain jur-testnet > customSpec.json
 
 ./target/release/jur-node build-spec --chain=customSpec.json --disable-default-bootnode > customSpecRaw.json
 ```
