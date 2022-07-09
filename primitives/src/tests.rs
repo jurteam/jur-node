@@ -1,4 +1,7 @@
-use crate::proof::{compute_storage_key_for_depositor, convert, decode_rlp, ErrorMessage, extract_storage_root, verify_proof};
+use crate::proof::{
+	compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof,
+	ErrorMessage,
+};
 use crate::EthereumAddress;
 use hex_literal::hex;
 
@@ -80,11 +83,7 @@ fn extract_storage_root_works() {
 
 #[test]
 fn extract_storage_root_not_works_for_invalid_rlp() {
-
-	assert_eq!(
-		extract_storage_root(vec![0u8]),
-		Err(ErrorMessage::InvalidRLP)
-	);
+	assert_eq!(extract_storage_root(vec![0u8]), Err(ErrorMessage::InvalidRLP));
 }
 
 #[test]
@@ -92,10 +91,7 @@ fn extract_storage_root_not_works_for_invalid_account() {
 	let proof =
 		hex!("c5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
 			.to_vec();
-	assert_eq!(
-		extract_storage_root(proof),
-		Err(ErrorMessage::InvalidAccount)
-	);
+	assert_eq!(extract_storage_root(proof), Err(ErrorMessage::InvalidAccount));
 }
 
 #[test]
@@ -103,12 +99,8 @@ fn convert_should_not_work_invalid_input() {
 	let proof =
 		hex!("c5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
 			.to_vec();
-	assert_eq!(
-		convert::<u8,32>(proof),
-		Err(ErrorMessage::InvalidInput)
-	);
+	assert_eq!(convert::<u8, 32>(proof), Err(ErrorMessage::InvalidInput));
 }
-
 
 #[test]
 fn compute_key_works() {

@@ -110,7 +110,6 @@ fn claim_with_invalid_input_does_not_work() {
 	});
 }
 
-
 #[test]
 fn claim_with_invalid_substrate_address_does_not_work() {
 	new_test_ext().execute_with(|| {
@@ -168,7 +167,6 @@ fn claim_with_no_prefix_does_not_work() {
 		);
 	});
 }
-
 
 #[test]
 fn claim_with_invalid_locked_balance_does_not_work() {

@@ -1,3 +1,4 @@
+use hex_literal::hex;
 use jur_node_runtime::{
 	AccountId, AuraConfig, BalancesConfig, CouncilConfig, CouncilMembershipConfig, DemocracyConfig,
 	GenesisConfig, GrandpaConfig, Signature, SudoConfig, SystemConfig, TechnicalMembershipConfig,
@@ -5,15 +6,12 @@ use jur_node_runtime::{
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_core::crypto::UncheckedInto;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
 use std::str::FromStr;
-use hex_literal::{
-	hex, // for parsing string literal at compile time use hex!("...");
-};
-use sp_core::crypto::UncheckedInto;
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
@@ -41,7 +39,8 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 }
 
 pub fn sudo_account_testnet() -> AccountId {
-	AccountId32::from_str(&"5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j".to_string()).expect("Invalid Account Id")
+	AccountId32::from_str(&"5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j".to_string())
+		.expect("Invalid Account Id")
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -85,7 +84,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Dave"),
 					get_account_id_from_seed::<sr25519::Public>("Eve"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-				]
+				],
 			)
 		},
 		// Bootnodes
@@ -121,18 +120,23 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![
 					(
-						hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].unchecked_into(),
-						hex!["e52e2901ea2bb2795601f1e130e1936c7f861e6375ea70ad7ca92ee9a121a75f"].unchecked_into()
+						hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"]
+							.unchecked_into(),
+						hex!["e52e2901ea2bb2795601f1e130e1936c7f861e6375ea70ad7ca92ee9a121a75f"]
+							.unchecked_into(),
 					),
 					(
-						hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"].unchecked_into(),
-						hex!["e9e9d202692f8446f013c0b550e4bb1507d6de60a52cdaee0a4863cc554897f9"].unchecked_into()
+						hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"]
+							.unchecked_into(),
+						hex!["e9e9d202692f8446f013c0b550e4bb1507d6de60a52cdaee0a4863cc554897f9"]
+							.unchecked_into(),
 					),
 					(
-						hex!["accec13ca659e4eb665dcf13d269a2ae529dcf7eed870453417c745e15e3ad27"].unchecked_into(),
-						hex!["ee1773c391a8d3e404f2b6f1f0ec5e22b9719a753b2a24376ab50113283d49d0"].unchecked_into()
-					)
-
+						hex!["accec13ca659e4eb665dcf13d269a2ae529dcf7eed870453417c745e15e3ad27"]
+							.unchecked_into(),
+						hex!["ee1773c391a8d3e404f2b6f1f0ec5e22b9719a753b2a24376ab50113283d49d0"]
+							.unchecked_into(),
+					),
 				],
 				// Sudo account
 				sudo_account_testnet(),
@@ -155,7 +159,7 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 				vec![
 					sudo_account_testnet(),
 					hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"].into(),
-				]
+				],
 			)
 		},
 		// Bootnodes
@@ -180,9 +184,8 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 	council_members: Vec<AccountId>,
-	technical_members: Vec<AccountId>
+	technical_members: Vec<AccountId>,
 ) -> GenesisConfig {
-
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.

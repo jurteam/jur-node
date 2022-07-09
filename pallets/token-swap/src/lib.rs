@@ -60,6 +60,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::traits::LockableCurrency;
 	use frame_system::pallet_prelude::*;
+	use primitives::ValidityError;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -128,7 +129,7 @@ pub mod pallet {
 		/// Prefix does not match
 		PrefixDoesNotMatch,
 		/// Invalid Input
-		InvalidInput
+		InvalidInput,
 	}
 
 	#[pallet::call]
@@ -172,6 +173,60 @@ pub mod pallet {
 			Ok(())
 		}
 	}
+
+	#[pallet::validate_unsigned]
+	impl<T: Config> ValidateUnsigned for Pallet<T> {
+		type Call = Call<T>;
+
+		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
+			const PRIORITY: u64 = 100;
+
+			let (maybe_signer, maybe_json) = match call {
+				Call::claim { ethereum_signature, signed_json, storage_proof: _ } => {
+					let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
+					(
+						Self::eth_recover(&ethereum_signature, blake2_256_hash),
+						serde_json::from_slice(&signed_json),
+					)
+				},
+				_ => return Err(InvalidTransaction::Call.into()),
+			};
+
+			let signer = maybe_signer.ok_or(InvalidTransaction::Custom(
+				ValidityError::InvalidEthereumSignature.into(),
+			))?;
+
+			let vs: serde_json::Value = maybe_json
+				.ok()
+				.ok_or(InvalidTransaction::Custom(ValidityError::InvalidJson.into()))?;
+			let content_str = vs["payload"]["content"]
+				.as_str()
+				.ok_or(InvalidTransaction::Custom(ValidityError::ContentNotFound.into()))?;
+
+			ensure!(
+				content_str.as_bytes().starts_with(T::Prefix::get()),
+				InvalidTransaction::Custom(ValidityError::PrefixDoesNotMatch.into(),)
+			);
+
+			let substrate_address = &content_str[T::Prefix::get().len()..];
+			let address = bs58::decode(substrate_address)
+				.into_vec()
+				.ok()
+				.ok_or(InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into()))?;
+			ensure!(
+				address.len() == 35,
+				InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into(),)
+			);
+
+			Ok(ValidTransaction {
+				priority: PRIORITY,
+				requires: vec![],
+				provides: vec![("claims", signer).encode()],
+				longevity: TransactionLongevity::max_value(),
+				propagate: true,
+			})
+		}
+	}
 }
 
 impl<T: Config> Pallet<T> {
@@ -192,10 +247,16 @@ impl<T: Config> Pallet<T> {
 			serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
 		let content_str = vs["payload"]["content"].as_str().ok_or(Error::<T>::ContentNotFound)?;
 
-		ensure!(content_str.as_bytes().starts_with(T::Prefix::get()), Error::<T>::PrefixDoesNotMatch);
+		ensure!(
+			content_str.as_bytes().starts_with(T::Prefix::get()),
+			Error::<T>::PrefixDoesNotMatch
+		);
 
 		let substrate_address = &content_str[T::Prefix::get().len()..];
-		let address = bs58::decode(substrate_address).into_vec().ok().ok_or(Error::<T>::InvalidSubstrateAddress)?;
+		let address = bs58::decode(substrate_address)
+			.into_vec()
+			.ok()
+			.ok_or(Error::<T>::InvalidSubstrateAddress)?;
 		ensure!(address.len() == 35, Error::<T>::InvalidSubstrateAddress);
 		let account_id =
 			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
@@ -204,7 +265,9 @@ impl<T: Config> Pallet<T> {
 
 		let storage_key = compute_storage_key_for_depositor(signer);
 		let storage_rlp = verify_proof(
-			convert(Self::root_information().storage_root).ok().ok_or(Error::<T>::InvalidInput)?,
+			convert(Self::root_information().storage_root)
+				.ok()
+				.ok_or(Error::<T>::InvalidInput)?,
 			storage_proof,
 			storage_key,
 		)

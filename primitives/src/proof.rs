@@ -22,7 +22,7 @@ pub enum ErrorMessage {
 	/// Invalid Account
 	InvalidAccount,
 	/// Invalid Input
-	InvalidInput
+	InvalidInput,
 }
 
 impl From<rlp::DecoderError> for ErrorMessage {
