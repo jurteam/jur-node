@@ -2,12 +2,9 @@ version: "3.8"
 
 services:
   service:
-    image: registry.digitalocean.com/jur-jbp/jur-node:27JUN2022
+    image: registry.digitalocean.com/jur-jbp/jur-node:11JUL2022
     container_name: jur_node_container
-    command: |
-      jur-node key insert --chain jur-testnet --scheme Sr25519 --suri ${KEY_SET_AURA} --key-type aura && \
-      jur-node key insert --chain jur-testnet --scheme Ed25519 --suri ${KEY_SET_GRANPA} --key-type gran && \
-      jur-node --dev
+    command: jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator
     ports:
       - 30333:30333
       - 9933:9933
