@@ -30,7 +30,7 @@ commands:
       - run:
           name: Run Key Insert commands on << parameters.instance >>
           command: |
-            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./key-insert.sh ${KEY_SET_AURA_1} ${KEY_SET_GRANPA_1}"
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "export KEY_SET_AURA=${KEY_SET_AURA_1} && export KEY_SET_GRANPA=${KEY_SET_GRANPA_1}"
 jobs:
   deploy-prod:
     docker:
