@@ -20,6 +20,6 @@ RUN useradd -m -u 1000 -U -s /bin/sh -d /jur-node jur-node && \
 # Sanity checks
 	/usr/local/bin/jur-node --version
 
-USER jur-node
+USER root
 EXPOSE 30333 9933 9944 9615
 VOLUME ["/data"]
