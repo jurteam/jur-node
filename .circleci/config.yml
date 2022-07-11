@@ -28,13 +28,9 @@ commands:
           command: |
             gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN}"
       - run:
-          name: Run Key Insert (Aura) command on << parameters.instance >>
+          name: Run Key Insert commands on << parameters.instance >>
           command: |
-            docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Sr25519 --suri ${KEY_SET_AURA_1} --key-type aura
-      - run:
-          name: Run Key Insert (Granpa) command on << parameters.instance >>
-          command: |
-            docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Ed25519 --suri ${KEY_SET_GRANPA_1} --key-type gran
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./key-insert.sh ${KEY_SET_AURA_1} ${KEY_SET_GRANPA_1}"
 jobs:
   deploy-prod:
     docker:
