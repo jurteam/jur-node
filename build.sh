@@ -55,6 +55,7 @@ if [ $shouldBuild == true ]; then
 
   sed -i "s/$JUR_NODE:[A-Z0-9\-]*/$JUR_NODE:$TAG/g" docker-compose-prod.yml && \
   sed -i "s/$JUR_NODE:[A-Z0-9\-]*/$JUR_NODE:$TAG/g" .circleci/config.yml && \
+  sed -i "s/$JUR_NODE:[A-Z0-9\-]*/$JUR_NODE:$TAG/g" deploy.sh && \
   docker build -f ./Dockerfile -t $IMAGE_JUR_NODE ./
 fi
 

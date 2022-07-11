@@ -7,6 +7,10 @@ commands:
   run-deploy-sh:
     description: "Run deploy.sh on given GCP CE instance"
     parameters:
+      aura_keyset:
+        type: string
+      granpa_keyset:
+        type: string
       instance:
         type: string
       zone:
@@ -26,14 +30,24 @@ commands:
       - run:
           name: Run deploy.sh on << parameters.instance >>
           command: |
-            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${KEY_SET_AURA_1} ${KEY_SET_GRANPA_1}"
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}"
 jobs:
   deploy-prod:
     docker:
       - image: google/cloud-sdk
     steps:
       - run-deploy-sh:
-          instance: jur-node-prod-us-a
+          instance: jur-node-prod-us-a-1
+          aura_keyset: KEY_SET_AURA_1
+          granpa_keyset: KEY_SET_GRANPA_1
+      - run-deploy-sh:
+          instance: jur-node-prod-us-a-2
+          aura_keyset: KEY_SET_AURA_2
+          granpa_keyset: KEY_SET_GRANPA_2
+      - run-deploy-sh:
+          instance: jur-node-prod-us-a-3
+          aura_keyset: KEY_SET_AURA_3
+          granpa_keyset: KEY_SET_GRANPA_3
 workflows:
   prod-flow:
     jobs:
