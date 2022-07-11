@@ -181,12 +181,13 @@ pub mod pallet {
 		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
 			const PRIORITY: u64 = 100;
 
-			let (maybe_signer, maybe_json) = match call {
-				Call::claim { ethereum_signature, signed_json, storage_proof: _ } => {
+			let (maybe_signer, maybe_json, storage_proof) = match call {
+				Call::claim { ethereum_signature, signed_json, storage_proof } => {
 					let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
 					(
 						Self::eth_recover(&ethereum_signature, blake2_256_hash),
 						serde_json::from_slice(&signed_json),
+						storage_proof
 					)
 				},
 				_ => return Err(InvalidTransaction::Call.into()),
@@ -217,6 +218,22 @@ pub mod pallet {
 				address.len() == 35,
 				InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into(),)
 			);
+
+			let storage_key: Vec<u8> = compute_storage_key_for_depositor(signer);
+
+			let storage_rlp = verify_proof(
+				convert(Self::root_information().storage_root)
+					.ok()
+					.ok_or(InvalidTransaction::Custom(ValidityError::InvalidInput.into()))?,
+				storage_proof,
+				storage_key,
+			)
+				.ok()
+				.ok_or(InvalidTransaction::Custom(ValidityError::InvalidProof.into()))?;
+
+			let locked_balance = decode_rlp(storage_rlp).ok().ok_or(InvalidTransaction::Custom(ValidityError::InvalidProof.into()))?;
+			let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
+			ensure!(locked_balance > balance, InvalidTransaction::Custom(ValidityError::NotSufficientLockedBalance.into()));
 
 			Ok(ValidTransaction {
 				priority: PRIORITY,

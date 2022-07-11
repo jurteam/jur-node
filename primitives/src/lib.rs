@@ -73,6 +73,12 @@ pub enum ValidityError {
 	ContentNotFound = 3,
 	/// Invalid JSON.
 	InvalidJson = 4,
+	/// Not Sufficient locked balance
+	NotSufficientLockedBalance = 5,
+	/// Invalid input
+	InvalidInput = 6,
+	/// Invalid proof
+	InvalidProof = 7,
 }
 
 impl From<ValidityError> for u8 {
