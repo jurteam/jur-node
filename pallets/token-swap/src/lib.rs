@@ -220,12 +220,13 @@ pub mod pallet {
 			);
 
 			let storage_key: Vec<u8> = compute_storage_key_for_depositor(signer);
+			let s_proof = storage_proof.clone();
 
 			let storage_rlp = verify_proof(
 				convert(Self::root_information().storage_root)
 					.ok()
 					.ok_or(InvalidTransaction::Custom(ValidityError::InvalidInput.into()))?,
-				storage_proof,
+				s_proof,
 				storage_key,
 			)
 				.ok()
