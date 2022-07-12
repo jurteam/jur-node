@@ -5,8 +5,13 @@ services:
     image: registry.digitalocean.com/jur-jbp/jur-node:11JUL2022
     container_name: jur_node_container
     command: jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator
+    volumes:
+      - data:/data
     ports:
       - 30333:30333
       - 9933:9933
       - 9944:9944
       - 9615:9615
+
+volumes:
+  data:

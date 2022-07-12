@@ -13,13 +13,13 @@ COPY --from=builder /jur-node/target/release/jur-node /usr/local/bin
 
 RUN useradd -m -u 1000 -U -s /bin/sh -d /jur-node jur-node && \
 	mkdir -p /data /jur-node/.local/share/jur-node && \
-	chown -R jur-node:jur-node /data && \
 	ln -s /data /jur-node/.local/share/jur-node && \
+        chown -R jur-node:jur-node /jur-node/.local && \
 # unclutter and minimize the attack surface
-	rm -rf /usr/bin /usr/sbin && \
+#	rm -rf /usr/bin /usr/sbin && \
 # Sanity checks
 	/usr/local/bin/jur-node --version
 
-USER root
+USER jur-node
 EXPOSE 30333 9933 9944 9615
 VOLUME ["/data"]
