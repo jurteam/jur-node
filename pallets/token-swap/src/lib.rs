@@ -132,6 +132,21 @@ pub mod pallet {
 		InvalidInput,
 	}
 
+	impl<T> From<Error<T>> for TransactionValidityError {
+		fn from(error: Error<T>) -> Self {
+			match error {
+				Error::<T>::InvalidEthereumSignature => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidEthereumSignature.into())),
+				Error::<T>::InvalidSubstrateAddress => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into())),
+				Error::<T>::PrefixDoesNotMatch => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::PrefixDoesNotMatch.into())),
+				Error::<T>::ContentNotFound => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::ContentNotFound.into())),
+				Error::<T>::InvalidJson => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidJson.into())),
+				Error::<T>::NotSufficientLockedBalance => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::NotSufficientLockedBalance.into())),
+				Error::<T>::InvalidProof => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidProof.into())),
+				_ => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidInput.into())),
+			}
+		}
+	}
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
@@ -200,41 +215,10 @@ pub mod pallet {
 			let vs: serde_json::Value = maybe_json
 				.ok()
 				.ok_or(InvalidTransaction::Custom(ValidityError::InvalidJson.into()))?;
-			let content_str = vs["payload"]["content"]
-				.as_str()
-				.ok_or(InvalidTransaction::Custom(ValidityError::ContentNotFound.into()))?;
-
-			ensure!(
-				content_str.as_bytes().starts_with(T::Prefix::get()),
-				InvalidTransaction::Custom(ValidityError::PrefixDoesNotMatch.into(),)
-			);
-
-			let substrate_address = &content_str[T::Prefix::get().len()..];
-			let address = bs58::decode(substrate_address)
-				.into_vec()
-				.ok()
-				.ok_or(InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into()))?;
-			ensure!(
-				address.len() == 35,
-				InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into(),)
-			);
-
-			let storage_key: Vec<u8> = compute_storage_key_for_depositor(signer);
 			let s_proof = storage_proof.clone();
 
-			let storage_rlp = verify_proof(
-				convert(Self::root_information().storage_root)
-					.ok()
-					.ok_or(InvalidTransaction::Custom(ValidityError::InvalidInput.into()))?,
-				s_proof,
-				storage_key,
-			)
-				.ok()
-				.ok_or(InvalidTransaction::Custom(ValidityError::InvalidProof.into()))?;
-
-			let locked_balance = decode_rlp(storage_rlp).ok().ok_or(InvalidTransaction::Custom(ValidityError::InvalidProof.into()))?;
-			let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
-			ensure!(locked_balance > balance, InvalidTransaction::Custom(ValidityError::NotSufficientLockedBalance.into()));
+			Self::get_address(vs)?;
+			Self::get_mint_amount(signer, s_proof)?;
 
 			Ok(ValidTransaction {
 				priority: PRIORITY,
@@ -248,22 +232,13 @@ pub mod pallet {
 }
 
 impl<T: Config> Pallet<T> {
-	fn process_claim(
-		ethereum_signature: EcdsaSignature,
-		signed_json: Vec<u8>,
-		storage_proof: Vec<Vec<u8>>,
-	) -> DispatchResult {
-		// Step: 1 Recover signer from signed json
-		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
 
-		let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
-			.ok_or(Error::<T>::InvalidEthereumSignature)?;
-
+	fn get_address(
+		signed_json: serde_json::Value,
+	) -> Result<Vec<u8>, Error<T>> {
 		// Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
 
-		let vs: serde_json::Value =
-			serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
-		let content_str = vs["payload"]["content"].as_str().ok_or(Error::<T>::ContentNotFound)?;
+		let content_str = signed_json["payload"]["content"].as_str().ok_or(Error::<T>::ContentNotFound)?;
 
 		ensure!(
 			content_str.as_bytes().starts_with(T::Prefix::get()),
@@ -276,8 +251,13 @@ impl<T: Config> Pallet<T> {
 			.ok()
 			.ok_or(Error::<T>::InvalidSubstrateAddress)?;
 		ensure!(address.len() == 35, Error::<T>::InvalidSubstrateAddress);
-		let account_id =
-			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
+
+		Ok(address)
+	}
+	fn get_mint_amount(
+		signer: EthereumAddress,
+		storage_proof: Vec<Vec<u8>>,
+	) -> Result<(Balance, Balance), Error<T>> {
 
 		// Step-3: Proof Verification
 
@@ -289,14 +269,34 @@ impl<T: Config> Pallet<T> {
 			storage_proof,
 			storage_key,
 		)
-		.ok()
-		.ok_or(Error::<T>::InvalidProof)?;
+			.ok()
+			.ok_or(Error::<T>::InvalidProof)?;
 
 		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
 		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
 		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
-		let mint_amount = locked_balance - balance;
+		Ok((locked_balance, locked_balance - balance))
+	}
+
+	fn process_claim(
+		ethereum_signature: EcdsaSignature,
+		signed_json: Vec<u8>,
+		storage_proof: Vec<Vec<u8>>,
+	) -> DispatchResult {
+		// Step: 1 Recover signer from signed json
+		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
+
+		let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
+			.ok_or(Error::<T>::InvalidEthereumSignature)?;
+
+		let vs: serde_json::Value =
+			serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
+
+		let address = Self::get_address(vs)?;
+		let account_id =
+			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
+		let (locked_balance, mint_amount) = Self::get_mint_amount(signer, storage_proof)?;
 		T::Balances::mint_into(&account_id, mint_amount)?;
 
 		LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());

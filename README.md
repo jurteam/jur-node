@@ -105,15 +105,6 @@ jur node.
 ## Generate Keys
 Generate Aura and Grandpa session keys using this [tutorial](https://docs.substrate.io/tutorials/get-started/trusted-network/#generate-your-account-and-keys)
 
-## Create a custom chain specification
-
-
-```
-./target/release/jur-node build-spec --disable-default-bootnode --chain jur-testnet > customSpec.json
-
-./target/release/jur-node build-spec --chain=customSpec.json --disable-default-bootnode > customSpecRaw.json
-```
-
 If validators are not part of chain_spec, follow `Add validators` section of this [tutorial](https://docs.substrate.io/tutorials/get-started/trusted-network/#create-a-custom-chain-specification)
 
 ## Add keys to the keystore
@@ -122,14 +113,14 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 
 ```
 ./target/release/jur-node key insert --base-path  /tmp/node01 \
---chain customSpecRaw.json \
+--chain jur-testnet \
 --scheme Sr25519 \
 --suri <first_keyset-aura-secret-seed> \
 --key-type aura
 
 
 ./target/release/jur-node key insert --base-path  /tmp/node01 \
---chain customSpecRaw.json \
+--chain jur-testnet \
 --scheme Ed25519 \
 --suri <first_keyset-granpa-secret-seed> \
 --key-type gran
@@ -139,16 +130,33 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 
 ```
 ./target/release/jur-node key insert --base-path  /tmp/node02 \
---chain customSpecRaw.json \
+--chain jur-testnet \
 --scheme Sr25519 \
 --suri <second_keyset-aura-secret-seed> \
 --key-type aura
 
 
 ./target/release/jur-node key insert --base-path  /tmp/node02 \
---chain customSpecRaw.json \
+--chain jur-testnet \
 --scheme Ed25519 \
 --suri <second_keyset-granpa-secret-seed> \
+--key-type gran
+```
+
+* For Node 3
+
+```
+./target/release/jur-node key insert --base-path  /tmp/node03 \
+--chain jur-testnet \
+--scheme Sr25519 \
+--suri <third_keyset-aura-secret-seed> \
+--key-type aura
+
+
+./target/release/jur-node key insert --base-path  /tmp/node03 \
+--chain jur-testnet \
+--scheme Ed25519 \
+--suri <third_keyset-granpa-secret-seed> \
 --key-type gran
 ```
 
@@ -157,7 +165,7 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 ```
 ./target/release/jur-node \
   --base-path /tmp/node01 \
-  --chain ./customSpecRaw.json \
+  --chain jur-testnet \
   --port 30333 \
   --ws-port 9945 \
   --rpc-port 9933 \
@@ -169,11 +177,10 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 
 ## Start Second Node
 
-You can now allow other validators to join the network using the `--bootnodes` and `--validator` command-line options.
 ```
 ./target/release/jur-node \
   --base-path /tmp/node02 \
-  --chain ./customSpecRaw.json \
+  --chain jur-testnet \
   --port 30334 \
   --ws-port 9946 \
   --rpc-port 9934 \
@@ -182,6 +189,24 @@ You can now allow other validators to join the network using the `--bootnodes` a
   --name MyNode02 \
   --bootnodes <Set Boot Nodes>
 ```
+
+## Start Third Node
+
+You can now allow other validators to join the network using the `--bootnodes` and `--validator` command-line options.
+```
+./target/release/jur-node \
+  --base-path /tmp/node03 \
+  --chain jur-testnet \
+  --port 30335 \
+  --ws-port 9947 \
+  --rpc-port 9935 \
+  --validator \
+  --rpc-methods Unsafe \
+  --name MyNode02 \
+  --bootnodes <Set Boot Nodes>
+```
+
+
 
 
 
