@@ -12,9 +12,9 @@ LABEL description="Multistage Docker image for JUR"
 COPY --from=builder /jur-node/target/release/jur-node /usr/local/bin
 
 RUN useradd -m -u 1000 -U -s /bin/sh -d /jur-node jur-node && \
-	mkdir -p /data /jur-node/.local/share/jur-node && \
+	mkdir -p /data /jur-node/.local/share && \
 	ln -s /data /jur-node/.local/share/jur-node && \
-        chown -R jur-node:jur-node /jur-node/.local && \
+    chown -R jur-node:jur-node /data /jur-node/.local/share && \
 # unclutter and minimize the attack surface
 #	rm -rf /usr/bin /usr/sbin && \
 # Sanity checks
