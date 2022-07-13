@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   service:
-    image: registry.digitalocean.com/jur-jbp/jur-node:13JUL2022
+    image: registry.digitalocean.com/jur-jbp/jur-node:13JUL2022-2
     container_name: jur_node_container
     command: jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator --bootnodes /ip4/35.206.83.115/p2p/12D3KooWKCP28KnSYD2K1T1ikb96hFb6TqnfdYT7ygVMHKvw4g8P
     volumes:
