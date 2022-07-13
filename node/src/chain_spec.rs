@@ -8,12 +8,6 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
-use sp_runtime::AccountId32;
-use std::str::FromStr;
-use hex_literal::{
-	hex, // for parsing string literal at compile time use hex!("...");
-};
-use sp_core::crypto::UncheckedInto;
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
@@ -38,10 +32,6 @@ where
 /// Generate an Aura authority key.
 pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 	(get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
-}
-
-pub fn sudo_account_testnet() -> AccountId {
-	AccountId32::from_str(&"5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j".to_string()).expect("Invalid Account Id")
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -85,7 +75,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Dave"),
 					get_account_id_from_seed::<sr25519::Public>("Eve"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-				]
+				],
 			)
 		},
 		// Bootnodes
@@ -114,9 +104,8 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 	council_members: Vec<AccountId>,
-	technical_members: Vec<AccountId>
+	technical_members: Vec<AccountId>,
 ) -> GenesisConfig {
-
 	GenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.

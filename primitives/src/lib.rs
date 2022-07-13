@@ -59,3 +59,30 @@ impl<'de> Deserialize<'de> for EthereumAddress {
 		Ok(r)
 	}
 }
+
+/// Custom validity errors used while validating transactions.
+#[repr(u8)]
+pub enum ValidityError {
+	/// The Ethereum signature is invalid.
+	InvalidEthereumSignature = 0,
+	/// Substarte address is invalid.
+	InvalidSubstrateAddress = 1,
+	/// Prefix does not match.
+	PrefixDoesNotMatch = 2,
+	/// Content not found.
+	ContentNotFound = 3,
+	/// Invalid JSON.
+	InvalidJson = 4,
+	/// Not Sufficient locked balance
+	NotSufficientLockedBalance = 5,
+	/// Invalid input
+	InvalidInput = 6,
+	/// Invalid proof
+	InvalidProof = 7,
+}
+
+impl From<ValidityError> for u8 {
+	fn from(err: ValidityError) -> Self {
+		err as u8
+	}
+}

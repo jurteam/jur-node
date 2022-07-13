@@ -1,4 +1,8 @@
-use crate::proof::{compute_storage_key_for_depositor, convert, decode_rlp, ErrorMessage, extract_storage_root, verify_proof};
+use crate::proof::{
+	compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof,
+	ErrorMessage,
+};
+use frame_support::assert_ok;
 use crate::EthereumAddress;
 use hex_literal::hex;
 
@@ -66,6 +70,20 @@ fn verify_storage_proof_not_works_invalid_key() {
 #[test]
 fn verify_account_proof_works() {
 	assert_eq!(get_account_rlp(), hex!("f85a80808094a18b81879e99394df4b99b78cf71037836706db2a06439ad2859e615114f02251c6d09c2a36e62d6de6cd55d0ad771964009ab6cc4a0072fbb05700cf818d7d3f6de8bb4d0d18cdfed173106b2b5af87ee06fe801d39"));
+
+	let account_proof: Vec<Vec<u8>> = vec![
+		hex!("f901b1a04d35263044ea475856b8dcddcad60a3e1f70f6f2ffc1504ae660e6bc802569f8a09d0c977efb886200180b1ec6ae3884bc2efdb48dcc5bc72e963c6778a740d62380a03c5399da93980ba518493209a870041fc155e9ddce56a6a400a4268ba879c170a0e8dac858daf0137156ce635b6999a0202998415abe7fdb3b97e7fad8011db9a1a0e7db9a17b3797740bec7d1e7f5da3a2f449d2d7170578f64f34ed74f4cc721a880a08818abe2997f92b6e43174490592355290aeb1712c8202b4d034740eb8e33c48a0cb8afc35aae984972cc2fcea40eb68442b62f08e604ec689eb1ee83682350f2ea05cb5c90253d6f59ba72617ed16aae52ec29aac514bf1d54013bb80c5fda65176a0a3b4e6d7a2597daf4c21f77efd7443b4bcab0a764525721c6438dee15f2134e6a022d2fc3c0fd5281def2f53ae7e75f6dac48c79a3e0e457556f83113ee3c829c2a0defbc7602e7a0a36a0e00e2332fe252efa486b8cf9ff6f6c8278f3889abfa9ba80a06c272fb3239143f2d46af8ca39ea139c71c175ffffcad33958f9c5949b8855c6a0b2015762c5d72f9342cc2f9c5729fe04cee5aed6132ee2cd3255172899896f4580").to_vec(),
+		hex!("e21aa04f4ac4fed4ddc11189d65e90bc5cfbd203d5a9c0d66809f84e57c818384439f9").to_vec(),
+		hex!("f851a0a258ff53accea48b0218f9f002da98cb5ae838e38a0ff6b595118f64259fefec80808080a0740ed2ba442853f489646ad13246420d8b71781d51ffbb0d33229f1f298eba788080808080808080808080").to_vec(),
+		hex!("f87e9f3b02dc6e1fe55f373af0e138b09941acd1723941e80ca5e067a8942da35d61b85cf85a80808094f077b491b355e64048ce21e3a6fc4751eeea77faa0b08505f2763206c8a2bd47c2b1318945e1b05abad77be1c54c794e3ba18cf579a033896be85e4ef6c4ad532cd0f0b75cf032244e8b0052cfe071a49394b98bea04").to_vec(),
+	];
+
+	assert_ok!(
+		verify_proof(
+			hex!("c066ed531c19ba6d36322481654fc6cdf089a79954e1e5941b18188f6bc199e3"),
+			account_proof,
+			hex!("5a0b02dc6e1fe55f373af0e138b09941acd1723941e80ca5e067a8942da35d61").to_vec()
+		));
 }
 
 #[test]
@@ -80,11 +98,7 @@ fn extract_storage_root_works() {
 
 #[test]
 fn extract_storage_root_not_works_for_invalid_rlp() {
-
-	assert_eq!(
-		extract_storage_root(vec![0u8]),
-		Err(ErrorMessage::InvalidRLP)
-	);
+	assert_eq!(extract_storage_root(vec![0u8]), Err(ErrorMessage::InvalidRLP));
 }
 
 #[test]
@@ -92,10 +106,7 @@ fn extract_storage_root_not_works_for_invalid_account() {
 	let proof =
 		hex!("c5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
 			.to_vec();
-	assert_eq!(
-		extract_storage_root(proof),
-		Err(ErrorMessage::InvalidAccount)
-	);
+	assert_eq!(extract_storage_root(proof), Err(ErrorMessage::InvalidAccount));
 }
 
 #[test]
@@ -103,12 +114,8 @@ fn convert_should_not_work_invalid_input() {
 	let proof =
 		hex!("c5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
 			.to_vec();
-	assert_eq!(
-		convert::<u8,32>(proof),
-		Err(ErrorMessage::InvalidInput)
-	);
+	assert_eq!(convert::<u8, 32>(proof), Err(ErrorMessage::InvalidInput));
 }
-
 
 #[test]
 fn compute_key_works() {
