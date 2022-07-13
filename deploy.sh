@@ -93,7 +93,7 @@ docker login -u $1 -p $1 $DOCKER_REGISTRY && \
 docker-compose -f $DC_FILE pull && \
 docker-compose -f $DC_FILE stop && \
 docker-compose -f $DC_FILE up -d && \
-docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Sr25519 --suri $2 --key-type aura
+docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Sr25519 --suri $2 --key-type aura && \
 docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Ed25519 --suri $3 --key-type gran && \
 echo "[$(date)] Successfully deployed" >> deploy.log && \
 popd
