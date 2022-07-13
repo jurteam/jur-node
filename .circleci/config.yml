@@ -55,4 +55,5 @@ workflows:
           filters:
             branches:
               only:
-                - feat/docker-circleci
+                - feat/docker-circleci # for testing (remove it later)
+                - main # for production
