@@ -343,6 +343,7 @@ impl pallet_token_swap::Config for Runtime {
 	type Balances = Balances;
 	type NativeCurrencyId = NativeCurrencyId;
 	type StorageRootOrigin = ApproveOrigin;
+	type WeightInfo = pallet_token_swap::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
