@@ -117,7 +117,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 101,
+	spec_version: 102,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -331,7 +331,7 @@ impl pallet_sudo::Config for Runtime {
 parameter_types! {
 	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
-	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("A839bb60fa202DDf055Dfd229d6dB2834876329c"));
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("6cd6C388a2323fA003D0509e4902977eE90CB06B"));
 }
 
 /// Configure the pallet-token-swap in pallets/token-swap.
