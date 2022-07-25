@@ -119,6 +119,7 @@ impl pallet_token_swap::Config for Test {
 	type Balances = Balances;
 	type NativeCurrencyId = NativeCurrencyId;
 	type StorageRootOrigin = EnsureRoot<u64>;
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.

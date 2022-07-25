@@ -28,6 +28,11 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+pub mod weights;
+pub use weights::WeightInfo;
+
 #[derive(Encode, Decode, Clone, TypeInfo)]
 pub struct EcdsaSignature(pub [u8; 65]);
 
@@ -88,6 +93,8 @@ pub mod pallet {
 
 		/// Specify which origin is allowed to update storage root.
 		type StorageRootOrigin: EnsureOrigin<Self::Origin>;
+
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
@@ -149,7 +156,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(T::WeightInfo::claim())]
 		pub fn claim(
 			origin: OriginFor<T>,
 			ethereum_signature: EcdsaSignature,
@@ -162,7 +169,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(T::WeightInfo::update_state_root())]
 		pub fn update_state_root(
 			origin: OriginFor<T>,
 			vechain_root_hash: VechainHash,

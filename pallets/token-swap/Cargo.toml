@@ -27,12 +27,12 @@ rustc-hex = { version = "2.1.0", default-features = false }
 sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 bs58 = { default-features = false, version = '0.4.0',features=['alloc']}
+hex-literal = "0.3.4"
 
 [dev-dependencies]
 pallet-assets = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 pallet-balances = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.20" }
 libsecp256k1 = { version = "0.7.0", default-features = false }
-hex-literal = "0.3.4"
 
 [features]
 default = ["std"]

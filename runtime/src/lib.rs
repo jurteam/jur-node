@@ -343,6 +343,7 @@ impl pallet_token_swap::Config for Runtime {
 	type Balances = Balances;
 	type NativeCurrencyId = NativeCurrencyId;
 	type StorageRootOrigin = ApproveOrigin;
+	type WeightInfo = pallet_token_swap::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -675,6 +676,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
+		[pallet_token_swap, TokenSwap]
 	);
 }
 
