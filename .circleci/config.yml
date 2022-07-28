@@ -1,11 +1,13 @@
 version: 2.1
 
 orbs:
-  gcp-cli: circleci/gcp-cli@1.0.0
+  docker: circleci/docker@1.7.0
+  gcp-cli: circleci/gcp-cli@2.4.1
+  jq: circleci/jq@2.2.0
 
 commands:
   run-deploy-sh:
-    description: "Run deploy.sh on given GCP CE instance"
+    description: "Deploy GCP CE instance"
     parameters:
       aura_keyset:
         type: string
@@ -17,6 +19,7 @@ commands:
         type: string
         default: us-central1-a
     steps:
+      - gcp-cli/install
       - gcp-cli/initialize
       - run:
           name: Prepare SSH metadata for GCP 🦌
@@ -27,11 +30,35 @@ commands:
             echo ${SSH_PRV_DEPLOY} >> ~/.ssh/google_compute_engine && \
             echo "-----END OPENSSH PRIVATE KEY-----" >> ~/.ssh/google_compute_engine && \
             chmod 600 ~/.ssh/google_compute_engine
+      - checkout
       - run:
           name: Run deploy.sh on << parameters.instance >>
           command: |
+            gcloud compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >>
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "chmod +x deploy.sh"
             gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}"
+
 jobs:
+  build-and-push-docker:
+    description: "Build & Push Docker Image"
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.14
+      - docker/check:
+          docker-username: DO_REGISTRY_TOKEN
+          docker-password: DO_REGISTRY_TOKEN
+          registry: registry.digitalocean.com
+          use-docker-credentials-store: false
+      - docker/build:
+          image: jur-jbp/jur-node
+          no_output_timeout: "90m"
+          registry: registry.digitalocean.com
+      - docker/push:
+          image: jur-jbp/jur-node
+          registry: registry.digitalocean.com
   deploy-prod:
     docker:
       - image: google/cloud-sdk
@@ -48,10 +75,14 @@ jobs:
           instance: jur-node-prod-us-a-3
           aura_keyset: KEY_SET_AURA_3
           granpa_keyset: KEY_SET_GRANPA_3
+
 workflows:
   prod-flow:
     jobs:
+      - build-and-push-docker
       - deploy-prod:
+          requires:
+            - build-and-push-docker
           filters:
             branches:
               only:
