@@ -32,17 +32,22 @@ fi
 
 
 if [ -z $1 ]; then
-  echo "Needs exactly three arg. Please provide docker login credentials"
+  echo "Needs exactly four arg. Please provide docker login credentials"
   exit $PARAMETER_MISSING
 fi
 
 if [ -z $2 ]; then
-  echo "Needs exactly three arg. Please provide aura key credentials"
+  echo "Needs exactly four arg. Please provide aura key credentials"
   exit $PARAMETER_MISSING
 fi
 
 if [ -z $3 ]; then
-  echo "Needs exactly three arg. Please provide granpa key credentials"
+  echo "Needs exactly four arg. Please provide granpa key credentials"
+  exit $PARAMETER_MISSING
+fi
+
+if [ -z $4 ]; then
+  echo "Needs exactly four arg. Please provide docker tag"
   exit $PARAMETER_MISSING
 fi
 
@@ -54,8 +59,8 @@ fi
 
 pushd $DEPLOY_PATH && \
 docker image prune -a -f && \
-docker pull $IMAGE_NAME:${DOCKER_TAGS[0]} && \
-docker run -d -v data:/data -p 30333:30333 -p 9933:9933 -p 9944:9944 -p 9615:9615 --name=jur_node_container $IMAGE_NAME:${DOCKER_TAGS[0]} jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator --bootnodes /ip4/34.171.35.134/tcp/30333/p2p/12D3KooWBBb45AWo5cnFhurPav2aSgpsPewPfLmEdCW8Xw7wiuAF
+docker pull $IMAGE_NAME:$4 && \
+docker run -d -v data:/data -p 30333:30333 -p 9933:9933 -p 9944:9944 -p 9615:9615 --name=jur_node_container $IMAGE_NAME:$4 jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator --bootnodes /ip4/34.171.35.134/tcp/30333/p2p/12D3KooWBBb45AWo5cnFhurPav2aSgpsPewPfLmEdCW8Xw7wiuAF && \
 docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Sr25519 --suri $2 --key-type aura && \
 docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Ed25519 --suri $3 --key-type gran && \
 echo "[$(date)] Successfully deployed" >> deploy.log && \

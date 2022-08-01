@@ -31,10 +31,7 @@ commands:
             echo "-----END OPENSSH PRIVATE KEY-----" >> ~/.ssh/google_compute_engine && \
             chmod 600 ~/.ssh/google_compute_engine
       - checkout
-      - run:
-          echo "Docker Tag = ${DOCKER_TAGS[0]}"
-      - run:
-          echo "CircleCi SHA = ${CIRCLE_SHA1}"
+      - run: echo "CircleCi SHA = ${CIRCLE_SHA1}"
       - run:
           name: Run deploy.sh on << parameters.instance >>
           command: |
