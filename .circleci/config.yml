@@ -40,7 +40,7 @@ commands:
           command: |
             gcloud compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >>
             gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "chmod +x deploy.sh"
-            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>} ${DOCKER_TAGS[0]}"
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>} ${CIRCLE_SHA1}"
 
 jobs:
   build-and-push-docker:
