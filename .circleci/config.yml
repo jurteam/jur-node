@@ -32,11 +32,15 @@ commands:
             chmod 600 ~/.ssh/google_compute_engine
       - checkout
       - run:
+          echo "Docker Tag = ${DOCKER_TAGS[0]}"
+      - run:
+          echo "CircleCi SHA = ${CIRCLE_SHA1}"
+      - run:
           name: Run deploy.sh on << parameters.instance >>
           command: |
             gcloud compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >>
             gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "chmod +x deploy.sh"
-            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}"
+            gcloud compute ssh --zone << parameters.zone >> circleci@<< parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>} ${DOCKER_TAGS[0]}"
 
 jobs:
   build-and-push-docker:
