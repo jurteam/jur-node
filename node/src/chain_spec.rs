@@ -1,6 +1,6 @@
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, CouncilConfig, CouncilMembershipConfig, DemocracyConfig,
-	GenesisConfig, GrandpaConfig, Signature, SudoConfig, SystemConfig, TechnicalMembershipConfig,
+	AccountId, AuraConfig, BalancesConfig, CouncilConfig, DemocracyConfig,
+	GenesisConfig, GrandpaConfig, Signature, SudoConfig, SystemConfig,
 	WASM_BINARY,
 };
 use sc_service::ChainType;
@@ -66,16 +66,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
 				true,
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-				],
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-				],
 			)
 		},
 		// Bootnodes
@@ -103,8 +93,6 @@ fn testnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
-	council_members: Vec<AccountId>,
-	technical_members: Vec<AccountId>,
 ) -> GenesisConfig {
 	GenesisConfig {
 		system: SystemConfig {
@@ -128,15 +116,9 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 		democracy: DemocracyConfig::default(),
 		council: CouncilConfig::default(),
-		council_membership: CouncilMembershipConfig {
-			members: council_members,
-			phantom: Default::default(),
-		},
+		council_membership: Default::default(),
 		technical_committee: Default::default(),
-		technical_membership: TechnicalMembershipConfig {
-			members: technical_members,
-			phantom: Default::default(),
-		},
+		technical_membership: Default::default(),
 		treasury: Default::default(),
 		elections: Default::default(),
 		assets: Default::default(),
