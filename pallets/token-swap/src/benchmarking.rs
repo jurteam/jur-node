@@ -9,7 +9,7 @@ use frame_system::RawOrigin;
 const VECHAIN_ROOT_HASH: VechainHash =
     hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
 
-fn assert_last_event<T: Config>(generic_event: <T as Config>::Event) {
+fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
     frame_system::Pallet::<T>::assert_last_event(generic_event.into());
 }
 

@@ -70,7 +70,7 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// eth address of the deposit contract
 		#[pallet::constant]
@@ -92,7 +92,7 @@ pub mod pallet {
 		type NativeCurrencyId: Get<AssetIdOf<Self>>;
 
 		/// Specify which origin is allowed to update storage root.
-		type StorageRootOrigin: EnsureOrigin<Self::Origin>;
+		type StorageRootOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 
 		type WeightInfo: WeightInfo;
 	}

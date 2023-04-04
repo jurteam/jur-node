@@ -39,9 +39,8 @@ impl SubstrateCli for Cli {
 		Ok(match id {
 			"dev" => Box::new(chain_spec::development_config()?),
 			"" | "jur-testnet" => Box::new(chain_spec::jur_testnet_config()?),
-			path => {
-				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?)
-			},
+			path =>
+				Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
 		})
 	}
 
@@ -119,7 +118,7 @@ pub fn run() -> sc_cli::Result<()> {
 								"Runtime benchmarking wasn't enabled when building the node. \
 							You can enable it with `--features runtime-benchmarks`."
 									.into(),
-							);
+							)
 						}
 
 						cmd.run::<Block, service::ExecutorDispatch>(config)
@@ -128,6 +127,12 @@ pub fn run() -> sc_cli::Result<()> {
 						let PartialComponents { client, .. } = service::new_partial(&config)?;
 						cmd.run(client)
 					},
+					#[cfg(not(feature = "runtime-benchmarks"))]
+					BenchmarkCmd::Storage(_) => Err(
+						"Storage benchmarking can be enabled with `--features runtime-benchmarks`."
+							.into(),
+					),
+					#[cfg(feature = "runtime-benchmarks")]
 					BenchmarkCmd::Storage(cmd) => {
 						let PartialComponents { client, backend, .. } =
 							service::new_partial(&config)?;
@@ -140,7 +145,13 @@ pub fn run() -> sc_cli::Result<()> {
 						let PartialComponents { client, .. } = service::new_partial(&config)?;
 						let ext_builder = RemarkBuilder::new(client.clone());
 
-						cmd.run(config, client, inherent_benchmark_data()?, &ext_builder)
+						cmd.run(
+							config,
+							client,
+							inherent_benchmark_data()?,
+							Vec::new(),
+							&ext_builder,
+						)
 					},
 					BenchmarkCmd::Extrinsic(cmd) => {
 						let PartialComponents { client, .. } = service::new_partial(&config)?;
@@ -153,8 +164,8 @@ pub fn run() -> sc_cli::Result<()> {
 								EXISTENTIAL_DEPOSIT,
 							)),
 						]);
-						cmd.run(client, inherent_benchmark_data()?, &ext_factory)
 
+						cmd.run(client, inherent_benchmark_data()?, Vec::new(), &ext_factory)
 					},
 					BenchmarkCmd::Machine(cmd) =>
 						cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()),

@@ -14,7 +14,7 @@ fn update_root() {
 	];
 
 	assert_ok!(TokenSwap::update_state_root(
-		Origin::root(),
+		RuntimeOrigin::root(),
 		VECHAIN_ROOT_HASH,
 		1,
 		"".as_bytes().to_vec(),
@@ -34,7 +34,7 @@ fn claim_works() {
 				.to_vec()];
 		update_root();
 		assert_ok!(TokenSwap::claim(
-			Origin::none(),
+			RuntimeOrigin::none(),
 			EcdsaSignature(signature),
 			signed_json,
 			storage_proof,
@@ -55,7 +55,7 @@ fn claim_with_invalid_ethereum_address_does_not_work() {
 			vec![hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
 				.to_vec()];
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature([0; 65]), signed_json,storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature([0; 65]), signed_json,storage_proof),
 			Error::<Test>::InvalidEthereumSignature
 		);
 	});
@@ -70,7 +70,7 @@ fn claim_with_invalid_json_does_not_work() {
 			vec![hex!("e5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
 				.to_vec()];
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof),
 			Error::<Test>::InvalidJson
 		);
 	});
@@ -87,7 +87,7 @@ fn claim_with_invalid_proof_does_not_work() {
 				.to_vec()];
 		update_root();
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof),
 			Error::<Test>::InvalidProof
 		);
 	});
@@ -104,7 +104,7 @@ fn claim_with_invalid_input_does_not_work() {
 				.to_vec()];
 
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof),
 			Error::<Test>::InvalidInput
 		);
 	});
@@ -121,7 +121,7 @@ fn claim_with_invalid_substrate_address_does_not_work() {
 				.to_vec()];
 		update_root();
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof),
 			Error::<Test>::InvalidSubstrateAddress
 		);
 	});
@@ -138,7 +138,7 @@ fn claim_with_no_json_content_does_not_work() {
 
 
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof),
 			Error::<Test>::ContentNotFound
 		);
 	});
@@ -155,14 +155,14 @@ fn claim_with_no_prefix_does_not_work() {
 
 
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof.clone()),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof.clone()),
 			Error::<Test>::PrefixDoesNotMatch
 		);
 
 		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"Abs    5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
 
 		assert_noop!(
-			TokenSwap::claim(Origin::none(), EcdsaSignature(signature), signed_json, storage_proof),
+			TokenSwap::claim(RuntimeOrigin::none(), EcdsaSignature(signature), signed_json, storage_proof),
 			Error::<Test>::PrefixDoesNotMatch
 		);
 	});
@@ -180,7 +180,7 @@ fn claim_with_invalid_locked_balance_does_not_work() {
 		update_root();
 		assert_ok!(
 			TokenSwap::claim(
-				Origin::none(),
+				RuntimeOrigin::none(),
 				EcdsaSignature(signature),
 				signed_json.clone(),
 				storage_proof.clone(),
@@ -188,7 +188,7 @@ fn claim_with_invalid_locked_balance_does_not_work() {
 
 		assert_noop!(
 			TokenSwap::claim(
-				Origin::none(),
+				RuntimeOrigin::none(),
 				EcdsaSignature(signature),
 				signed_json,
 				storage_proof,
