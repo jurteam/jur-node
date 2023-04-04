@@ -53,16 +53,16 @@ pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: TokenSwap RootInformation (r:0 w:1)
 	fn update_state_root() -> Weight {
-		(14_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(14_000_000 as u64)
+			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
 	// Storage: TokenSwap RootInformation (r:1 w:0)
 	// Storage: TokenSwap LatestClaimedBalance (r:1 w:1)
 	// Storage: System Account (r:1 w:1)
 	fn claim() -> Weight {
-		(61_000_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(61_000_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(3 as u64))
+			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
 }
 
@@ -70,15 +70,15 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 impl WeightInfo for () {
 	// Storage: TokenSwap RootInformation (r:0 w:1)
 	fn update_state_root() -> Weight {
-		(14_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(14_000_000 as u64)
+			.saturating_add(RocksDbWeight::get().writes(1 as u64))
 	}
 	// Storage: TokenSwap RootInformation (r:1 w:0)
 	// Storage: TokenSwap LatestClaimedBalance (r:1 w:1)
 	// Storage: System Account (r:1 w:1)
 	fn claim() -> Weight {
-		(61_000_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+		Weight::from_ref_time(61_000_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(3 as u64))
+			.saturating_add(RocksDbWeight::get().writes(2 as u64))
 	}
 }
