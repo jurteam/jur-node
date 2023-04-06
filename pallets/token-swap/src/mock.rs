@@ -2,7 +2,7 @@ use super::*;
 use crate as pallet_token_swap;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, ConstU64},
+	traits::{AsEnsureOriginWithArg, ConstU16, ConstU64},
 };
 use frame_system::{self as system, EnsureRoot};
 use hex_literal::hex;
@@ -90,7 +90,9 @@ impl pallet_assets::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type AssetId = CurrencyId;
+	type AssetIdParameter = u32;
 	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<u64>>;
 	type ForceOrigin = EnsureRoot<u64>;
 	type AssetDeposit = AssetDeposit;
 	type MetadataDepositBase = MetadataDepositBase;
@@ -99,6 +101,7 @@ impl pallet_assets::Config for Test {
 	type ApprovalDeposit = ApprovalDeposit;
 	type StringLimit = StringLimit;
 	type Freezer = ();
+	type RemoveItemsLimit = ConstU32<5>;
 	type Extra = ();
 	type WeightInfo = ();
 }
