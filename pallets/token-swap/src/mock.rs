@@ -1,9 +1,11 @@
 use super::*;
 use crate as pallet_token_swap;
+use parity_scale_codec::Encode;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU64},
 };
+use pallet_assets::AssetsCallback;
 use frame_system::{self as system, EnsureRoot};
 use hex_literal::hex;
 use primitives::{Balance, CurrencyId, JUR};
@@ -12,6 +14,7 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
+use sp_io::storage;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -33,6 +36,9 @@ frame_support::construct_runtime!(
 	}
 );
 
+type AccountId = u64;
+type AssetId = u32;
+
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -44,7 +50,7 @@ impl system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type RuntimeEvent = RuntimeEvent;
@@ -86,6 +92,17 @@ parameter_types! {
 	pub const MetadataDepositPerByte: u64 = 1;
 }
 
+pub struct AssetsCallbackHandle;
+impl AssetsCallback<AssetId, AccountId> for AssetsCallbackHandle {
+	fn created(_id: &AssetId, _owner: &AccountId) {
+		storage::set(b"asset_created", &().encode());
+	}
+
+	fn destroyed(_id: &AssetId) {
+		storage::set(b"asset_destroyed", &().encode());
+	}
+}
+
 impl pallet_assets::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
@@ -103,6 +120,7 @@ impl pallet_assets::Config for Test {
 	type Freezer = ();
 	type RemoveItemsLimit = ConstU32<5>;
 	type Extra = ();
+	type CallbackHandle = AssetsCallbackHandle;
 	type WeightInfo = ();
 }
 
