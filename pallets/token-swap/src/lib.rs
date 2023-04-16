@@ -16,7 +16,7 @@ use parity_scale_codec::{Decode, Encode};
 use primitives::proof::{
 	compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof,
 };
-use primitives::{Balance, CurrencyId, EthereumAddress, VechainHash};
+use primitives::{Balance, CurrencyId, EthereumAddress, ACCOUNT_ID_INITIAL_INDEX, ETHEREUM_SIGNATURE_SIZE, ADDRESS_LEN, MAX_ACCOUNT_ID_INDEX, FROM_INDEX, VechainHash};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
@@ -34,7 +34,7 @@ pub mod weights;
 pub use weights::WeightInfo;
 
 #[derive(Encode, Decode, Clone, TypeInfo)]
-pub struct EcdsaSignature(pub [u8; 65]);
+pub struct EcdsaSignature(pub [u8; ETHEREUM_SIGNATURE_SIZE]);
 
 impl PartialEq for EcdsaSignature {
 	fn eq(&self, other: &Self) -> bool {
@@ -65,11 +65,12 @@ pub mod pallet {
 	use super::*;
 	use frame_support::traits::LockableCurrency;
 	use frame_system::pallet_prelude::*;
-	use primitives::ValidityError;
+	use primitives::{PRIORITY, ETHEREUM_ADDRESS_SIZE, ValidityError};
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
+		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// eth address of the deposit contract
@@ -113,7 +114,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Stored claimed balance [account_id, balance, ethereum_address]
-		ClaimedToken(T::AccountId, BalanceOf<T>, [u8; 20]),
+		ClaimedToken(T::AccountId, BalanceOf<T>, [u8; ETHEREUM_ADDRESS_SIZE]),
 		/// Updated Storage Root [storage_root]
 		UpdatedStorageRoot(Vec<u8>),
 	}
@@ -202,11 +203,10 @@ pub mod pallet {
 		type Call = Call<T>;
 
 		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-			const PRIORITY: u64 = 100;
 
 			let (maybe_signer, maybe_json, storage_proof) = match call {
 				Call::claim { ethereum_signature, signed_json, storage_proof } => {
-					let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
+					let blake2_256_hash: VechainHash = blake2_256(&signed_json);
 					(
 						Self::eth_recover(&ethereum_signature, blake2_256_hash),
 						serde_json::from_slice(&signed_json),
@@ -258,7 +258,7 @@ impl<T: Config> Pallet<T> {
 			.into_vec()
 			.ok()
 			.ok_or(Error::<T>::InvalidSubstrateAddress)?;
-		ensure!(address.len() == 35, Error::<T>::InvalidSubstrateAddress);
+		ensure!(address.len() == ADDRESS_LEN, Error::<T>::InvalidSubstrateAddress);
 
 		Ok(address)
 	}
@@ -293,7 +293,7 @@ impl<T: Config> Pallet<T> {
 		storage_proof: Vec<Vec<u8>>,
 	) -> DispatchResult {
 		// Step: 1 Recover signer from signed json
-		let blake2_256_hash: [u8; 32] = blake2_256(&signed_json);
+		let blake2_256_hash: VechainHash = blake2_256(&signed_json);
 
 		let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
 			.ok_or(Error::<T>::InvalidEthereumSignature)?;
@@ -303,21 +303,21 @@ impl<T: Config> Pallet<T> {
 
 		let address = Self::get_address(vs)?;
 		let account_id =
-			T::AccountId::decode(&mut &address[1..33]).map_err(|_| Error::<T>::InvalidJson)?;
+			T::AccountId::decode(&mut &address[ACCOUNT_ID_INITIAL_INDEX..MAX_ACCOUNT_ID_INDEX]).map_err(|_| Error::<T>::InvalidJson)?;
 		let (locked_balance, mint_amount) = Self::get_mint_amount(signer, storage_proof)?;
 		T::Balances::mint_into(&account_id, mint_amount)?;
 
-		LatestClaimedBalance::<T>::insert(signer, locked_balance.clone());
+		LatestClaimedBalance::<T>::insert(signer, locked_balance);
 		Self::deposit_event(Event::<T>::ClaimedToken(account_id, locked_balance, signer.0));
 		Ok(())
 	}
 
 	// Attempts to recover the Ethereum address from a message signature signed by using
 	// the Ethereum RPC's `personal_sign` and `eth_sign`.
-	fn eth_recover(s: &EcdsaSignature, blake2_256_hash: [u8; 32]) -> Option<EthereumAddress> {
+	fn eth_recover(s: &EcdsaSignature, blake2_256_hash: VechainHash) -> Option<EthereumAddress> {
 		let mut res = EthereumAddress::default();
 		res.0.copy_from_slice(
-			&keccak_256(&secp256k1_ecdsa_recover(&s.0, &blake2_256_hash).ok()?[..])[12..],
+			&keccak_256(&secp256k1_ecdsa_recover(&s.0, &blake2_256_hash).ok()?[..])[FROM_INDEX..],
 		);
 		Some(res)
 	}

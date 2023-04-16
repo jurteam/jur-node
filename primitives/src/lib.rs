@@ -21,17 +21,81 @@ pub type VechainHash = [u8; 32];
 // Native Token
 pub const JUR: CurrencyId = 0;
 
+/// Number Constants
+
+pub const INITIAL_INDEX: usize = 0;
+
+pub const INITIAL_NODE_INDEX: u8 = 0;
+
+pub const ACCOUNT_ID_INITIAL_INDEX: usize = 1;
+
+pub const SHORT_NODE_INDEX: u8 = 2;
+
+pub const OFFSET_INDEX: usize = 2;
+
+pub const NIBBLES_RIGHT_SHIFT_INDEX: u8 = 4;
+
+pub const NODE_ROOT_INDEX: usize = 5;
+
+pub const RLP_ROOT_ITEM_INDEX: u8 = 6;
+
+pub const FROM_INDEX: usize = 12;
+
+pub const NIBBLES_PATH_LEN: u8 = 16;
+
+pub const ODD_NODE_INDEX: u8 = 16;
+
+pub const RLP_FULL_NODE_INDEX: u8 = 17;
+
+pub const FULL_NODE_INDEX: u8 = 16;
+
+pub const ETHEREUM_ADDRESS_SIZE: usize = 20;
+
+pub const TERMINAL_NODE_INDEX: u8 = 32;
+
+pub const TO_INDEX: usize = 32;
+
+pub const VECHAIN_HASH_SIZE: u8 = 32;
+
+pub const MAX_ACCOUNT_ID_INDEX: usize = 33;
+
+pub const ADDRESS_LEN: usize = 35;
+
+pub const ETHEREUM_ADDRESS_LEN: usize = 40;
+
+pub const MAX_KEY_SIZE: usize = 64;
+
+pub const ETHEREUM_SIGNATURE_SIZE: usize = 65;
+
+pub const PRIORITY: u64 = 100;
+
+pub const INVALID_ETHEREUM_SIGNATURE_ERR_CODE: u8 = 0;
+
+pub const INVALID_SUBSTRATE_ADDRESS_ERR_CODE: u8 = 1;
+
+pub const INVALID_PREFIX_ERR_CODE: u8 = 2;
+
+pub const INVALID_CONTENT_ERR_CODE: u8 = 3;
+
+pub const INVALID_JSON_ERR_CODE: u8 = 4;
+
+pub const INVALID_BALANCE_ERR_CODE: u8 = 5;
+
+pub const INVALID_INPUT_ERR_CODE: u8 = 6;
+
+pub const INVALID_PROOF_ERR_CODE: u8 = 7;
+
 /// An Ethereum address (i.e. 20 bytes, used to represent an Ethereum account).
 ///
 /// This gets serialized to the 0x-prefixed hex representation.
 #[derive(Clone, Copy, PartialEq, Eq, Encode, Decode, Default, RuntimeDebug, TypeInfo)]
-pub struct EthereumAddress(pub [u8; 20]);
+pub struct EthereumAddress(pub [u8; ETHEREUM_ADDRESS_SIZE]);
 
 #[cfg(feature = "std")]
 impl Serialize for EthereumAddress {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
+		where
+			S: Serializer,
 	{
 		let hex: String = rustc_hex::ToHex::to_hex(&self.0[..]);
 		serializer.serialize_str(&format!("0x{}", hex))
@@ -41,13 +105,13 @@ impl Serialize for EthereumAddress {
 #[cfg(feature = "std")]
 impl<'de> Deserialize<'de> for EthereumAddress {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-	where
-		D: Deserializer<'de>,
+		where
+			D: Deserializer<'de>,
 	{
 		let base_string = String::deserialize(deserializer)?;
-		let offset = if base_string.starts_with("0x") { 2 } else { 0 };
+		let offset = if base_string.starts_with("0x") { OFFSET_INDEX } else { INITIAL_INDEX };
 		let s = &base_string[offset..];
-		if s.len() != 40 {
+		if s.len() != ETHEREUM_ADDRESS_LEN {
 			Err(serde::de::Error::custom(
 				"Bad length of Ethereum address (should be 42 including '0x')",
 			))?;
@@ -64,21 +128,21 @@ impl<'de> Deserialize<'de> for EthereumAddress {
 #[repr(u8)]
 pub enum ValidityError {
 	/// The Ethereum signature is invalid.
-	InvalidEthereumSignature = 0,
+	InvalidEthereumSignature = INVALID_ETHEREUM_SIGNATURE_ERR_CODE,
 	/// Substarte address is invalid.
-	InvalidSubstrateAddress = 1,
+	InvalidSubstrateAddress = INVALID_SUBSTRATE_ADDRESS_ERR_CODE,
 	/// Prefix does not match.
-	PrefixDoesNotMatch = 2,
+	PrefixDoesNotMatch = INVALID_PREFIX_ERR_CODE,
 	/// Content not found.
-	ContentNotFound = 3,
+	ContentNotFound = INVALID_CONTENT_ERR_CODE,
 	/// Invalid JSON.
-	InvalidJson = 4,
+	InvalidJson = INVALID_JSON_ERR_CODE,
 	/// Not Sufficient locked balance
-	NotSufficientLockedBalance = 5,
+	NotSufficientLockedBalance = INVALID_BALANCE_ERR_CODE,
 	/// Invalid input
-	InvalidInput = 6,
+	InvalidInput = INVALID_INPUT_ERR_CODE,
 	/// Invalid proof
-	InvalidProof = 7,
+	InvalidProof = INVALID_PROOF_ERR_CODE,
 }
 
 impl From<ValidityError> for u8 {

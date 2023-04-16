@@ -33,8 +33,6 @@ frame_support::construct_runtime!(
 	}
 );
 
-type AccountId = u64;
-
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -46,7 +44,7 @@ impl system::Config for Test {
 	type BlockNumber = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
+	type AccountId = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type RuntimeEvent = RuntimeEvent;
@@ -88,11 +86,10 @@ parameter_types! {
 	pub const MetadataDepositPerByte: u64 = 1;
 }
 
-
 impl pallet_assets::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
+	type AssetId = u32;
 	type Balance = Balance;
-	type AssetId = CurrencyId;
 	type AssetIdParameter = u32;
 	type Currency = Balances;
 	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<u64>>;
@@ -104,10 +101,10 @@ impl pallet_assets::Config for Test {
 	type ApprovalDeposit = ApprovalDeposit;
 	type StringLimit = StringLimit;
 	type Freezer = ();
-	type RemoveItemsLimit = ConstU32<5>;
 	type Extra = ();
-	type CallbackHandle = ();
 	type WeightInfo = ();
+	type RemoveItemsLimit = ConstU32<5>;
+	type CallbackHandle = ();
 }
 
 parameter_types! {
