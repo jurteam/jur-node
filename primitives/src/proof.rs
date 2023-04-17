@@ -44,9 +44,9 @@ pub fn verify_proof(
 ) -> Result<Vec<u8>, ErrorMessage> {
 	let mut nibbles = vec![];
 
-	for (_i, k) in key.iter().enumerate() {
-		nibbles.push(k >> 4);
-		nibbles.push(k % 16);
+	for k in key.iter() {
+		nibbles.push(k >> NIBBLES_RIGHT_SHIFT_INDEX);
+		nibbles.push(k % NIBBLES_PATH_LEN);
 	}
 
 	let mut nibbles_iter = nibbles.iter();
@@ -57,8 +57,8 @@ pub fn verify_proof(
 		ensure!(blake2_256_hash == root, ErrorMessage::InvalidProofData);
 
 		let rlp = rlp::Rlp::new(proof_step);
-		match rlp.item_count()? {
-			2 => {
+		match rlp.item_count()? as u8 {
+			SHORT_NODE_INDEX => {
 				let mut node = rlp.iter();
 				let prefix: Vec<u8> = match node.next() {
 					Some(n) => n.as_val()?,
@@ -70,18 +70,19 @@ pub fn verify_proof(
 					None => return Err(ErrorMessage::InvalidRLP),
 				};
 
-				let odd = prefix[0] & 16 != 0;
-				let terminal = prefix[0] & 32 != 0;
+				ensure!(!prefix.is_empty(), ErrorMessage::InvalidProofData);
+				let odd = prefix[INITIAL_INDEX] & ODD_NODE_INDEX != INITIAL_NODE_INDEX;
+				let terminal = prefix[INITIAL_INDEX] & TERMINAL_NODE_INDEX != INITIAL_NODE_INDEX;
 
 				let mut prefix_nibbles = vec![];
 
 				for (i, p) in prefix.iter().enumerate() {
-					if i != 0 {
-						prefix_nibbles.push(p >> 4);
+					if i != INITIAL_INDEX {
+						prefix_nibbles.push(p >> NIBBLES_RIGHT_SHIFT_INDEX);
 					}
 
-					if i != 0 || odd {
-						prefix_nibbles.push(p % 16);
+					if i != INITIAL_INDEX || odd {
+						prefix_nibbles.push(p % NIBBLES_PATH_LEN);
 					}
 				}
 
@@ -94,7 +95,7 @@ pub fn verify_proof(
 				}
 
 				if terminal {
-					if nibbles_iter.count() != 0 {
+					if nibbles_iter.count() != INITIAL_INDEX as usize {
 						return Err(ErrorMessage::ProofTooShort);
 					} else {
 						return Ok(value);
@@ -102,10 +103,10 @@ pub fn verify_proof(
 				}
 				root = convert(value)?;
 			},
-			17 => {
+			RLP_FULL_NODE_INDEX => {
 				let mut node = rlp.iter();
 				let key_nibble = match nibbles_iter.next() {
-					None => match node.nth(16 as usize) {
+					None => match node.nth(FULL_NODE_INDEX as usize) {
 						None => return Err(ErrorMessage::InvalidRLP),
 						Some(value) => return Ok(value.as_val()?),
 					},
@@ -118,7 +119,7 @@ pub fn verify_proof(
 				};
 
 				root = convert(branch)?;
-			},
+			}
 			_ => return Err(ErrorMessage::ProofTooShort),
 		};
 	}
@@ -133,25 +134,23 @@ pub fn convert<T, const N: usize>(v: Vec<T>) -> Result<[T; N], ErrorMessage> {
 pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, ErrorMessage> {
 	let rlp = rlp::Rlp::new(&account_rlp);
 
-	match rlp.item_count()? {
-		6 => {
+	match rlp.item_count()? as u8 {
+		RLP_ROOT_ITEM_INDEX => {
 			let mut node = rlp.iter();
 
-			match node.nth(5 as usize) {
+			match node.nth(NODE_ROOT_INDEX) {
 				None => Err(ErrorMessage::InvalidRLP),
 				Some(value) => Ok(value.as_val()?),
 			}
-		},
+		}
 		_ => Err(ErrorMessage::InvalidAccount),
 	}
 }
 
 pub fn compute_storage_key_for_depositor(eth_address: EthereumAddress) -> Vec<u8> {
-	let mut x: Vec<u8> = vec![];
-	x.extend_from_slice(&[0; 12]);
-	x.extend_from_slice(&eth_address.0);
-	x.extend_from_slice(&[0; 32]);
+	let mut key = [0u8; MAX_KEY_SIZE];
+	key[FROM_INDEX..TO_INDEX].copy_from_slice(&eth_address.0);
 
-	let kec_256 = keccak_256(x.as_slice());
+	let kec_256 = keccak_256(&key);
 	blake2_256(&kec_256).to_vec()
 }

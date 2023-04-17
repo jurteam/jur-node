@@ -329,7 +329,7 @@ impl pallet_sudo::Config for Runtime {
 parameter_types! {
 	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
-	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("6cd6C388a2323fA003D0509e4902977eE90CB06B"));
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("37abc97DD3dA0b81fe635e35Ea1655A15FfF4d76"));
 }
 
 /// Configure the pallet-token-swap in pallets/token-swap.

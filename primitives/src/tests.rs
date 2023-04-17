@@ -38,6 +38,22 @@ fn verify_storage_proof_works() {
 }
 
 #[test]
+fn verify_storage_proof_not_works_for_proof_without_prefix() {
+
+	assert_eq!(
+		verify_proof(
+			[255, 209, 120, 49, 99, 103, 39, 161, 43, 151, 204, 61, 119, 88, 144, 94, 8,
+			152,
+				107, 30, 102, 112, 131, 208, 46, 241, 200, 16, 220, 221, 103, 92,],
+			vec![vec![194, 128, 128]],
+			hex!
+			("13614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a611499221").to_vec(),
+		),
+		Err(ErrorMessage::InvalidProofData)
+	);
+}
+
+#[test]
 fn verify_storage_proof_not_works_invalid_proof() {
 	let proof =
 		hex!("c5a12013614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a6114992218281c8")
