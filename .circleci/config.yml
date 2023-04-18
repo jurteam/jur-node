@@ -37,7 +37,7 @@ jobs:
     steps:
       - checkout
       - gcp-gcr/gcr-auth:
-          gcloud_service_key: $GOOGLE_CREDENTIALS
+          gcloud-service-key: GOOGLE_CREDENTIALS
       - gcp-gcr/build-image:
           image: jur-chain
           no_output_timeout: 20m
