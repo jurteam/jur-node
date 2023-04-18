@@ -27,6 +27,7 @@ commands:
         type: string
         default: us-central1-a
     steps:
+      - checkout
       - gcp-cli/install
       - gcp-cli/initialize
       - run:
