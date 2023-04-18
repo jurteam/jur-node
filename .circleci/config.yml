@@ -4,6 +4,7 @@ orbs:
   terraform: circleci/terraform@3.2.0
   docker: circleci/docker@1.7.0
   gcp-gcr: circleci/gcp-gcr@0.15.1
+  gcp-cli: circleci/gcp-cli@2.4.1
 
 # Commands
 commands:
@@ -13,7 +14,32 @@ commands:
       - run:
           name: Install latest terraform
           command: wget -nv https://releases.hashicorp.com/terraform/1.4.5/terraform_1.4.5_linux_amd64.zip && unzip terraform_1.4.5_linux_amd64.zip && mv terraform /usr/local/bin && terraform -v
-# Jobs
+  run-deploy-sh:
+    description: "Deploy Docker to GCP CE instance"
+    parameters:
+      aura_keyset:
+        type: string
+      granpa_keyset:
+        type: string
+      instance:
+        type: string
+      zone:
+        type: string
+        default: us-central1-a
+    steps:
+      - gcp-cli/install
+      - gcp-cli/initialize
+      - run:
+          name: Prepare SSH metadata for GCP 🦌
+          command: |
+            gcloud \
+              --quiet \
+              --project="${GOOGLE_PROJECT_ID}" \
+              compute ssh "<< parameters.instance >>" \
+              --zone "<< parameters.zone >>" \
+              --strict-host-key-checking=no \
+              --command "echo works"
+  # Jobs
 jobs:
   validate_infrastructure:
     description: "Validate Infrastructure"
@@ -68,6 +94,14 @@ jobs:
       - gcp-gcr/push-image:
           image: jur-node
           registry-url: us.gcr.io
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - run-deploy-sh:
+          instance: staging-l1-jur-node-archive-compute-instance-us-central1-a-1
+          aura_keyset: KEY_SET_AURA_1
+          granpa_keyset: KEY_SET_GRANPA_1
 
 # Workflows
 workflows:
@@ -88,3 +122,6 @@ workflows:
       - build_and_push_docker_image:
           requires:
             - apply_infrastructure
+      - deploy:
+          requires:
+            - build_and_push_docker_image
