@@ -18,10 +18,14 @@ jobs:
   validate_infrastructure:
     description: "Validate Infrastructure"
     executor: terraform/default
+    parameters:
+      deployment_environment:
+        type: string
     steps:
       - checkout
       - install_latest_terraform
       - terraform/init:
+          backend_config: "prefix=<< parameters.deployment_environment >>-l1-jur-node"
           path: infrastructure
       - terraform/validate:
           path: infrastructure
@@ -72,6 +76,7 @@ workflows:
   staging:
     jobs:
       - validate_infrastructure:
+          deployment_environment: "staging"
           filters:
             branches:
               only: feat/cicd
