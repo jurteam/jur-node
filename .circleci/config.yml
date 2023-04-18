@@ -13,7 +13,7 @@ commands:
       - run:
           name: Install latest terraform
           command: wget -nv https://releases.hashicorp.com/terraform/1.4.5/terraform_1.4.5_linux_amd64.zip && unzip terraform_1.4.5_linux_amd64.zip && mv terraform /usr/local/bin && terraform -v
-
+# Jobs
 jobs:
   validate_infrastructure:
     description: "Validate Infrastructure"
@@ -30,8 +30,16 @@ jobs:
     working_directory: ~/src
 
   apply_infrastructure:
+    parameters:
+      sub_domain:
+        type: string
+      deployment_environment:
+        type: string
     description: "Apply Infrastructure"
     executor: terraform/default
+    environment:
+      TF_VAR_SUB_DOMAIN: << parameters.sub_domain >>
+      TF_VAR_DEPLOYMENT_ENVIRONMENT: << parameters.deployment_environment >>
     steps:
       - checkout
       - install_latest_terraform
@@ -52,19 +60,16 @@ jobs:
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CREDENTIALS
       - gcp-gcr/build-image:
-          image: jur-chain
+          image: jur-node
           no_output_timeout: 20m
           registry-url: us.gcr.io
       - gcp-gcr/push-image:
-          digest-path: /tmp/digest.txt
-          image: jur-chain
+          image: jur-node
           registry-url: us.gcr.io
-      - run:
-          command: |
-            echo "Digest is: $(</tmp/digest.txt)"
 
+# Workflows
 workflows:
-  deploy_infrastructure:
+  staging:
     jobs:
       - validate_infrastructure:
           filters:
@@ -76,6 +81,9 @@ workflows:
           requires:
             - validate_infrastructure
       - apply_infrastructure:
+          parameters:
+            sub_domain: "testnet"
+            deployment_environment: "staging"
           requires:
             - approve_infrastructure
       - build_and_push_docker_image:
