@@ -18,14 +18,10 @@ jobs:
   validate_infrastructure:
     description: "Validate Infrastructure"
     executor: terraform/default
-    parameters:
-      deployment_environment:
-        type: string
     steps:
       - checkout
       - install_latest_terraform
       - terraform/init:
-          backend_config: "prefix=<< parameters.deployment_environment >>-l1-jur-node"
           path: infrastructure
       - terraform/validate:
           path: infrastructure
@@ -37,8 +33,10 @@ jobs:
     parameters:
       sub_domain:
         type: string
+        default: "testnet"
       deployment_environment:
         type: string
+        default: "staging"
     description: "Apply Infrastructure"
     executor: terraform/default
     environment:
@@ -76,7 +74,6 @@ workflows:
   staging:
     jobs:
       - validate_infrastructure:
-          deployment_environment: "staging"
           filters:
             branches:
               only: feat/cicd
@@ -86,8 +83,6 @@ workflows:
           requires:
             - validate_infrastructure
       - apply_infrastructure:
-          sub_domain: "testnet"
-          deployment_environment: "staging"
           requires:
             - approve_infrastructure
       - build_and_push_docker_image:
