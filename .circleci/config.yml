@@ -38,7 +38,7 @@ commands:
               compute ssh "<< parameters.instance >>" \
               --zone "<< parameters.zone >>" \
               --strict-host-key-checking=no \
-              --command "echo works"
+              --command "echo works!"
   # Jobs
 jobs:
   validate_infrastructure:
