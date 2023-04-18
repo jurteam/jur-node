@@ -22,8 +22,8 @@ if [ $(docker ps -a -q) ]; then
 fi
 
 pushd $DEPLOY_PATH && \
-gcloud auth activate-service-account --key-file=key.json
-gcloud auth configure-docker
+gcloud --quiet auth activate-service-account --key-file=key.json
+gcloud --quiet auth configure-docker
 
 docker image prune -a -f && \
 docker pull $IMAGE_NAME && \
