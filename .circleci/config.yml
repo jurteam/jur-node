@@ -58,7 +58,7 @@ workflows:
       - validate_infrastructure:
           filters:
             branches:
-              only: circleci-project-setup
+              only: feat/cicd
       - approve_infrastructure:
           description: "Approve Infrastructure"
           type: approval
