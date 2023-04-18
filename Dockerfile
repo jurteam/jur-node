@@ -3,7 +3,7 @@ FROM docker.io/paritytech/ci-linux:production as builder
 
 WORKDIR /jur-node
 COPY . /jur-node
-RUN cargo build --locked --release
+RUN SKIP_WASM_BUILD= cargo build --locked --release
 
 # This is the 2nd stage: a very small image where we copy the JUR binary."
 FROM docker.io/library/ubuntu:20.04
