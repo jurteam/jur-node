@@ -35,6 +35,7 @@ commands:
           command: |
             gcloud --quiet compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >> 
             gcloud compute ssh  circleci@<< parameters.instance >> --command "chmod +x deploy.sh" --zone << parameters.zone >>
+            gcloud compute ssh  circleci@<< parameters.instance >> --command "./deploy.sh '${GCLOUD_SERVICE_KEY}' ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}" --zone << parameters.zone >>
 
 # Jobs
 jobs:
