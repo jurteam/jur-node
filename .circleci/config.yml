@@ -44,10 +44,10 @@ jobs:
       - checkout
       - install_latest_terraform
       - terraform/plan:
-          backend_config: "prefix=staging-l1-jur-node"
+          backend_config: "prefix=<< parameters.deployment_environment >>-l1-jur-node"
           path: infrastructure
       - terraform/apply:
-          backend_config: "prefix=staging-l1-jur-node"
+          backend_config: "prefix=<< parameters.deployment_environment >>-l1-jur-node"
           path: infrastructure
     working_directory: ~/src
 
