@@ -1,0 +1,69 @@
+version: 2.1
+
+orbs:
+  terraform: circleci/terraform@3.2.0
+  docker: circleci/docker@1.7.0
+  gcp-gcr: circleci/gcp-gcr@0.15.1
+
+jobs:
+  validate_infrastructure:
+    description: "Validate Infrastructure"
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/init:
+          path: infrastructure
+      - terraform/validate:
+          path: infrastructure
+      - terraform/fmt:
+          path: infrastructure
+    working_directory: ~/src
+
+  apply_infrastructure:
+    description: "Apply Infrastructure"
+    executor: terraform/default
+    steps:
+      - checkout
+      - terraform/plan:
+          path: infrastructure
+      - terraform/apply:
+          path: infrastructure
+    working_directory: ~/src
+
+  build_and_push_docker_image:
+    description: "Build and Push Docker Image"
+    executor: gcp-gcr/default
+    resource_class: xlarge
+    steps:
+      - checkout
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          image: jur-chain
+          no_output_timeout: 20m
+          registry-url: us.gcr.io
+      - gcp-gcr/push-image:
+          digest-path: /tmp/digest.txt
+          image: jur-chain
+          registry-url: us.gcr.io
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
+
+workflows:
+  deploy_infrastructure:
+    jobs:
+      # - validate_infrastructure:
+      #     filters:
+      #       branches:
+      #         only: circleci-project-setup
+      # - approve_infrastructure:
+      #     description: "Approve Infrastructure"
+      #     type: approval
+      #     requires:
+      #       - validate_infrastructure
+      # - apply_infrastructure:
+      #     requires:
+      #       - approve_infrastructure
+      - build_and_push_docker_image
+      #     requires:
+      #       - apply_infrastructure
