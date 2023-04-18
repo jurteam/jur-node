@@ -25,8 +25,10 @@ jobs:
     steps:
       - checkout
       - terraform/plan:
+          backend_config: "prefix=staging-l1-jur-node"
           path: infrastructure
       - terraform/apply:
+          backend_config: "prefix=staging-l1-jur-node"
           path: infrastructure
     working_directory: ~/src
 
@@ -53,18 +55,18 @@ jobs:
 workflows:
   deploy_infrastructure:
     jobs:
-      # - validate_infrastructure:
-      #     filters:
-      #       branches:
-      #         only: circleci-project-setup
-      # - approve_infrastructure:
-      #     description: "Approve Infrastructure"
-      #     type: approval
-      #     requires:
-      #       - validate_infrastructure
-      # - apply_infrastructure:
-      #     requires:
-      #       - approve_infrastructure
-      - build_and_push_docker_image
-      #     requires:
-      #       - apply_infrastructure
+      - validate_infrastructure:
+          filters:
+            branches:
+              only: circleci-project-setup
+      - approve_infrastructure:
+          description: "Approve Infrastructure"
+          type: approval
+          requires:
+            - validate_infrastructure
+      - apply_infrastructure:
+          requires:
+            - approve_infrastructure
+      - build_and_push_docker_image:
+          requires:
+            - apply_infrastructure
