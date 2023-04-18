@@ -32,13 +32,12 @@ commands:
       - run:
           name: Prepare SSH metadata for GCP 🦌
           command: |
-            gcloud \
-              --quiet \
-              --project="${GOOGLE_PROJECT_ID}" \
-              compute ssh "<< parameters.instance >>" \
-              --zone "<< parameters.zone >>" \
-              --strict-host-key-checking=no \
-              --command "echo works!"
+            echo $MTM > key.json
+            gcloud auth activate-service-account --key-file=key.json
+            gcloud auth configure-docker
+            gcloud compute scp deploy.sh << parameters.instance >>:deploy.sh --zone=<< parameters.zone >>
+            gcloud compute ssh  << parameters.instance >> --command "chmod +x deploy.sh" --zone << parameters.zone >>
+            gcloud compute ssh  << parameters.instance >> --command "./deploy.sh ${DO_REGISTRY_TOKEN} ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}" --zone << parameters.zone >>
   # Jobs
 jobs:
   validate_infrastructure:
