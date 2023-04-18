@@ -81,9 +81,8 @@ workflows:
           requires:
             - validate_infrastructure
       - apply_infrastructure:
-          parameters:
-            sub_domain: "testnet"
-            deployment_environment: "staging"
+          sub_domain: "testnet"
+          deployment_environment: "staging"
           requires:
             - approve_infrastructure
       - build_and_push_docker_image:
