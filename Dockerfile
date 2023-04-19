@@ -6,7 +6,7 @@ WORKDIR /jur-node
 COPY . /jur-node
 
 # Build JUR Node
-RUN SKIP_WASM_BUILD= cargo build --all-targets --features runtime-benchmarks --locked --release
+RUN cargo build --release
 
 # This is the 2nd stage: a very small image where we copy the JUR binary."
 FROM docker.io/library/ubuntu:latest
