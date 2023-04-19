@@ -2,7 +2,7 @@
 
 DEPLOY_PATH=$HOME/deployment # NOTE: change this to your codebase location
 
-if [ $(docker ps -a -q) ]; then
+if [ "$(docker ps -a -q)" ]; then
   docker stop $(docker ps -a -q)  # stop all containers
   docker rm $(docker ps -a -q)  # remove all containers
 fi
