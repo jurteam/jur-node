@@ -40,3 +40,47 @@ variable "DEPLOYMENT_ENVIRONMENT" {
   type        = string
 }
 
+variable "INSTANCE_1_NUMBER_OF_CORES" {
+  description = "Number of cores for the instance 1"
+  type        = string
+}
+
+variable "INSTANCE_1_MEMORY_MB" {
+  description = "RAM for the instance 1"
+  type        = string
+}
+
+variable "INSTANCE_1_DISK_SIZE_GB" {
+  description = "Disk size for the instance 1"
+  type        = string
+}
+
+variable "INSTANCE_2_NUMBER_OF_CORES" {
+  description = "Number of cores for the instance 2"
+  type        = string
+}
+
+variable "INSTANCE_2_MEMORY_MB" {
+  description = "RAM for the instance 2"
+  type        = string
+}
+
+variable "INSTANCE_2_DISK_SIZE_GB" {
+  description = "Disk size for the instance 2"
+  type        = string
+}
+
+variable "INSTANCE_3_NUMBER_OF_CORES" {
+  description = "Number of cores for the instance 3"
+  type        = string
+}
+
+variable "INSTANCE_3_MEMORY_MB" {
+  description = "RAM for the instance 3"
+  type        = string
+}
+
+variable "INSTANCE_3_DISK_SIZE_GB" {
+  description = "Disk size for the instance 3"
+  type        = string
+}

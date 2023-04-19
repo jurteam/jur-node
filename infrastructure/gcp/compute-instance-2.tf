@@ -1,14 +1,14 @@
 
 resource "google_compute_instance" "l1_jur_chain_compute_instance_2" {
   name         = "${var.environment}-${var.name_prefix}-compute-instance-${var.zone}-2"
-  machine_type = "e2-standard-4"
+  machine_type = "custom-${var.instance_2_number_of_cores}-${var.instance_2_memory_mb}"
 
   tags = [var.name_prefix, var.environment]
 
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2204-lts" #project/family
-      size  = 100
+      size  = var.instance_2_disk_size_gb
     }
   }
 
