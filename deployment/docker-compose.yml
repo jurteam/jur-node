@@ -6,6 +6,7 @@ services:
     volumes:
       - ./nginx/config:/etc/nginx/conf.d
       - ./nginx/certificate:/etc/ssl/certs
+      - /home/circleci/html:/html
     ports:
       - 80:80
     restart: always
