@@ -27,7 +27,7 @@ gcloud --quiet auth configure-docker
 
 docker image prune -a -f && \
 docker pull $IMAGE_NAME && \
-docker run -d -v data:/data -p 30333:30333 -p 9933:9933 -p 9944:9944 -p 9615:9615 --name=jur_node_container $IMAGE_NAME jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator 
+docker run -d --restart always -v  data:/data -p 30333:30333 -p 9933:9933 -p 9944:9944 -p 9615:9615 --name=jur_node_container us.gcr.io/layer1-mvp/jur-node:latest jur-node --chain jur-testnet --port 30333 --ws-port 9944 --rpc-port 9933 --validator 
 docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Sr25519 --suri $1 --key-type aura && \
 docker exec jur_node_container jur-node key insert --chain jur-testnet --scheme Ed25519 --suri $2 --key-type gran && \
 echo "[$(date)] Successfully deployed" >> deploy.log && \

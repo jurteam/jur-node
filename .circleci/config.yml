@@ -38,7 +38,7 @@ commands:
             gcloud --quiet compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >> 
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x deploy.sh" --zone << parameters.zone >>
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deploy.sh ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}" --zone << parameters.zone >>
-
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "rm -f key.json" --zone << parameters.zone >>
 # Jobs
 jobs:
   validate_infrastructure:
