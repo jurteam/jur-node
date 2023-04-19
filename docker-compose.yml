@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  web:
+    image: nginx:latest
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    restart: always
+    depends_on:
+      - jur-node
+  jur-node:
+    image: us.gcr.io/layer1-mvp/jur-node:latest
+    command: jur-node --dev --port 30333  --ws-port 9945 --rpc-port 9933 --validator --rpc-methods Unsafe --rpc-cors all --rpc-external --ws-external
+    volumes:
+      - ./data:/data
+    ports:
+      - 30333:30333
+      - 9933:9933
+      - 9945:9945
+    restart: unless-stopped

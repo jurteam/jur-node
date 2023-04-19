@@ -17,10 +17,6 @@ commands:
   run-deploy-sh:
     description: "Deploy Docker to GCP CE instance"
     parameters:
-      aura_keyset:
-        type: string
-      granpa_keyset:
-        type: string
       instance:
         type: string
       zone:
@@ -37,7 +33,7 @@ commands:
             gcloud --quiet compute scp key.json circleci@<< parameters.instance >>:key.json --zone=<< parameters.zone >> 
             gcloud --quiet compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >> 
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x deploy.sh" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deploy.sh ${<< parameters.aura_keyset >>} ${<< parameters.granpa_keyset >>}" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deploy.sh" --zone << parameters.zone >>
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "rm -f key.json" --zone << parameters.zone >>
 # Jobs
 jobs:
@@ -100,8 +96,6 @@ jobs:
     steps:
       - run-deploy-sh:
           instance: staging-l1-jur-node-archive-compute-instance-us-central1-a-1
-          aura_keyset: KEY_SET_AURA_1
-          granpa_keyset: KEY_SET_GRANPA_1
 
 # Workflows
 workflows:
