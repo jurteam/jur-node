@@ -122,6 +122,6 @@ workflows:
       - build_and_push_docker_image:
           requires:
             - apply_infrastructure
-      - deploy
-        requires:
-          - build_and_push_docker_image
+      - deploy:
+          requires:
+            - build_and_push_docker_image
