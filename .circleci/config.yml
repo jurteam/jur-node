@@ -103,21 +103,19 @@ jobs:
 workflows:
   staging:
     jobs:
-      - validate_infrastructure:
-          filters:
-            branches:
-              only: feat/cicd
-      - approve:
-          description: "Approve"
-          type: approval
-          requires:
-            - validate_infrastructure
-      - apply_infrastructure:
-          requires:
-            - approve
-      - build_and_push_docker_image:
-          requires:
-            - apply_infrastructure
-      - deploy:
-          requires:
-            - build_and_push_docker_image
+      # - validate_infrastructure:
+      #     filters:
+      #       branches:
+      #         only: feat/cicd
+      # - approve:
+      #     description: "Approve"
+      #     type: approval
+      #     requires:
+      #       - validate_infrastructure
+      # - apply_infrastructure:
+      #     requires:
+      #       - approve
+      # - build_and_push_docker_image:
+      #     requires:
+      #       - apply_infrastructure
+      - deploy
