@@ -1,12 +1,25 @@
 # This is the build stage for JUR. Here we create the binary.
-FROM docker.io/paritytech/ci-linux:production as builder
+FROM docker.io/library/ubuntu:latest as builder
 
+RUN apt install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
+
+#Install Rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+RUN source ~/.cargo/env
+RUN rustup default stable
+RUN rustup update nightly
+RUN rustup update stable
+RUN rustup target add wasm32-unknown-unknown --toolchain nightly
+
+# copy the source
 WORKDIR /jur-node
 COPY . /jur-node
-RUN SKIP_WASM_BUILD= cargo build --locked --release
+
+# Build JUR Node
+RUN SKIP_WASM_BUILD= cargo build --all-targets --features runtime-benchmarks --locked --release
 
 # This is the 2nd stage: a very small image where we copy the JUR binary."
-FROM docker.io/library/ubuntu:20.04
+FROM docker.io/library/ubuntu:latest
 LABEL description="Multistage Docker image for JUR"
 
 COPY --from=builder /jur-node/target/release/jur-node /usr/local/bin
