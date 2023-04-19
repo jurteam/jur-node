@@ -29,14 +29,12 @@ commands:
       - run:
           name: Prepare SSH metadata for GCP 🦌
           command: |
-            echo $GCLOUD_SERVICE_KEY > key.json
-            gcloud --quiet compute scp key.json circleci@<< parameters.instance >>:key.json --zone=<< parameters.zone >>
-            gcloud --quiet compute scp deploy.sh circleci@<< parameters.instance >>:deploy.sh --zone=<< parameters.zone >>
-            gcloud --quiet compute scp docker-compose.yml circleci@<< parameters.instance >>:docker-compose.yml --zone=<< parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x deploy.sh && mkdir -p nginx" --zone << parameters.zone >>
-            gcloud --quiet compute scp ./nginx/default.conf circleci@staging-l1-jur-node-archive-compute-instance-us-central1-a-1:nginx/default.conf --zone=<< parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deploy.sh" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "rm -f key.json" --zone << parameters.zone >>
+            echo $GCLOUD_SERVICE_KEY > ./deployment/key.json
+            sed 's/\\n/\'$'\n''/g' <<< $SSL_CERT_KEY > ./deployment/nginx/certificate/key.pem
+            gcloud --quiet compute scp --recurse ./deployment/ circleci@<< parameters.instance >>:. --zone=<< parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x ./deployment/deploy.sh" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deployment/deploy.sh" --zone << parameters.zone >>
+
 # Jobs
 jobs:
   validate_infrastructure:

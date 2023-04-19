@@ -4,7 +4,8 @@ services:
   web:
     image: nginx:latest
     volumes:
-      - ./nginx:/etc/nginx/conf.d
+      - ./nginx/config:/etc/nginx/conf.d
+      - ./nginx/certificate:/etc/ssl/certs
     ports:
       - 80:80
     restart: always
