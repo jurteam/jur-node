@@ -111,14 +111,14 @@ workflows:
           filters:
             branches:
               only: feat/cicd
-      - approve_infrastructure:
-          description: "Approve Infrastructure"
+      - approve:
+          description: "Approve"
           type: approval
           requires:
             - validate_infrastructure
       - apply_infrastructure:
           requires:
-            - approve_infrastructure
+            - approve
       - build_and_push_docker_image:
           requires:
             - apply_infrastructure
