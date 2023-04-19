@@ -1,5 +1,5 @@
 resource "google_compute_firewall" "l1_jur_node_compute_firewall" {
-  name    = "${var.environment}-${var.environment}-${var.name_prefix}-compute-firewall-${var.zone}"
+  name    = "${var.environment}-${var.name_prefix}-compute-firewall-${var.zone}"
   network = "default"
 
   # SSH access

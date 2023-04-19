@@ -9,6 +9,7 @@ services:
       - /home/circleci/html:/html
     ports:
       - 80:80
+      - 443:443
     restart: always
     depends_on:
       - jur-node
