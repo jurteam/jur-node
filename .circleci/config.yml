@@ -92,30 +92,36 @@ jobs:
       - gcp-gcr/push-image:
           image: jur-node
           registry-url: us.gcr.io
-  deploy:
+  deploy_to_staging:
     docker:
       - image: google/cloud-sdk
     steps:
       - run-deploy-sh:
           instance: staging-l1-jur-node-archive-compute-instance-us-central1-a-1
+      - run-deploy-sh:
+          instance: staging-l1-jur-node-compute-instance-us-central1-a-2
+      - run-deploy-sh:
+          instance: staging-l1-jur-node-compute-instance-us-central1-a-3
 
 # Workflows
 workflows:
   staging:
     jobs:
-      # - validate_infrastructure:
-      #     filters:
-      #       branches:
-      #         only: feat/cicd
-      # - approve:
-      #     description: "Approve"
-      #     type: approval
-      #     requires:
-      #       - validate_infrastructure
-      # - apply_infrastructure:
-      #     requires:
-      #       - approve
-      # - build_and_push_docker_image:
-      #     requires:
-      #       - apply_infrastructure
-      - deploy
+      - validate_infrastructure:
+          filters:
+            branches:
+              only: feat/cicd
+      - approve:
+          description: "Approve"
+          type: approval
+          requires:
+            - validate_infrastructure
+      - apply_infrastructure:
+          requires:
+            - approve
+      - build_and_push_docker_image:
+          requires:
+            - apply_infrastructure
+      - deploy_to_staging:
+          requires:
+            - build_and_push_docker_image
