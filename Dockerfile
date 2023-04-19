@@ -1,7 +1,7 @@
 # This is the build stage for JUR. Here we create the binary.
 FROM docker.io/library/ubuntu:latest as builder
 
-RUN apt install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
+RUN apt-get install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
 
 #Install Rustup
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
