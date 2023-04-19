@@ -1,15 +1,5 @@
 # This is the build stage for JUR. Here we create the binary.
-FROM docker.io/library/ubuntu:latest as builder
-
-RUN apt-get update && apt-get install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
-
-#Install Rustup
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
-RUN source ~/.cargo/env
-RUN rustup default stable
-RUN rustup update nightly
-RUN rustup update stable
-RUN rustup target add wasm32-unknown-unknown --toolchain nightly
+FROM docker.io/paritytech/ci-linux:production as builder
 
 # copy the source
 WORKDIR /jur-node
