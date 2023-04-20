@@ -86,6 +86,15 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(&include_bytes!("../../res/jurTestnetSpecRaw.json")[..])
 }
 
+pub fn local_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../../res/localSpecRaw.json")[..])
+}
+
+
+pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(&include_bytes!("../../res/jurMainnetSpecRaw.json")[..])
+}
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
 	wasm_binary: &[u8],
