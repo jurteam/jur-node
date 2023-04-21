@@ -113,14 +113,14 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 
 ```
 ./target/release/jur-node key insert --base-path  /tmp/node01 \
---chain jur-testnet \
+--chain ./res/localSpecRaw.json \
 --scheme Sr25519 \
 --suri <first_keyset-aura-secret-seed> \
 --key-type aura
 
 
 ./target/release/jur-node key insert --base-path  /tmp/node01 \
---chain jur-testnet \
+--chain ./res/localSpecRaw.json \
 --scheme Ed25519 \
 --suri <first_keyset-granpa-secret-seed> \
 --key-type gran
@@ -130,14 +130,14 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 
 ```
 ./target/release/jur-node key insert --base-path  /tmp/node02 \
---chain jur-testnet \
+--chain ./res/localSpecRaw.json \
 --scheme Sr25519 \
 --suri <second_keyset-aura-secret-seed> \
 --key-type aura
 
 
 ./target/release/jur-node key insert --base-path  /tmp/node02 \
---chain jur-testnet \
+--chain ./res/localSpecRaw.json \
 --scheme Ed25519 \
 --suri <second_keyset-granpa-secret-seed> \
 --key-type gran
@@ -147,14 +147,14 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 
 ```
 ./target/release/jur-node key insert --base-path  /tmp/node03 \
---chain jur-testnet \
+--chain ./res/localSpecRaw.json \
 --scheme Sr25519 \
 --suri <third_keyset-aura-secret-seed> \
 --key-type aura
 
 
 ./target/release/jur-node key insert --base-path  /tmp/node03 \
---chain jur-testnet \
+--chain ./res/localSpecRaw.json \
 --scheme Ed25519 \
 --suri <third_keyset-granpa-secret-seed> \
 --key-type gran
@@ -165,7 +165,7 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 ```
 ./target/release/jur-node \
   --base-path /tmp/node01 \
-  --chain jur-testnet \
+  --chain ./res/localSpecRaw.json \
   --port 30333 \
   --ws-port 9945 \
   --rpc-port 9933 \
@@ -180,7 +180,7 @@ If validators are not part of chain_spec, follow `Add validators` section of thi
 ```
 ./target/release/jur-node \
   --base-path /tmp/node02 \
-  --chain jur-testnet \
+  --chain ./res/localSpecRaw.json \
   --port 30334 \
   --ws-port 9946 \
   --rpc-port 9934 \
@@ -196,7 +196,7 @@ You can now allow other validators to join the network using the `--bootnodes` a
 ```
 ./target/release/jur-node \
   --base-path /tmp/node03 \
-  --chain jur-testnet \
+  --chain ./res/localSpecRaw.json \
   --port 30335 \
   --ws-port 9947 \
   --rpc-port 9935 \
