@@ -1,10 +1,10 @@
 {
-  "name": "Jur Testnet",
-  "id": "jur_testnet",
-  "chainType": "Local",
+  "name": "Jur Mainnet",
+  "id": "jur_mainnet",
+  "chainType": "Live",
   "bootNodes": [],
   "telemetryEndpoints": null,
-  "protocolId": "jur-testnet",
+  "protocolId": "jur_mainnet",
   "properties": {
     "ss58Format": 33,
     "tokenDecimals": 18,
@@ -18,23 +18,23 @@
       },
       "aura": {
         "authorities": [
-          "5DXE3qEAH1qTdvCekxaMcCjtDfPQGqL8Ciu7jzDqGqzy4Dzv",
-          "5HKkXnPbST6Hxh1c1YiEmSn4Nq5pEM5iD3EckYpyQDvWrEpB",
-          "5FyHWfn3uLn8EHmRRttYmFCB2vKRMVKv7cNyDiCrVcJKB1Sr"
+          "5HYMVp1ydGVQWS1mn8MAucMPKEEMnRvPDHdg6WhXYhgof3zr",
+          "5GWCFH8V3XUNR3bfbS9QrMKkCXtvdLh6TmZ6KaqViKiUwcmL",
+          "5CoYwkKrz7cSZ6BsN4k5pvBT9UPoGNr9DLwmrABVUdaaRmLv"
         ]
       },
       "grandpa": {
         "authorities": [
           [
-            "5HFCXzf2FLxwVwXW5jjSPPFpvdVeYQJCJvJUZFBhFozC8WiG",
+            "5DpbaqB69s5mU1x38MDRxJcwGBcjEnfsjwJY2zJaLhqUFvMR",
             1
           ],
           [
-            "5HMQUQwC3Rx1YC3Yid2Mzh3riPe25SdxMuQGS4wK6qridmqg",
+            "5GvMaJopADqTo5eNGw4qqgih6eD22k2c6BzxVcwbTTuVSzkr",
             1
           ],
           [
-            "5HStDjwrsZ4CrXs2a8rH3qjztFT5Ao7vppmqn3f1xhXEbcZj",
+            "5DY2mJkgG9DVBb2MKSKuEPVSLUNCgtaURoT7rxQZbVR61SGW",
             1
           ]
         ]
@@ -42,31 +42,31 @@
       "balances": {
         "balances": [
           [
-            "5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j",
+            "5DUzXPgapc76wzmA5vpyjt2SiQpsKZg3xbvsZuKxf8yG6gUp",
             1152921504606846976
           ],
           [
-            "5ChW6zTR3Vv2PNaezP1dCUgFVSoUTKkTRwgNtKQYzDU5qYWo",
+            "5HYMVp1ydGVQWS1mn8MAucMPKEEMnRvPDHdg6WhXYhgof3zr",
             1152921504606846976
           ],
           [
-            "5HKkXnPbST6Hxh1c1YiEmSn4Nq5pEM5iD3EckYpyQDvWrEpB",
+            "5GWCFH8V3XUNR3bfbS9QrMKkCXtvdLh6TmZ6KaqViKiUwcmL",
             1152921504606846976
           ],
           [
-            "5FyHWfn3uLn8EHmRRttYmFCB2vKRMVKv7cNyDiCrVcJKB1Sr",
+            "5CoYwkKrz7cSZ6BsN4k5pvBT9UPoGNr9DLwmrABVUdaaRmLv",
             1152921504606846976
           ],
           [
-            "5EbfcVRJ9h7Zz2eJP6tCHFijvrNdWNySxRdUpXrBk5pz329G",
+            "5F73w6BjwUBvdMEDiDQVqHubMmZr6LiU48A9aAQe2YnaJQP5",
             1152921504606846976
           ],
           [
-            "5H3RFPkqYqqsSdKvaSyJTYu4tg2yPAYtKfBfa9bcRW2zZ5Fy",
+            "5CdBjmWJoZBwC43gSvybmhbYoANUM8yWtxViQpPY6bny2E2r",
             1152921504606846976
           ],
           [
-            "5DxqwtZj3BWXjUJfTt1touerf6TpiNkWCyeJgqAEwZPitQZM",
+            "5Evg93qNLigEVt88ADh19q6b4wcFX1VcM7Evg89cpcEHNwTA",
             1152921504606846976
           ]
         ]
@@ -80,7 +80,7 @@
         "multiplier": "1000000000000000000"
       },
       "sudo": {
-        "key": "5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j"
+        "key": "5DUzXPgapc76wzmA5vpyjt2SiQpsKZg3xbvsZuKxf8yG6gUp"
       },
       "democracy": {
         "phantom": null
