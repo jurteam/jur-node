@@ -1,5 +1,5 @@
 # This is the build stage for JUR. Here we create the binary.
-FROM docker.io/paritytech/ci-linux:production as builder
+FROM docker.io/paritytech/ci-linux:production AS builder
 
 # copy the source
 WORKDIR /jur-node
