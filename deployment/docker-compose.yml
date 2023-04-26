@@ -15,9 +15,16 @@ services:
       - jur-node
   jur-node:
     image: us.gcr.io/layer1-mvp/jur-node:latest
-    command: jur-node --dev --port 30333  --ws-port 9945 --rpc-port 9933 --validator --rpc-methods Unsafe --rpc-cors all --rpc-external --ws-external
+    command:
+      - /bin/bash
+      - -c
+      - |
+        jur-node key insert --chain ./jurTestnetSpecRaw.json --scheme Sr25519 --suri $KEY_SET_AURA_1 --key-type aura 
+        jur-node key insert --chain ./jurTestnetSpecRaw.json --scheme Ed25519 --suri $KEY_SET_GRANPA_1 --key-type gran 
+        jur-node --chain ./jurTestnetSpecRaw.json --port 30333 --ws-port 9945 --rpc-port 9933 --validator --rpc-methods Unsafe
+    working_dir: /res
     volumes:
-      - ./data:/data
+      - ../res:/res
     ports:
       - 30333:30333
       - 9933:9933
