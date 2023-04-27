@@ -30,7 +30,7 @@ commands:
           name: Prepare SSH metadata for GCP 🦌
           command: |
             echo $GCLOUD_SERVICE_KEY > ./deployment/key.json
-            echo $SSL_CERT_KEY | sed 's/\\n/\'$'\n''/g' > ./deployment/nginx/certificate/key.pem
+            echo $SSL_CERT_KEY | sed 's/\\n/\'$'\n''/g' > ./deployment/nginx/certificate/origin-server.pem
             gcloud --quiet compute scp --recurse ./deployment/ circleci@<< parameters.instance >>:. --zone=<< parameters.zone >>
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x ./deployment/deploy.sh" --zone << parameters.zone >>
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deployment/deploy.sh" --zone << parameters.zone >>

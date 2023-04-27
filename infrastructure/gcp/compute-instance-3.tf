@@ -21,8 +21,7 @@ resource "google_compute_instance" "l1_jur_chain_compute_instance_3" {
     }
   }
 
-  metadata_startup_script = file("gcp/scripts/install-docker.sh")
-
+  metadata_startup_script = "echo  BOOT_NODE_IP=${google_compute_address.l1_jur_chain_archive_static_compute_address_1.address} >> /etc/profile"
 
   depends_on = [
     google_compute_address.l1_jur_chain_static_compute_address_3
