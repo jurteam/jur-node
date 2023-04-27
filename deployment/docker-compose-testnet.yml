@@ -21,4 +21,5 @@ services:
     ports:
       - 30333:30333
       - 9933:9933
+      - 9945:9945
     restart: unless-stopped
