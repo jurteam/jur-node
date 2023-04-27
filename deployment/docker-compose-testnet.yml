@@ -13,7 +13,7 @@ services:
     depends_on:
       - jur-node
   jur-node:
-    image: deployment_jur-node:latest
+    image: us.gcr.io/layer1-mvp/jur-node:latest
     command: sleep infinity
     working_dir: /res
     volumes:
