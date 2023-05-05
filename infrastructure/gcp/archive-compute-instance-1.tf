@@ -1,4 +1,11 @@
 
+data "template_file" "default" {
+  template = file("gcp/scripts/install-docker.sh")
+  vars = {
+    BOOT_NODE = "TRUE"
+  }
+}
+
 resource "google_compute_instance" "l1_jur_chain_archive_compute_instance_1" {
   name         = "${var.environment}-${var.name_prefix}-archive-compute-instance-${var.zone}-1"
   machine_type = "custom-${var.instance_1_number_of_cores}-${var.instance_1_memory_mb}"
@@ -21,7 +28,7 @@ resource "google_compute_instance" "l1_jur_chain_archive_compute_instance_1" {
     }
   }
 
-  metadata_startup_script = file("gcp/scripts/install-docker.sh")
+  metadata_startup_script = data.template_file.default.rendered
 
 
   depends_on = [
