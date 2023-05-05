@@ -101,6 +101,16 @@ jobs:
           instance: staging-l1-jur-node-compute-instance-us-central1-a-2
       - run-deploy-sh:
           instance: staging-l1-jur-node-compute-instance-us-central1-a-3
+  deploy_to_production:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - run-deploy-sh:
+          instance: production-l1-jur-node-archive-compute-instance-us-central1-a-1
+      - run-deploy-sh:
+          instance: production-l1-jur-node-compute-instance-us-central1-a-2
+      - run-deploy-sh:
+          instance: production-l1-jur-node-compute-instance-us-central1-a-3
 
 # Workflows
 workflows:
@@ -141,6 +151,6 @@ workflows:
             - approve
           sub_domain: "chain"
           deployment_environment: "production"
-      - deploy_to_staging:
+      - deploy_to_production:
           requires:
             - apply_infrastructure
