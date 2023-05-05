@@ -8,6 +8,12 @@ resource "google_compute_firewall" "l1_jur_node_compute_firewall" {
     ports    = ["22"]
   }
 
+  # P2P bootnode access
+  allow {
+    protocol = "tcp"
+    ports    = ["30333"]
+  }
+
   # ICMP access (ping)
   allow {
     protocol = "icmp"
