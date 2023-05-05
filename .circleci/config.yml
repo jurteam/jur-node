@@ -104,7 +104,28 @@ jobs:
 
 # Workflows
 workflows:
-  staging:
+  # staging:
+  #   jobs:
+  #     - validate_infrastructure:
+  #         filters:
+  #           branches:
+  #             only: feat/cicd
+  #     - approve:
+  #         description: "Approve"
+  #         type: approval
+  #         requires:
+  #           - validate_infrastructure
+  #     - apply_infrastructure:
+  #         requires:
+  #           - approve
+  #     - build_and_push_docker_image:
+  #         requires:
+  #           - apply_infrastructure
+  #     - deploy_to_staging:
+  #         requires:
+  #           - build_and_push_docker_image
+
+  production:
     jobs:
       - validate_infrastructure:
           filters:
@@ -118,9 +139,8 @@ workflows:
       - apply_infrastructure:
           requires:
             - approve
-      # - build_and_push_docker_image:
-      #     requires:
-      #       - apply_infrastructure
+          sub_domain: "chain"
+          deployment_environment: "production"
       - deploy_to_staging:
           requires:
             - apply_infrastructure
