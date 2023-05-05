@@ -15,6 +15,11 @@ services:
     image: us.gcr.io/layer1-mvp/jur-node:latest
     command: ./start-jur-node.sh
     working_dir: /jur-node-config
+    environment:
+      - AURA_KEY=$"${KEY_PREFIX}_AURA_KEY"
+      - GRANPA_KEY=$"${KEY_PREFIX}_GRANPA_KEY"
+      - BOOT_NODE_IP=$BOOT_NODE_IP
+      - BOOT_NODE_ID=$BOOT_NODE_ID
     volumes:
       - ${PWD}/../res/jurMainnetSpecRaw.json:/jur-node-config/spec.json
       - ${PWD}/start-jur-node.sh:/jur-node-config/start-jur-node.sh

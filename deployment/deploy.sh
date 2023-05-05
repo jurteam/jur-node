@@ -12,6 +12,6 @@ gcloud --quiet auth activate-service-account --key-file=key.json
 gcloud --quiet auth configure-docker
 
 docker image prune -a -f && \
-docker-compose -f docker-compose-testnet.yml up -d && \
+docker-compose -f docker-compose-mainnet.yml up -d && \
 echo "[$(date)] Successfully deployed" >> deploy.log && \
 popd
