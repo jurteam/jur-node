@@ -128,12 +128,12 @@ workflows:
       - apply_infrastructure:
           requires:
             - approve
-      - build_and_push_docker_image:
-          requires:
-            - apply_infrastructure
+      # - build_and_push_docker_image:
+      #     requires:
+      #       - apply_infrastructure
       - deploy_to_staging:
           requires:
-            - build_and_push_docker_image
+            - apply_infrastructure
 
   # production:
   #   jobs:
