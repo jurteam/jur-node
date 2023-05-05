@@ -3,12 +3,14 @@
 DOCKER_NOT_FOUND=21
 DOCKER_COMPOSE_NOT_FOUND=22
 
-# add if statement is_boot_node== "TRUE" then
 if [ "${is_boot_node}" == "TRUE" ]; then
   echo  BOOT_NODE="TRUE" >> /etc/profile
 else
   echo  BOOT_NODE="FALSE" >> /etc/profile
 fi
+
+echo  KEY_PREFIX="${key_prefix}" >> /etc/profile
+echo  BOOT_NODE_IP="${boot_node_ip}" >> /etc/profile
 
 if [[ ! $(which docker) ]]; then
   echo "[$(date)] No docker found" >> deploy.log

@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  web:
+    image: nginx:latest
+    volumes:
+      - ${PWD}/nginx/config/mainnet.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/certificate:/etc/ssl/certs
+    ports:
+      - 443:443
+    restart: unless-stopped
+    depends_on:
+      - jur-node
+  jur-node:
+    image: us.gcr.io/layer1-mvp/jur-node:latest
+    command: ./start-jur-node.sh
+    working_dir: /jur-node-config
+    volumes:
+      - ${PWD}/../res/jurMainnetSpecRaw.json:/jur-node-config/spec.json
+      - ${PWD}/start-jur-node.sh:/jur-node-config/start-jur-node.sh
+    restart: unless-stopped
