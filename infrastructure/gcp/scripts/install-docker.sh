@@ -4,13 +4,13 @@ DOCKER_NOT_FOUND=21
 DOCKER_COMPOSE_NOT_FOUND=22
 
 if [ "${is_boot_node}" == "TRUE" ]; then
-  echo  BOOT_NODE="TRUE" >> /etc/profile
+  echo  BOOT_NODE="TRUE" >> /etc/environment
 else
-  echo  BOOT_NODE="FALSE" >> /etc/profile
+  echo  BOOT_NODE="FALSE" >> /etc/environment
 fi
 
-echo  KEY_PREFIX="${key_prefix}" >> /etc/profile
-echo  BOOT_NODE_IP="${boot_node_ip}" >> /etc/profile
+echo  KEY_PREFIX="${key_prefix}" >> /etc/environment
+echo  BOOT_NODE_IP="${boot_node_ip}" >> /etc/environment
 
 if [[ ! $(which docker) ]]; then
   echo "[$(date)] No docker found" >> deploy.log
