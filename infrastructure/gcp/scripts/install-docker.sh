@@ -3,6 +3,13 @@
 DOCKER_NOT_FOUND=21
 DOCKER_COMPOSE_NOT_FOUND=22
 
+# add if statement is_boot_node== "TRUE" then
+if [ "${is_boot_node}" == "TRUE" ]; then
+  echo  BOOT_NODE="TRUE" >> /etc/profile
+else
+  echo  BOOT_NODE="FALSE" >> /etc/profile
+fi
+
 if [[ ! $(which docker) ]]; then
   echo "[$(date)] No docker found" >> deploy.log
   removeOld=$(sudo apt-get remove docker docker-engine docker.io containerd runc)

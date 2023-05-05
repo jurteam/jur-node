@@ -2,7 +2,7 @@
 data "template_file" "default" {
   template = file("gcp/scripts/install-docker.sh")
   vars = {
-    BOOT_NODE = "TRUE"
+    is_boot_node = "TRUE"
   }
 }
 
