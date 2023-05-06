@@ -8,8 +8,10 @@ if [ "$(docker ps -a -q)" ]; then
 fi
 
 pushd $DEPLOY_PATH && \
-gcloud --quiet auth activate-service-account --key-file=key.json
-gcloud --quiet auth configure-docker
+gcloud --quiet auth activate-service-account --key-file=key.json && \
+gcloud --quiet auth configure-docker && \
+
+chmod +x ./start-jur-node.sh && \
 
 docker image prune -a -f && \
 docker-compose -f docker-compose-mainnet.yml up -d && \
