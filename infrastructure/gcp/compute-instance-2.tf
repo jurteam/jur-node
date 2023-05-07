@@ -1,3 +1,12 @@
+data "template_file" "default" {
+  template = file("gcp/scripts/install-docker.sh")
+  vars = {
+    is_boot_node           = "FALSE"
+    key_prefix             = "INSTANCE_2"
+    boot_node_ip           = google_compute_address.l1_jur_chain_archive_static_compute_address_1.address
+    deployment_environment = "${var.environment}"
+  }
+}
 
 resource "google_compute_instance" "l1_jur_chain_compute_instance_2" {
   name         = "${var.environment}-${var.name_prefix}-compute-instance-${var.zone}-2"
@@ -21,8 +30,7 @@ resource "google_compute_instance" "l1_jur_chain_compute_instance_2" {
     }
   }
 
-  # metadata_startup_script = "echo  BOOT_NODE_IP=${google_compute_address.l1_jur_chain_archive_static_compute_address_1.address} >> /etc/profile"
-  metadata_startup_script = file("gcp/scripts/install-docker.sh")
+  metadata_startup_script = data.template_file.default.rendered
 
   depends_on = [
     google_compute_address.l1_jur_chain_static_compute_address_2,

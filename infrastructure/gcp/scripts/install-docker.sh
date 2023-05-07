@@ -11,6 +11,13 @@ fi
 
 echo  KEY_PREFIX="${key_prefix}" >> /etc/environment
 echo  BOOT_NODE_IP="${boot_node_ip}" >> /etc/environment
+echo  BOOT_NODE_IP="${boot_node_ip}" >> /etc/environment
+
+if [ "${deployment_environment}" == "production" ]; then
+  echo  NETWORK_TYPE="mainnet" >> /etc/environment
+else
+  echo  NETWORK_TYPE="testnet" >> /etc/environment
+fi
 
 if [[ ! $(which docker) ]]; then
   echo "[$(date)] No docker found" >> deploy.log

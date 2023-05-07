@@ -1,10 +1,10 @@
-
 data "template_file" "default" {
   template = file("gcp/scripts/install-docker.sh")
   vars = {
-    is_boot_node = "TRUE"
-    key_prefix   = "INSTANCE_1"
-    boot_node_ip = google_compute_address.l1_jur_chain_archive_static_compute_address_1.address
+    is_boot_node           = "TRUE"
+    key_prefix             = "INSTANCE_1"
+    boot_node_ip           = google_compute_address.l1_jur_chain_archive_static_compute_address_1.address
+    deployment_environment = "${var.environment}"
   }
 }
 

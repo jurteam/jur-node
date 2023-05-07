@@ -14,6 +14,6 @@ gcloud --quiet auth configure-docker && \
 chmod +x ./start-jur-node.sh && \
 
 docker image prune -a -f && \
-docker-compose -f docker-compose-mainnet.yml up -d && \
+docker-compose -f docker-compose-$NETWORK_TYPE.yml up -d && \
 echo "[$(date)] Successfully deployed" >> deploy.log && \
 popd
