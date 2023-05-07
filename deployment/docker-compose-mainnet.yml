@@ -16,8 +16,8 @@ services:
     command: ./start-jur-node.sh
     working_dir: /jur-node-config
     environment:
-      - AURA_KEY="${KEY_PREFIX}_AURA_KEY"
-      - GRANPA_KEY="${KEY_PREFIX}_GRANPA_KEY"
+      - AURA_KEY=$AURA_KEY
+      - GRANPA_KEY=$GRANPA_KEY
       - BOOT_NODE_IP=$BOOT_NODE_IP
       - BOOT_NODE_ID=$BOOT_NODE_ID
     volumes:
