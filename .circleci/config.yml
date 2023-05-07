@@ -34,7 +34,7 @@ commands:
             gcloud --quiet compute scp --recurse ./deployment/ circleci@<< parameters.instance >>:. --zone=<< parameters.zone >>
             gcloud --quiet compute scp --recurse ./res/ circleci@<< parameters.instance >>:. --zone=<< parameters.zone >>
             gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x ./deployment/deploy.sh" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "./deployment/deploy.sh" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "sudo ./deployment/deploy.sh" --zone << parameters.zone >>
 
 # Jobs
 jobs:
@@ -137,22 +137,22 @@ workflows:
 
   production:
     jobs:
-      - validate_infrastructure:
-          filters:
-            branches:
-              only: feat/cicd
-      - approve:
-          description: "Approve"
-          type: approval
-          requires:
-            - validate_infrastructure
-      - apply_infrastructure:
-          requires:
-            - approve
-          sub_domain: "chain"
-          deployment_environment: "production"
-          context: jur-node-production
+      # - validate_infrastructure:
+      #     filters:
+      #       branches:
+      #         only: feat/cicd
+      # - approve:
+      #     description: "Approve"
+      #     type: approval
+      #     requires:
+      #       - validate_infrastructure
+      # - apply_infrastructure:
+      #     requires:
+      #       - approve
+      #     sub_domain: "chain"
+      #     deployment_environment: "production"
+      #     context: jur-node-production
       - deploy_to_production:
-          requires:
-            - apply_infrastructure
+          # requires:
+          #   - apply_infrastructure
           context: jur-node-production
