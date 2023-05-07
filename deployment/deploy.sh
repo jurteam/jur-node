@@ -7,8 +7,11 @@ if [ "$(docker ps -a -q)" ]; then
   docker rm $(docker ps -a -q)  # remove all containers
 fi
 
-AURA_KEY="${KEY_PREFIX}_AURA_KEY}"
-GRANPA_KEY="${KEY_PREFIX}_GRANPA_KEY}"
+AURA_KEY="${KEY_PREFIX}_AURA_KEY"
+GRANPA_KEY="${KEY_PREFIX}_GRANPA_KEY"
+
+echo "key" 
+echo $$AURA_KEY
 
 sudo echo AURA_KEY=$$AURA_KEY >> /etc/environment
 sudo echo GRANPA_KEY=$$GRANPA_KEY >> /etc/environment
