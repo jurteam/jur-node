@@ -1,4 +1,4 @@
-data "template_file" "default" {
+data "template_file" "template_file_instance_2" {
   template = file("gcp/scripts/install-docker.sh")
   vars = {
     is_boot_node           = "FALSE"
