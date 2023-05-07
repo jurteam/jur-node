@@ -30,7 +30,7 @@ resource "google_compute_instance" "l1_jur_chain_compute_instance_2" {
     }
   }
 
-  metadata_startup_script = data.template_file.default.rendered
+  metadata_startup_script = data.template_file.template_file_instance_2.rendered
 
   depends_on = [
     google_compute_address.l1_jur_chain_static_compute_address_2,

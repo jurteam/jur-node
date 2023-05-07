@@ -30,7 +30,7 @@ resource "google_compute_instance" "l1_jur_chain_archive_compute_instance_1" {
     }
   }
 
-  metadata_startup_script = data.template_file.default.rendered
+  metadata_startup_script = data.template_file.template_file_instance_1.rendered
 
 
   depends_on = [
