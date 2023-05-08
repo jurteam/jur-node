@@ -146,12 +146,12 @@ workflows:
       #     type: approval
       #     requires:
       #       - validate_infrastructure
-      # - apply_infrastructure:
-      #     requires:
-      #       - approve
-      #     sub_domain: "chain"
-      #     deployment_environment: "production"
-      #     context: jur-node-production
+      - apply_infrastructure:
+          # requires:
+          #   - approve
+          sub_domain: "chain"
+          deployment_environment: "production"
+          context: jur-node-production
       - deploy_to_production:
           # requires:
           #   - apply_infrastructure
