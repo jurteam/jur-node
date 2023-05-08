@@ -12,6 +12,7 @@ services:
     depends_on:
       - jur-node
   jur-node:
+    container_name: jur-node
     image: us.gcr.io/layer1-mvp/jur-node:latest
     command: ./start-jur-node.sh
     working_dir: /jur-node-config
