@@ -7,15 +7,22 @@ services:
       - ${PWD}/nginx/config/testnet.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/certificate:/etc/ssl/certs
     ports:
-      - 80:80
       - 443:443
     restart: unless-stopped
     depends_on:
       - jur-node
   jur-node:
+    container_name: jur-node
     image: us.gcr.io/layer1-mvp/jur-node:latest
-    command: sleep infinity
-    working_dir: /res
+    command: ./start-jur-node.sh
+    working_dir: /jur-node-config
+    environment:
+      - AURA_KEY=$AURA_KEY
+      - GRANPA_KEY=$GRANPA_KEY
+      - BOOT_NODE=$BOOT_NODE
+      - BOOT_NODE_IP=$BOOT_NODE_IP
+      - BOOT_NODE_ID=$BOOT_NODE_ID
     volumes:
-      - ../res:/res
+      - ${PWD}/../res/jurTestnetSpecRaw.json:/jur-node-config/spec.json
+      - ${PWD}/start-jur-node.sh:/jur-node-config/start-jur-node.sh
     restart: unless-stopped

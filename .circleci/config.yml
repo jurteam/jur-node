@@ -181,6 +181,6 @@ workflows:
           requires:
             - apply_infrastructure
           context: jur-node-production
-          instance_1: "staging-l1-jur-node-archive-compute-instance-us-central1-a-1"
-          instance_2: "staging-l1-jur-node-compute-instance-us-central1-a-2"
-          instance_3: "staging-l1-jur-node-compute-instance-us-central1-a-3"
+          instance_1: "production-l1-jur-node-archive-compute-instance-us-central1-a-1"
+          instance_2: "production-l1-jur-node-compute-instance-us-central1-a-2"
+          instance_3: "production-l1-jur-node-compute-instance-us-central1-a-3"
