@@ -40,7 +40,7 @@ chmod +x ./start-jur-node.sh && \
 docker image prune -a -f && \
 docker-compose -f docker-compose-$NETWORK_TYPE.yml up -d 
 if [ $KEY_PREFIX == "INSTANCE_1" ]; then 
-  docker logs -f jur-node 2>&1 | grep -m 1 $BOOTNODE_ID_SEARCH_KEYWORD | sed "s/^.*Local node identity is://" | sed "s/^[ \t]*//" | head -n 1 >> bootnode_id.txt 
+  docker logs -f jur-node 2>&1 | grep -m 1 "${BOOTNODE_ID_SEARCH_KEYWORD}" | sed "s/^.*"${BOOTNODE_ID_SEARCH_KEYWORD}"//" | sed "s/^[ \t]*//" | head -n 1 >> bootnode_id.txt 
 fi
 echo "[$(date)] Successfully deployed" >> deploy.log && \
 popd
