@@ -7,11 +7,14 @@ if [ "$(docker ps -a -q)" ]; then
   docker rm $(docker ps -a -q)  # remove all containers
 fi
 
-AURA="${KEY_PREFIX}_AURA_KEY"
-GRANPA="${KEY_PREFIX}_GRANPA_KEY"
+AURA_KEY_NAME="${KEY_PREFIX}_AURA_KEY"
+GRANPA_KEY_NAME="${KEY_PREFIX}_GRANPA_KEY"
 
-sudo echo AURA_KEY="${!AURA}" >> /etc/environment
-sudo echo GRANPA_KEY="${!AURA}" >> /etc/environment
+AURA_KEY_VALUE="${!AURA_KEY_NAME}"
+GRANPA_KEY_VALUE="${!GRANPA_KEY_NAME}"
+
+sudo echo AURA_KEY=$AURA_KEY_VALUE >> /etc/environment
+sudo echo GRANPA_KEY=$GRANPA_KEY_VALUE >> /etc/environment
 
 pushd $DEPLOY_PATH && \
 gcloud --quiet auth activate-service-account --key-file=key.json && \
