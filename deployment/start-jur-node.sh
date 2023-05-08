@@ -4,6 +4,9 @@ PORT=30333
 WS_PORT=9944
 RPC_PORT=9933
 SPEC_FILE_PATH="./spec.json"
+BOOT_NODE_ID=$(head -n 1 ./bootnode_id.txt)
+
+echo "bootnode id is $BOOT_NODE_ID"
 
 jur-node key insert --base-path  /tmp/node --chain $SPEC_FILE_PATH --scheme Sr25519 --suri $AURA_KEY --key-type aura
 jur-node key insert --base-path  /tmp/node --chain $SPEC_FILE_PATH --scheme Ed25519 --suri $GRANPA_KEY --key-type gran
