@@ -132,8 +132,8 @@ jobs:
 
 # Workflows
 workflows:
-  # staging:
-  #   jobs:
+  staging:
+    jobs:
   #     - validate_infrastructure:
   #         filters:
   #           branches:
@@ -143,37 +143,40 @@ workflows:
   #         type: approval
   #         requires:
   #           - validate_infrastructure
-  #     - apply_infrastructure:
-  #         requires:
-  #           - approve
-  #     # - build_and_push_docker_image:
+  - apply_infrastructure:
+      # requires:
+      #   - approve
+      sub_domain: "testnet"
+      deployment_environment: "staging"
+      context: jur-node-production
+  # - build_and_push_docker_image:
+  #     requires:
+  #       - apply_infrastructure
+  - deploy:
+      requires:
+        - apply_infrastructure
+      context: jur-node-production
+      deployment_environment: "staging"
+
+  # production:
+  #   jobs:
+  #     # - validate_infrastructure:
+  #     #     filters:
+  #     #       branches:
+  #     #         only: feat/cicd
+  #     # - approve:
+  #     #     description: "Approve"
+  #     #     type: approval
   #     #     requires:
-  #     #       - apply_infrastructure
+  #     #       - validate_infrastructure
+  #     - apply_infrastructure:
+  #         # requires:
+  #         #   - approve
+  #         sub_domain: "chain"
+  #         deployment_environment: "production"
+  #         context: jur-node-production
   #     - deploy:
   #         requires:
   #           - apply_infrastructure
-  #         context: jur-node-staging
+  #         context: jur-node-production
   #         deployment_environment: "production"
-
-  production:
-    jobs:
-      # - validate_infrastructure:
-      #     filters:
-      #       branches:
-      #         only: feat/cicd
-      # - approve:
-      #     description: "Approve"
-      #     type: approval
-      #     requires:
-      #       - validate_infrastructure
-      - apply_infrastructure:
-          # requires:
-          #   - approve
-          sub_domain: "chain"
-          deployment_environment: "production"
-          context: jur-node-production
-      - deploy:
-          requires:
-            - apply_infrastructure
-          context: jur-node-production
-          deployment_environment: "production"
