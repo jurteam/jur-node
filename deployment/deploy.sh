@@ -19,6 +19,7 @@ pushd $DEPLOY_PATH
 if [ $KEY_PREFIX == "INSTANCE_1" ]; then
   sudo echo AURA_KEY=$1 >> /etc/environment
   sudo echo GRANPA_KEY=$2 >> /etc/environment
+  rm -f bootnode_id.txt &&  touch bootnode_id.txt
 elif [ $KEY_PREFIX == "INSTANCE_2" ]; then
   sudo echo AURA_KEY=$3 >> /etc/environment
   sudo echo GRANPA_KEY=$4 >> /etc/environment
@@ -30,6 +31,7 @@ else
   exit $EMPTY_ARGUMENT_ERROR_CODE
 fi
 
+
 gcloud --quiet auth activate-service-account --key-file=key.json && \
 gcloud --quiet auth configure-docker && \
 
@@ -39,7 +41,6 @@ docker image prune -a -f && \
 docker-compose -f docker-compose-$NETWORK_TYPE.yml up -d 
 if [ $KEY_PREFIX == "INSTANCE_1" ]; then 
   sleep 10s
-  rm -f bootnode_id.txt
   docker logs -f jur-node 2>&1 | grep -m 1 "${BOOTNODE_ID_SEARCH_KEYWORD}" | sed "s|^.*${BOOTNODE_ID_SEARCH_KEYWORD}||" | sed "s/^[ \t]*//" | head -n 1 >> bootnode_id.txt 
 fi
 echo "[$(date)] Successfully deployed" >> deploy.log && \
