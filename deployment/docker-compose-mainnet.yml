@@ -27,4 +27,5 @@ services:
       - ${PWD}/../res/jurMainnetSpecRaw.json:/jur-node-config/spec.json
       - ${PWD}/start-jur-node.sh:/jur-node-config/start-jur-node.sh
       - ${PWD}/bootnode_id.txt:/jur-node-config/bootnode_id.txt
+      - /data/jur-node:/tmp/node
     restart: unless-stopped
