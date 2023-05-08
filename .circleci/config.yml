@@ -29,12 +29,12 @@ commands:
       - run:
           name: Export ENV variables
           command: |
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_1_AURA_KEY=$INSTANCE_1_AURA_KEY >> /etc/environment" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_2_AURA_KEY=$INSTANCE_2_AURA_KEY >> /etc/environment" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_3_AURA_KEY=$INSTANCE_3_AURA_KEY >> /etc/environment" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_1_GRANPA_KEY=$INSTANCE_1_GRANPA_KEY >> /etc/environment" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_2_GRANPA_KEY=$INSTANCE_2_GRANPA_KEY >> /etc/environment" --zone << parameters.zone >>
-            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_3_GRANPA_KEY=$INSTANCE_3_GRANPA_KEY >> /etc/environment" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_1_AURA_KEY=$INSTANCE_1_AURA_KEY >> .bashrc" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_2_AURA_KEY=$INSTANCE_2_AURA_KEY >> .bashrc" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_3_AURA_KEY=$INSTANCE_3_AURA_KEY >> .bashrc" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_1_GRANPA_KEY=$INSTANCE_1_GRANPA_KEY >> .bashrc" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_2_GRANPA_KEY=$INSTANCE_2_GRANPA_KEY >> .bashrc" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "echo INSTANCE_3_GRANPA_KEY=$INSTANCE_3_GRANPA_KEY >> .bashrc" --zone << parameters.zone >>
       - run:
           name: Prepare SSH metadata for GCP 🦌
           command: |
