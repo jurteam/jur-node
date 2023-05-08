@@ -116,17 +116,17 @@ jobs:
       - gcp-cli/install
       - gcp-cli/initialize
       - run-deploy-sh:
-          instance: << parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1
+          instance: "<< parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1"
       - extract_bootnode_id:
-          bootnode_instance: << parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1
-          peernode_instance: << parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-2
+          bootnode_instance: "<< parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1"
+          peernode_instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-2"
       - run-deploy-sh:
-          instance: << parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-2
+          instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-2"
       - extract_bootnode_id:
-          bootnode_instance: << parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1
-          peernode_instance: << parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-3
+          bootnode_instance: "<< parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1"
+          peernode_instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-3"
       - run-deploy-sh:
-          instance: << parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-3
+          instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-3"
 
 # Workflows
 workflows:
