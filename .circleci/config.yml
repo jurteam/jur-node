@@ -27,6 +27,15 @@ commands:
       - gcp-cli/install
       - gcp-cli/initialize
       - run:
+          name: Export ENV variables
+          command: |
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "export INSTANCE_1_AURA_KEY=$INSTANCE_1_AURA_KEY" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "export INSTANCE_2_AURA_KEY=$INSTANCE_2_AURA_KEY" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "export INSTANCE_3_AURA_KEY=$INSTANCE_3_AURA_KEY" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "export INSTANCE_1_GRANPA_KEY=$INSTANCE_1_GRANPA_KEY" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "export INSTANCE_2_GRANPA_KEY=$INSTANCE_2_GRANPA_KEY" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "export INSTANCE_3_GRANPA_KEY=$INSTANCE_3_GRANPA_KEY" --zone << parameters.zone >>
+      - run:
           name: Prepare SSH metadata for GCP 🦌
           command: |
             echo $GCLOUD_SERVICE_KEY > ./deployment/key.json
