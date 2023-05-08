@@ -13,13 +13,21 @@ if [ -z $1 ] || [ -z $2 ] || [ -z $3 ] || [ -z $4 ] || [ -z $5 ] || [ -z $6 ]; t
   exit $EMPTY_ARGUMENT_ERROR_CODE
 fi
 
-if [ $KEY_PREFIX == "INSTANCE_1"]; then
+echo "Key Prefix: ${KEY_PREFIX}"
+echo "Aura Key 1: ${1}"
+echo "Granpa Key 1: ${2}"
+echo "Aura Key 2: ${3}"
+echo "Granpa Key 2: ${4}"
+echo "Aura Key 3: ${5}"
+echo "Granpa Key 3: ${6}"
+
+if [ $KEY_PREFIX == "INSTANCE_1" ]; then
   sudo echo AURA_KEY=$1 >> /etc/environment
   sudo echo GRANPA_KEY=$2 >> /etc/environment
-elif [ $KEY_PREFIX == "INSTANCE_2"]; then
+elif [ $KEY_PREFIX == "INSTANCE_2" ]; then
   sudo echo AURA_KEY=$3 >> /etc/environment
   sudo echo GRANPA_KEY=$4 >> /etc/environment
-elif [ $KEY_PREFIX == "INSTANCE_3"]; then
+elif [ $KEY_PREFIX == "INSTANCE_3" ]; then
   sudo echo AURA_KEY=$5 >> /etc/environment
   sudo echo GRANPA_KEY=$6 >> /etc/environment
 else
