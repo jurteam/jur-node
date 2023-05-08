@@ -30,7 +30,7 @@ commands:
           name: Extract bootnode id and set it to peernode
           command: |
             gcloud --quiet compute scp circleci@<< parameters.bootnode_instance >>:/home/circleci/deployment/bootnode_id.txt ./deployment/bootnode_id.txt  --zone=<< parameters.zone >>
-            gcloud --quiet compute scp ./deployment/bootnode_id.txt circleci@<< parameters.peernode_instance >>:/home/circleci/deployment/bootnode_id.txt --zone=<< parameters.zone >>
+            gcloud --quiet compute scp ./deployment/bootnode_id.txt circleci@<< parameters.peernode_instance >>:/home/circleci/deployment --zone=<< parameters.zone >>
 
   run-deploy-sh:
     description: "Deploy Docker to GCP CE instance"
