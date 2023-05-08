@@ -1,20 +1,31 @@
 #!/bin/bash
 
 DEPLOY_PATH=/home/circleci/deployment # NOTE: change this to your codebase location
+$EMPTY_ARGUMENT_ERROR_CODE=1
 
 if [ "$(docker ps -a -q)" ]; then
   docker stop $(docker ps -a -q)  # stop all containers
   docker rm $(docker ps -a -q)  # remove all containers
 fi
 
-AURA_KEY_NAME="${KEY_PREFIX}_AURA_KEY"
-GRANPA_KEY_NAME="${KEY_PREFIX}_GRANPA_KEY"
+if [ -z $1 ] || [ -z $2 ] || [ -z $3 ] || [ -z $4 ] || [ -z $5 ] || [ -z $6 ]; then
+  echo "Needs exactly six arguments. Please provide Aura and Granpa keys for all instances"
+  exit $EMPTY_ARGUMENT_ERROR_CODE
+fi
 
-AURA_KEY_VALUE="${!AURA_KEY_NAME}"
-GRANPA_KEY_VALUE="${!GRANPA_KEY_NAME}"
-
-sudo echo AURA_KEY=$AURA_KEY_VALUE >> /etc/environment
-sudo echo GRANPA_KEY=$GRANPA_KEY_VALUE >> /etc/environment
+if [ $KEY_PREFIX == "INSTANCE_1"]; then
+  sudo echo AURA_KEY=$1 >> /etc/environment
+  sudo echo GRANPA_KEY=$2 >> /etc/environment
+elif [ $KEY_PREFIX == "INSTANCE_2"]; then
+  sudo echo AURA_KEY=$3 >> /etc/environment
+  sudo echo GRANPA_KEY=$4 >> /etc/environment
+elif [ $KEY_PREFIX == "INSTANCE_3"]; then
+  sudo echo AURA_KEY=$5 >> /etc/environment
+  sudo echo GRANPA_KEY=$6 >> /etc/environment
+else
+  echo "Invalid KEY_PREFIX. Please provide a valid KEY_PREFIX"
+  exit $EMPTY_ARGUMENT_ERROR_CODE
+fi
 
 pushd $DEPLOY_PATH && \
 gcloud --quiet auth activate-service-account --key-file=key.json && \
