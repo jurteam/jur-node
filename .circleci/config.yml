@@ -34,7 +34,7 @@ commands:
             gcloud --quiet compute scp ./deployment/bootnode_id.txt circleci@<< parameters.peernode_instance >>:./deployment --zone=<< parameters.zone >>
 
   run-deploy-sh:
-    description: "Deploy Docker to GCP CE instance"
+    description: "Deploy Docker to << parameters.instance >>"
     parameters:
       instance:
         type: string
@@ -43,7 +43,7 @@ commands:
         default: us-central1-a
     steps:
       - run:
-          name: Prepare SSH metadata for GCP 🦌
+          name: Deploy Docker to << parameters.instance >>
           command: |
             echo $GCLOUD_SERVICE_KEY > ./deployment/key.json
             echo $SSL_CERT_KEY | sed 's/\\n/\'$'\n''/g' > ./deployment/nginx/certificate/origin-server.pem
