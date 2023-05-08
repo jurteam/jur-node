@@ -1,8 +1,8 @@
 #!/bin/bash
 
 DEPLOY_PATH=/home/circleci/deployment # NOTE: change this to your codebase location
-$EMPTY_ARGUMENT_ERROR_CODE=1
-$BOOTNODE_ID_SEARCH_KEYWORD="Local node identity is:"
+EMPTY_ARGUMENT_ERROR_CODE=1
+BOOTNODE_ID_SEARCH_KEYWORD="Local node identity is:"
 
 if [ "$(docker ps -a -q)" ]; then
   docker stop $(docker ps -a -q)  # stop all containers
