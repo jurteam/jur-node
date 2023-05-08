@@ -23,7 +23,7 @@ services:
       - GRANPA_KEY=$GRANPA_KEY
       - BOOT_NODE=$BOOT_NODE
       - BOOT_NODE_IP=$BOOT_NODE_IP
-      - BOOT_NODE_ID=$(cat ./bootnode_id.txt | head -n 1)
+      - BOOT_NODE_ID=$BOOT_NODE_ID
     volumes:
       - ${PWD}/../res/jurMainnetSpecRaw.json:/jur-node-config/spec.json
       - ${PWD}/start-jur-node.sh:/jur-node-config/start-jur-node.sh
