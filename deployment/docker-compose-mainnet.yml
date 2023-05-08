@@ -18,6 +18,7 @@ services:
     environment:
       - AURA_KEY=$AURA_KEY
       - GRANPA_KEY=$GRANPA_KEY
+      - BOOT_NODE=$BOOT_NODE
       - BOOT_NODE_IP=$BOOT_NODE_IP
       - BOOT_NODE_ID=$BOOT_NODE_ID
     volumes:
