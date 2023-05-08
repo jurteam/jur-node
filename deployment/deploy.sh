@@ -22,11 +22,9 @@ if [ $KEY_PREFIX == "INSTANCE_1" ]; then
 elif [ $KEY_PREFIX == "INSTANCE_2" ]; then
   sudo echo AURA_KEY=$3 >> /etc/environment
   sudo echo GRANPA_KEY=$4 >> /etc/environment
-  sudo echo BOOT_NODE_ID=$(head -n 1 ./bootnode_id.txt) >> /etc/environment
 elif [ $KEY_PREFIX == "INSTANCE_3" ]; then
   sudo echo AURA_KEY=$5 >> /etc/environment
   sudo echo GRANPA_KEY=$6 >> /etc/environment
-  sudo echo BOOT_NODE_ID=$(head -n 1 ./bootnode_id.txt) >> /etc/environment
 else
   echo "Invalid KEY_PREFIX. Please provide a valid KEY_PREFIX"
   exit $EMPTY_ARGUMENT_ERROR_CODE
