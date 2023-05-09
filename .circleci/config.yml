@@ -75,7 +75,6 @@ jobs:
         default: "testnet"
       deployment_environment:
         type: string
-        default: "staging"
     description: "Apply Infrastructure"
     executor: terraform/default
     environment:
@@ -135,35 +134,7 @@ jobs:
 
 # Workflows
 workflows:
-  # staging:
-  #   jobs:
-  #     - validate_infrastructure:
-  #         filters:
-  #           branches:
-  #             only: staging
-  #     - approve:
-  #         description: "Approve"
-  #         type: approval
-  #         requires:
-  #           - validate_infrastructure
-  #     - apply_infrastructure:
-  #         requires:
-  #           - approve
-  #         sub_domain: "testnet"
-  #         deployment_environment: "staging"
-  #         context: jur-node-staging
-  #     - build_and_push_docker_image:
-  #         requires:
-  #           - approve
-  #         deployment_environment: "staging"
-  #     - deploy:
-  #         requires:
-  #           - apply_infrastructure
-  #           - build_and_push_docker_image
-  #         context: jur-node-staging
-  #         deployment_environment: "staging"
-
-  production:
+  staging:
     jobs:
       - validate_infrastructure:
           filters:
@@ -177,16 +148,44 @@ workflows:
       - apply_infrastructure:
           requires:
             - approve
-          sub_domain: "chain"
-          deployment_environment: "production"
-          context: jur-node-production
+          sub_domain: "testnet"
+          deployment_environment: "staging"
+          context: jur-node-staging
       - build_and_push_docker_image:
           requires:
             - approve
-          deployment_environment: "production"
+          deployment_environment: "staging"
       - deploy:
           requires:
             - apply_infrastructure
             - build_and_push_docker_image
-          context: jur-node-production
-          deployment_environment: "production"
+          context: jur-node-staging
+          deployment_environment: "staging"
+
+  # production:
+  #   jobs:
+  #     - validate_infrastructure:
+  #         filters:
+  #           branches:
+  #             only: feat/cicd
+  #     - approve:
+  #         description: "Approve"
+  #         type: approval
+  #         requires:
+  #           - validate_infrastructure
+  #     - apply_infrastructure:
+  #         requires:
+  #           - approve
+  #         sub_domain: "chain"
+  #         deployment_environment: "production"
+  #         context: jur-node-production
+  #     - build_and_push_docker_image:
+  #         requires:
+  #           - approve
+  #         deployment_environment: "production"
+  #     - deploy:
+  #         requires:
+  #           - apply_infrastructure
+  #           - build_and_push_docker_image
+  #         context: jur-node-production
+  #         deployment_environment: "production"
