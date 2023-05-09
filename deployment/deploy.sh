@@ -31,7 +31,6 @@ else
   exit $EMPTY_ARGUMENT_ERROR_CODE
 fi
 
-
 gcloud --quiet auth activate-service-account --key-file=key.json && \
 gcloud --quiet auth configure-docker && \
 
@@ -39,9 +38,12 @@ chmod +x ./start-jur-node.sh && \
 
 docker image prune -a -f && \
 docker-compose -f docker-compose-$NETWORK_TYPE.yml up -d 
+
+sleep 10s #This is to wait for the node to start
+
 if [ $KEY_PREFIX == "INSTANCE_1" ]; then 
-  sleep 10s
   docker logs -f jur-node 2>&1 | grep -m 1 "${BOOTNODE_ID_SEARCH_KEYWORD}" | sed "s|^.*${BOOTNODE_ID_SEARCH_KEYWORD}||" | sed "s/^[ \t]*//" | head -n 1 >> bootnode_id.txt 
 fi
+
 echo "[$(date)] Successfully deployed" >> deploy.log && \
 popd
