@@ -94,6 +94,9 @@ jobs:
 
   build_and_push_docker_image:
     description: "Build and Push Docker Image"
+    parameters:
+      deployment_environment:
+        type: string
     executor: gcp-gcr/default
     resource_class: xlarge
     steps:
@@ -101,11 +104,11 @@ jobs:
       - gcp-gcr/gcr-auth:
           gcloud-service-key: GOOGLE_CREDENTIALS
       - gcp-gcr/build-image:
-          image: jur-node
+          image: jur-node-<< parameters.deployment_environment >>
           no_output_timeout: 20m
           registry-url: us.gcr.io
       - gcp-gcr/push-image:
-          image: jur-node
+          image: jur-node-<< parameters.deployment_environment >>
           registry-url: us.gcr.io
   deploy:
     parameters:
@@ -132,51 +135,56 @@ jobs:
 
 # Workflows
 workflows:
-  staging:
+  # staging:
+  #   jobs:
+  #     - validate_infrastructure:
+  #         filters:
+  #           branches:
+  #             only: staging
+  #     - approve:
+  #         description: "Approve"
+  #         type: approval
+  #         requires:
+  #           - validate_infrastructure
+  #     - apply_infrastructure:
+  #         requires:
+  #           - approve
+  #         sub_domain: "testnet"
+  #         deployment_environment: "staging"
+  #         context: jur-node-staging
+  #     - build_and_push_docker_image:
+  #         requires:
+  #           - approve
+  #         deployment_environment: "staging"
+  #     - deploy:
+  #         requires:
+  #           - build_and_push_docker_image
+  #         context: jur-node-staging
+  #         deployment_environment: "staging"
+
+  production:
     jobs:
-      # - validate_infrastructure:
-      #     filters:
-      #       branches:
-      #         only: feat/cicd
-      # - approve:
-      #     description: "Approve"
-      #     type: approval
-      #     requires:
-      #       - validate_infrastructure
+      - validate_infrastructure:
+          filters:
+            branches:
+              only: feat/cicd
+      - approve:
+          description: "Approve"
+          type: approval
+          requires:
+            - validate_infrastructure
       - apply_infrastructure:
-          # requires:
-          #   - approve
-          sub_domain: "testnet"
-          deployment_environment: "staging"
+          requires:
+            - approve
+          sub_domain: "chain"
+          deployment_environment: "production"
           context: jur-node-production
-      # - build_and_push_docker_image:
-      #     requires:
-      #       - apply_infrastructure
+      - build_and_push_docker_image:
+          requires:
+            - approve
+          deployment_environment: "production"
       - deploy:
           requires:
             - apply_infrastructure
           context: jur-node-production
-          deployment_environment: "staging"
-
-  # production:
-  #   jobs:
-  #     # - validate_infrastructure:
-  #     #     filters:
-  #     #       branches:
-  #     #         only: feat/cicd
-  #     # - approve:
-  #     #     description: "Approve"
-  #     #     type: approval
-  #     #     requires:
-  #     #       - validate_infrastructure
-  #     - apply_infrastructure:
-  #         # requires:
-  #         #   - approve
-  #         sub_domain: "chain"
-  #         deployment_environment: "production"
-  #         context: jur-node-production
-  #     - deploy:
-  #         requires:
-  #           - apply_infrastructure
-  #         context: jur-node-production
-  #         deployment_environment: "production"
+          deployment_environment: "production"

@@ -13,7 +13,7 @@ services:
       - jur-node
   jur-node:
     container_name: jur-node
-    image: us.gcr.io/layer1-mvp/jur-node:latest
+    image: us.gcr.io/layer1-mvp/jur-node-staging:latest
     command: ./start-jur-node.sh
     working_dir: /jur-node-config
     ports:
