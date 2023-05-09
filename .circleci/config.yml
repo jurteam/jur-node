@@ -13,11 +13,12 @@ commands:
     steps:
       - run:
           name: Install latest terraform
-          command: VER=1.4.5 ZIPFILE="terraform_${VER}_linux_amd64.zip" SUMFILE="terraform_${VER}_SHA256SUMS" \
- SIGFILE="${SUMFILE}.sig"; for fn in "${ZIPFILE}" "${SUMFILE}" "${SIGFILE}" ; do \
- wget -nv [https://releases.hashicorp.com/terraform/${VER}/${fn}](https://releases.hashicorp.com/terraform/$%7BVER%7D/$%7Bfn%7D); done; \
- gpg --receive-keys 374EC75B485913604A831CC7C820C6D5CD27AB87 && \
-  sha256sum -c --ignore-missing ${SUMFILE} && gpg --verify ${SIGFILE} && unzip terraform_1.4.5_linux_amd64.zip && mv terraform /usr/local/bin && terraform -v
+          command: |
+            VER=1.4.5 ZIPFILE="terraform_${VER}_linux_amd64.zip" SUMFILE="terraform_${VER}_SHA256SUMS" \
+            SIGFILE="${SUMFILE}.sig"; for fn in "${ZIPFILE}" "${SUMFILE}" "${SIGFILE}" ; do \
+            wget -nv [https://releases.hashicorp.com/terraform/${VER}/${fn}](https://releases.hashicorp.com/terraform/$%7BVER%7D/$%7Bfn%7D); done; \
+            gpg --receive-keys 374EC75B485913604A831CC7C820C6D5CD27AB87 && \
+            sha256sum -c --ignore-missing ${SUMFILE} && gpg --verify ${SIGFILE} && unzip terraform_1.4.5_linux_amd64.zip && mv terraform /usr/local/bin && terraform -v
 
   extract_bootnode_id:
     description: "Extract and set bootnode id"
