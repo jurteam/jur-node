@@ -158,6 +158,7 @@ workflows:
   #         deployment_environment: "staging"
   #     - deploy:
   #         requires:
+  #           - apply_infrastructure
   #           - build_and_push_docker_image
   #         context: jur-node-staging
   #         deployment_environment: "staging"
@@ -186,5 +187,6 @@ workflows:
       - deploy:
           requires:
             - apply_infrastructure
+            - build_and_push_docker_image
           context: jur-node-production
           deployment_environment: "production"
