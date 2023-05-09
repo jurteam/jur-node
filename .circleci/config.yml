@@ -134,40 +134,40 @@ jobs:
 
 # Workflows
 workflows:
-  # staging:
-  #   jobs:
-  #     - validate_infrastructure:
-  #         filters:
-  #           branches:
-  #             only: feat/cicd
-  #     - approve:
-  #         description: "Approve"
-  #         type: approval
-  #         requires:
-  #           - validate_infrastructure
-  #     - apply_infrastructure:
-  #         requires:
-  #           - approve
-  #         sub_domain: "testnet"
-  #         deployment_environment: "staging"
-  #         context: jur-node-staging
-  #     - build_and_push_docker_image:
-  #         requires:
-  #           - approve
-  #         deployment_environment: "staging"
-  #     - deploy:
-  #         requires:
-  #           - apply_infrastructure
-  #           - build_and_push_docker_image
-  #         context: jur-node-staging
-  #         deployment_environment: "staging"
+  staging:
+    jobs:
+      - validate_infrastructure:
+          filters:
+            branches:
+              only: staging
+      - approve:
+          description: "Approve"
+          type: approval
+          requires:
+            - validate_infrastructure
+      - apply_infrastructure:
+          requires:
+            - approve
+          sub_domain: "testnet"
+          deployment_environment: "staging"
+          context: jur-node-staging
+      - build_and_push_docker_image:
+          requires:
+            - approve
+          deployment_environment: "staging"
+      - deploy:
+          requires:
+            - apply_infrastructure
+            - build_and_push_docker_image
+          context: jur-node-staging
+          deployment_environment: "staging"
 
   production:
     jobs:
       - validate_infrastructure:
           filters:
             branches:
-              only: feat/cicd
+              only: main
       - approve:
           description: "Approve"
           type: approval
