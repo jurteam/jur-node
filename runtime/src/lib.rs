@@ -53,7 +53,7 @@ pub use sp_runtime::{Perbill, Percent, Permill};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
-use primitives::{Balance, CurrencyId, EthereumAddress, JUR};
+use primitives::{Balance, CommunityId, CurrencyId, EthereumAddress, JUR};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -115,7 +115,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 103,
+	spec_version: 104,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -390,7 +390,16 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 16;
 }
 
-
+impl pallet_community::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type CommunityId = CommunityId;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type NameLimit = ConstU32<50>;
+	type DescriptionLimit = ConstU32<250>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_community::weights::SubstrateWeight<Runtime>;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -410,6 +419,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-token-swap in the runtime.
 		TokenSwap: pallet_token_swap,
+		Community: pallet_community,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 	}
@@ -457,6 +467,7 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_token_swap, TokenSwap]
+		[pallet_community, Community]
 	);
 }
 

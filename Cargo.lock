@@ -3109,6 +3109,7 @@ dependencies = [
  "pallet-assets",
  "pallet-aura",
  "pallet-balances",
+ "pallet-community",
  "pallet-grandpa",
  "pallet-multisig",
  "pallet-sudo",
@@ -4535,6 +4536,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-community"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "jur-primitives",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.41#980eb16791bab5d63b47c07657bb9dc198d9307b"
@@ -4628,7 +4646,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-token-swap"
-version = "4.0.0-dev"
+version = "0.1.0"
 dependencies = [
  "bs58",
  "frame-benchmarking",
