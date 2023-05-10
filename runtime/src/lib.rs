@@ -53,7 +53,7 @@ pub use sp_runtime::{Perbill, Percent, Permill};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
-use primitives::{Balance, CommunityId, CurrencyId, EthereumAddress, JUR};
+use primitives::{Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, JUR, ProposalId};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -401,6 +401,17 @@ impl pallet_community::Config for Runtime {
 	type WeightInfo = pallet_community::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_proposal::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ProposalId = ProposalId;
+	type ChoiceId = ChoiceId;
+	type DescriptionLimit = ConstU32<250>;
+	type LabelLimit = ConstU32<250>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -420,6 +431,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-token-swap in the runtime.
 		TokenSwap: pallet_token_swap,
 		Community: pallet_community,
+		Proposal: pallet_proposal,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 	}
@@ -468,6 +480,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_token_swap, TokenSwap]
 		[pallet_community, Community]
+		[pallet_proposal, Proposal]
 	);
 }
 

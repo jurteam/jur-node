@@ -3112,6 +3112,7 @@ dependencies = [
  "pallet-community",
  "pallet-grandpa",
  "pallet-multisig",
+ "pallet-proposal",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-token-swap",
@@ -4586,6 +4587,24 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-proposal"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "jur-primitives",
+ "pallet-community",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
