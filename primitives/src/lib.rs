@@ -19,6 +19,8 @@ pub type CurrencyId = u32;
 
 pub type CommunityId = u32;
 
+pub type PassportId = u32;
+
 pub type ProposalId = u32;
 
 pub type ChoiceId = u32;
