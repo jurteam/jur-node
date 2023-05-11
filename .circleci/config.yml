@@ -11,6 +11,8 @@ commands:
   install_latest_terraform:
     description: "Install latest terraform"
     steps:
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y gnupg
       - run:
           name: Install latest terraform
           command: |
@@ -145,7 +147,7 @@ workflows:
       - validate_infrastructure:
           filters:
             branches:
-              only: staging
+              only: fix/gpg-error
       - approve:
           description: "Approve"
           type: approval
