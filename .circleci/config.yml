@@ -17,14 +17,14 @@ commands:
             VER=1.4.5 ZIPFILE="terraform_${VER}_linux_amd64.zip" SUMFILE="terraform_${VER}_SHA256SUMS" \
             SIGFILE="${SUMFILE}.sig"; for fn in "${ZIPFILE}" "${SUMFILE}" "${SIGFILE}" ; do \
             wget -nv https://releases.hashicorp.com/terraform/${VER}/${fn}; done; \
-            expected_sha=$(cat "${SUMFILE}" | grep "${ZIPFILE}" | awk '{print $1}') \
-            export -f checksumCommand \
-            download_sha=$(checksumCommand "${ZIPFILE}") \
-            echo "Validating download..." \
-            if [ "$expected_sha" != "$download_sha" ]; then
-              echo "Expected SHA256SUM does not match downloaded file, exiting."
-              exit 1
-            fi
+            expected_sha=$(cat "${SUMFILE}" | grep "${ZIPFILE}" | awk '{print $1}') ; \
+            export -f checksumCommand; \
+            download_sha=$(checksumCommand "${ZIPFILE}") ; \
+            echo "Validating download..." ; \
+            if [ "$expected_sha" != "$download_sha" ]; then \
+              echo "Expected SHA256SUM does not match downloaded file, exiting." ; \
+              exit 1  ; \
+            fi  ; \
             unzip "${ZIPFILE}" && mv terraform /usr/local/bin && terraform -v
 
   extract_bootnode_id:
