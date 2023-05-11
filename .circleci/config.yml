@@ -150,7 +150,7 @@ workflows:
       - validate_infrastructure:
           filters:
             branches:
-              only: fix/gpg-error
+              only: staging
       - approve:
           description: "Approve"
           type: approval
