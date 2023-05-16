@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  terraform: circleci/terraform@3.1
+  terraform: circleci/terraform@3.2.1
   docker: circleci/docker@1.7.0
   gcp-gcr: circleci/gcp-gcr@0.15.1
   gcp-cli: circleci/gcp-cli@2.4.1
