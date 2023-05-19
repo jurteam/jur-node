@@ -2,6 +2,7 @@
 
 pub mod proof;
 
+pub mod macros;
 #[cfg(test)]
 mod tests;
 
@@ -9,12 +10,20 @@ use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{traits::Saturating, RuntimeDebug};
 
 /// Balance of an account.
 pub type Balance = u128;
 
 pub type CurrencyId = u32;
+
+pub type CommunityId = u32;
+
+pub type PassportId = u32;
+
+pub type ProposalId = u32;
+
+pub type ChoiceId = u32;
 
 pub type VechainHash = [u8; 32];
 
@@ -150,3 +159,10 @@ impl From<ValidityError> for u8 {
 		err as u8
 	}
 }
+
+pub trait Incrementable {
+	fn increment(&self) -> Self;
+	fn initial_value() -> Self;
+}
+
+impl_incrementable!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
