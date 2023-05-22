@@ -1,5 +1,5 @@
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, CouncilConfig, DemocracyConfig,
+	AccountId, AuraConfig, BalancesConfig,
 	GenesisConfig, GrandpaConfig, Signature, SudoConfig, SystemConfig,
 	WASM_BINARY,
 };
@@ -123,13 +123,6 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
-		democracy: DemocracyConfig::default(),
-		council: CouncilConfig::default(),
-		council_membership: Default::default(),
-		technical_committee: Default::default(),
-		technical_membership: Default::default(),
-		treasury: Default::default(),
-		elections: Default::default(),
 		assets: Default::default(),
 	}
 }
