@@ -88,6 +88,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type LabelLimit: Get<u32>;
 
+		/// The maximum length of address.
+		#[pallet::constant]
+		type AddressLimit: Get<u32>;
+
 		#[cfg(feature = "runtime-benchmarks")]
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::ProposalId, Self::ChoiceId>;
@@ -109,7 +113,7 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::ProposalId,
-		Proposal<<T as Config>::DescriptionLimit>,
+		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit>,
 		OptionQuery,
 	>;
 
@@ -190,6 +194,7 @@ pub mod pallet {
 		pub fn create_proposal(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
+			address: BoundedVec<u8, T::AddressLimit>,
 			proposal: Vec<u8>,
 			choices: Vec<Vec<u8>>,
 			is_historical: bool,
@@ -199,7 +204,7 @@ pub mod pallet {
 			let origin = ensure_signed(origin)?;
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
-			Self::do_create_proposal(community_id, proposal, choices, is_historical)
+			Self::do_create_proposal(community_id, address, proposal, choices, is_historical)
 		}
 
 		/// Submit a choice for a proposal.
@@ -252,6 +257,7 @@ pub mod pallet {
 impl<T: Config> Pallet<T> {
 	pub fn do_create_proposal(
 		community_id: T::CommunityId,
+		address: BoundedVec<u8, T::AddressLimit>,
 		proposal: Vec<u8>,
 		choices: Vec<Vec<u8>>,
 		is_historical: bool,
@@ -262,7 +268,7 @@ impl<T: Config> Pallet<T> {
 			.map_err(|_| Error::<T>::BadDescription)?;
 
 		let new_proposal =
-			Proposal { description: bounded_proposal.clone(), historical: is_historical };
+			Proposal { address, description: bounded_proposal.clone(), historical: is_historical };
 
 		let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
 

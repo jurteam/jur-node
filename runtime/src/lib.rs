@@ -412,6 +412,7 @@ impl pallet_proposal::Config for Runtime {
 	type LabelLimit = ConstU32<250>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
+	type AddressLimit = ConstU32<60>;
 	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
 }
 

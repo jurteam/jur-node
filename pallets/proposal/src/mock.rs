@@ -77,6 +77,7 @@ impl pallet_proposal::Config for Test {
 	type LabelLimit = ConstU32<250>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
+	type AddressLimit = ConstU32<60>;
 	type WeightInfo = ();
 }
 

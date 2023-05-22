@@ -1,4 +1,6 @@
 use crate::{mock::*, Choices, Error, Votes};
+use frame_support::pallet_prelude::ConstU32;
+use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
 use pallet_community::types::{CommunityMetaData, CommunityType};
 use sp_core::H256;
@@ -39,10 +41,15 @@ fn create_community() {
 }
 
 fn create_proposal() {
+	let proposal_address: Vec<u8> =
+		"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+	let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
+		proposal_address.try_into().unwrap();
 	create_community();
 	Proposal::create_proposal(
 		RuntimeOrigin::signed(1),
 		0,
+		bounded_proposal_address,
 		"Which language should we speak within the Community?".into(),
 		vec![
 			"English".as_bytes().to_vec(),
@@ -58,10 +65,16 @@ fn create_proposal() {
 #[test]
 fn create_proposal_works() {
 	new_test_ext().execute_with(|| {
+		let proposal_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
+			proposal_address.try_into().unwrap();
+
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
+			bounded_proposal_address,
 			"Which is your native country".into(),
 			vec![
 				"India".as_bytes().to_vec(),
@@ -78,10 +91,16 @@ fn create_proposal_works() {
 #[test]
 fn create_proposal_does_not_work_when_no_community_id() {
 	new_test_ext().execute_with(|| {
+		let proposal_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
+			proposal_address.try_into().unwrap();
+
 		assert_noop!(
 			Proposal::create_proposal(
 				RuntimeOrigin::signed(1),
 				0,
+				bounded_proposal_address,
 				"Which is your native country".into(),
 				vec![
 					"India".as_bytes().to_vec(),
@@ -119,10 +138,16 @@ fn submit_proposal_not_work_for_invalid_input() {
 #[test]
 fn submit_choices_not_work_for_invalid_input() {
 	new_test_ext().execute_with(|| {
+		let proposal_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
+			proposal_address.try_into().unwrap();
+
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
+			bounded_proposal_address.clone(),
 			"Which is your native language".into(),
 			vec![],
 			false
@@ -136,7 +161,8 @@ fn submit_choices_not_work_for_invalid_input() {
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
-			"Which Langugage".into(),
+			bounded_proposal_address,
+			"Which Language".into(),
 			vec!["English".as_bytes().to_vec()],
 			false
 		));
