@@ -1,3 +1,25 @@
+//! # Jur Passport Pallet
+//!
+//! A pallet allows a meta-citizen to mint its own Jur NFT Passport.
+//! This passport is what allows access to different features within the ecosystem.
+//!
+//! ## Overview
+//!
+//! A Passport is an official document released by a State that proves
+//! that you are a citizen of that State.
+//!
+//! In Jur, this would be represented as a mintable NFT that any citizen of a State can redeem.
+//! You won’t be able to mint the NFT in case
+//! your wallet is not part of the citizens property of the State.
+//!
+//!
+//! ## Interface
+//!
+//! * `mint`
+//! * `update_passport`
+//! * `add_stamps`
+//! * `update_avatar`
+//!
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
@@ -52,6 +74,7 @@ pub mod pallet {
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::PassportId>;
 
+		/// Weight information
 		type WeightInfo: WeightInfo;
 	}
 
@@ -59,6 +82,7 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
+	/// Store passport metadata for a passport holder that belongs to a particular community
 	#[pallet::storage]
 	#[pallet::getter(fn passport)]
 	pub type Passports<T: Config> = StorageDoubleMap<
@@ -109,6 +133,15 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Mint a new passport
+		///
+		/// The origin must be Signed and the founder of the community.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `member`: Member of the community.
+		///
+		/// Emits `MintedPassport` event when successful.
+		///
 		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::mint())]
 		pub fn mint(
@@ -142,6 +175,16 @@ pub mod pallet {
 		}
 
 		/// Update the passport.
+		///
+		/// The origin must be Signed and the founder of the community.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `member`: Member of the community.
+		/// - `passport_address`: Address of the passport
+		///
+		/// Emits `UpdatedPassport` event when successful.
+		///
 		#[pallet::call_index(1)]
 		#[pallet::weight(<T as Config>::WeightInfo::update_passport())]
 		pub fn update_passport(
@@ -171,6 +214,16 @@ pub mod pallet {
 		}
 
 		/// Add the stamp to the passport.
+		///
+		/// The origin must be Signed and the founder of the community.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `member`: Member of the community.
+		/// - `stamp`: stamp of the passport
+		///
+		/// Emits `AddedStamp` event when successful.
+		///
 		#[pallet::call_index(2)]
 		#[pallet::weight(<T as Config>::WeightInfo::add_stamps())]
 		pub fn add_stamps(
@@ -208,6 +261,15 @@ pub mod pallet {
 		}
 
 		/// Add/update the avatar to the passport.
+		///
+		/// The origin must be Signed and the founder of the community.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `avatar`: avatar of the passport
+		///
+		/// Emits `UpdatedAvatar` event when successful.
+		///
 		#[pallet::call_index(3)]
 		#[pallet::weight(<T as Config>::WeightInfo::update_avatar())]
 		pub fn update_avatar(

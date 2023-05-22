@@ -1,3 +1,24 @@
+//! # Jur Community Pallet
+//!
+//! A pallet allows any $JUR token holder to create a society/community on the Jur.
+//!
+//! ## Overview
+//!
+//! Community will be the central building block of our entire ecosystem.
+//! It can organize in various forms. We are currently envisioning three different shapes
+//! that the Community can take:
+//! * a core Community concept which aggregates members based on values and a set of related properties such as religion and language;
+//! * a Nation which is a Community that lives together in a specific physical Territory;
+//! * a State which is a body that organizes one or more Nations through a Government.
+//!
+//! ## Interface
+//!
+//! * `create_community`
+//! * `update_community`
+//! * `delete_community`
+//! * `add_members`
+//!
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{dispatch::DispatchResult, BoundedVec};
@@ -69,6 +90,7 @@ pub mod pallet {
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::CommunityId>;
 
+		/// Weight information
 		type WeightInfo: WeightInfo;
 	}
 
@@ -76,6 +98,7 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
+	/// Store the community with community id
 	#[pallet::storage]
 	#[pallet::getter(fn communities)]
 	pub type Communities<T: Config> = StorageMap<
@@ -121,7 +144,21 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Create a new community
+		/// Create a new community from a privileged origin.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `logo`: This is an image file (also a GIF is valid) that is uploaded on IPFS.
+		/// - `name`: Name of the community
+		/// - `description`: Information about community
+		/// - `members`: as a Founder I should be able to add members to the society by adding
+		/// 				their wallet addresses. Tt’s not required to add members immediately
+		/// 			at society’s creation
+		/// - `metadata`: Other customizable fields like community_type, custom, language, norms etc.
+		///
+		/// Emits `CreatedCommunity` event when successful.
+		///
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::create_community())]
 		pub fn create_community(
@@ -148,7 +185,14 @@ pub mod pallet {
 			)
 		}
 
-		/// Delete a community
+		/// Delete a particular community from a privileged origin.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be deleted
+		///
+		/// Emits `DeletedCommunity` event when successful.
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::delete_community())]
 		pub fn delete_community(
@@ -170,7 +214,18 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Update a community
+		/// Update a particular community from a privileged origin.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `logo`: This is an image file (also a GIF is valid) that is uploaded on IPFS.
+		/// - `description`: Information about community
+		/// - `community_id`: Id of the community to be updated
+		/// - `metadata`: Other customizable fields like community_type, custom, language, norms etc.
+		///
+		/// Emits `UpdatedCommunity` event when successful.
+		///
 		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::update_community())]
 		pub fn update_community(
@@ -201,7 +256,15 @@ pub mod pallet {
 			})
 		}
 
-		/// Add the members to the community
+		/// Update members of a particular community from a privileged origin.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be updated
+		/// - `members`: Members of teh community
+		///
+		/// Emits `UpdatedCommunity` event when successful.
 		#[pallet::call_index(3)]
 		#[pallet::weight(10_000)]
 		pub fn add_members(

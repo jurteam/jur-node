@@ -1,3 +1,30 @@
+//! # Jur Proposal Pallet
+//!
+//! A pallet allow Members to make and vote on proposals that can shape the identity and
+//! values of the community
+//!
+//! ## Overview
+//!
+//! A Proposal is a way for the Community to propose a change in any of the core values that
+//! make the Community stick together.
+//!
+//! A Proposal can be of different types e.g. custom, language, etc. and the outcome sets
+//! a different value within that property of the Community data structure.
+//!
+//! ## Functionalities
+//!
+//! * A founder can create a new proposal for a particular community and specify:
+//! 		- if it’s historical or not
+//! 		- the ask/question to the other Members
+//! * A member can vote on an existing proposal
+//!
+//! ## Interface
+//!
+//! * `create_proposal`
+//! * `submit_choice`
+//!
+
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
@@ -65,6 +92,7 @@ pub mod pallet {
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::ProposalId, Self::ChoiceId>;
 
+		/// Weight information
 		type WeightInfo: WeightInfo;
 	}
 
@@ -72,6 +100,7 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
+	/// Store new proposal with a unique proposal id for a particular community
 	#[pallet::storage]
 	#[pallet::getter(fn proposals)]
 	pub type Proposals<T: Config> = StorageDoubleMap<
@@ -84,6 +113,7 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+	/// Store Choices for a particular proposal
 	#[pallet::storage]
 	#[pallet::getter(fn choices)]
 	pub type Choices<T: Config> = StorageMap<
@@ -94,6 +124,7 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+	/// Store votes submitted for a choice
 	#[pallet::storage]
 	#[pallet::getter(fn votes)]
 	pub type Votes<T: Config> =
@@ -139,6 +170,21 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		/// Create a new proposal for a particular community from a origin.
+		///
+		/// This new proposal has choices with zero votes.
+		///
+		/// The origin must be Signed and the community founder.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `proposal`: A proposal like `Which language should we speak within the Community?`.
+		/// - `choices`: Choices for a given proposal.
+		/// - `is_historical`: A Proposal can be marked as historical.
+		/// 			In case it is flagged as such, the proposal becomes part of the History.
+		///
+		/// Emits `CreatedProposal` event when successful.
+		///
 		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::create_proposal())]
 		pub fn create_proposal(
@@ -156,6 +202,17 @@ pub mod pallet {
 			Self::do_create_proposal(community_id, proposal, choices, is_historical)
 		}
 
+		/// Submit a choice for a proposal.
+		///
+		/// The origin must be Signed and the member of the community.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `proposal_id`: Id of the proposal.
+		/// - `choice_id`: Id of the coice.
+		///
+		/// Emits `SubmittedChoice` event when successful.
+		///
 		#[pallet::call_index(1)]
 		#[pallet::weight(<T as Config>::WeightInfo::submit_choice())]
 		pub fn submit_choice(
