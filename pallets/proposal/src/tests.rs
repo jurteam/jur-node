@@ -58,7 +58,7 @@ fn create_proposal() {
 			"Rust".as_bytes().to_vec(),
 		],
 		false,
-		5
+		5,
 	)
 	.unwrap();
 }

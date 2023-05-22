@@ -24,7 +24,6 @@
 //! * `submit_choice`
 //!
 
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
@@ -130,7 +129,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn proposal_expire)]
 	pub type ProposalExpireTime<T: Config> =
-	StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
+		StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
 
 	/// Store Choices for a particular proposal
 	#[pallet::storage]
@@ -220,7 +219,7 @@ pub mod pallet {
 						Ok(())
 					},
 				)
-					.expect("Proposal not found");
+				.expect("Proposal not found");
 			}
 			Weight::zero()
 		}

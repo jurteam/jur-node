@@ -76,7 +76,7 @@ fn add_proposal<T: Config>(caller: T::AccountId) -> (T::CommunityId, T::Proposal
 			"England".as_bytes().to_vec(),
 		],
 		false,
-		5
+		5,
 	)
 	.unwrap();
 
