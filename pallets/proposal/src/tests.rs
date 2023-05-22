@@ -58,6 +58,7 @@ fn create_proposal() {
 			"Rust".as_bytes().to_vec(),
 		],
 		false,
+		5
 	)
 	.unwrap();
 }
@@ -81,7 +82,8 @@ fn create_proposal_works() {
 				"Germany".as_bytes().to_vec(),
 				"England".as_bytes().to_vec()
 			],
-			false
+			false,
+			5
 		));
 
 		assert!(Choices::<Test>::contains_key(0));
@@ -107,7 +109,8 @@ fn create_proposal_does_not_work_when_no_community_id() {
 					"Germany".as_bytes().to_vec(),
 					"England".as_bytes().to_vec()
 				],
-				false
+				false,
+				5
 			),
 			Error::<Test>::CommunityDoesNotExist
 		);
@@ -150,7 +153,8 @@ fn submit_choices_not_work_for_invalid_input() {
 			bounded_proposal_address.clone(),
 			"Which is your native language".into(),
 			vec![],
-			false
+			false,
+			5
 		));
 
 		assert_noop!(
@@ -164,7 +168,8 @@ fn submit_choices_not_work_for_invalid_input() {
 			bounded_proposal_address,
 			"Which Language".into(),
 			vec!["English".as_bytes().to_vec()],
-			false
+			false,
+			5
 		));
 
 		assert_noop!(

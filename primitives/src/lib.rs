@@ -94,6 +94,10 @@ pub const INVALID_INPUT_ERR_CODE: u8 = 6;
 
 pub const INVALID_PROOF_ERR_CODE: u8 = 7;
 
+/// Blocks per day is a assumption of block generating by chain in 24 hours
+/// Assuming chain generating the blocks in every 6 second. 1 Block = 6 second
+pub const BLOCKS_PER_DAY: u32 = 14_400;
+
 /// An Ethereum address (i.e. 20 bytes, used to represent an Ethereum account).
 ///
 /// This gets serialized to the 0x-prefixed hex representation.
@@ -103,8 +107,8 @@ pub struct EthereumAddress(pub [u8; ETHEREUM_ADDRESS_SIZE]);
 #[cfg(feature = "std")]
 impl Serialize for EthereumAddress {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-		where
-			S: Serializer,
+	where
+		S: Serializer,
 	{
 		let hex: String = rustc_hex::ToHex::to_hex(&self.0[..]);
 		serializer.serialize_str(&format!("0x{}", hex))
@@ -114,8 +118,8 @@ impl Serialize for EthereumAddress {
 #[cfg(feature = "std")]
 impl<'de> Deserialize<'de> for EthereumAddress {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-		where
-			D: Deserializer<'de>,
+	where
+		D: Deserializer<'de>,
 	{
 		let base_string = String::deserialize(deserializer)?;
 		let offset = if base_string.starts_with("0x") { OFFSET_INDEX } else { INITIAL_INDEX };

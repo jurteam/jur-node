@@ -76,6 +76,7 @@ fn add_proposal<T: Config>(caller: T::AccountId) -> (T::CommunityId, T::Proposal
 			"England".as_bytes().to_vec(),
 		],
 		false,
+		5
 	)
 	.unwrap();
 
@@ -97,7 +98,8 @@ benchmarks! {
 		bounded_proposal_address,
 		proposal.clone(),
 		vec!["English".as_bytes().to_vec(), "Ghukliak".as_bytes().to_vec(), "官话".as_bytes().to_vec(), "Rust".as_bytes().to_vec()],
-		false
+		false,
+		5
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::CreatedProposal(proposal).into());
