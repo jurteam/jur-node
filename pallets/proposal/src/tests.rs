@@ -178,3 +178,35 @@ fn submit_choices_not_work_for_invalid_input() {
 		);
 	});
 }
+
+#[test]
+fn submit_proposal_not_work_for_after_proposal_deadline() {
+	new_test_ext().execute_with(|| {
+		let proposal_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
+			proposal_address.try_into().unwrap();
+
+		create_community();
+		assert_ok!(Proposal::create_proposal(
+			RuntimeOrigin::signed(1),
+			0,
+			bounded_proposal_address.clone(),
+			"Which is your native language".into(),
+			vec![
+			"English".as_bytes().to_vec(),
+			"Ghukliak".as_bytes().to_vec(),
+			"官话".as_bytes().to_vec(),
+			"Rust".as_bytes().to_vec(),
+			],
+			false,
+			1,
+		));
+
+		run_to_block(15_000);
+		assert_noop!(
+			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 0),
+			Error::<Test>::ProposalNotActive
+		);
+	});
+}
