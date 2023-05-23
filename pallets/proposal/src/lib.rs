@@ -165,8 +165,8 @@ pub mod pallet {
 		CreatedProposal(Vec<u8>),
 		/// Submitted Proposal
 		SubmittedChoice,
-		/// Proposal state change
-		ProposalStateChange,
+		/// Proposal state changed
+		ProposalStateChanged,
 	}
 
 	#[pallet::error]
@@ -190,11 +190,9 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
-			let is_proposal_expire = ProposalExpireTime::<T>::get(n);
+			let option_proposal_expire = ProposalExpireTime::<T>::get(n);
 
-			if is_proposal_expire.is_some() {
-				let (proposal_id, community_id) = is_proposal_expire.unwrap();
-
+			if let Some((proposal_id, community_id)) = option_proposal_expire {
 				Proposals::<T>::try_mutate(
 					community_id,
 					proposal_id,
@@ -214,7 +212,7 @@ pub mod pallet {
 							}
 						});
 
-						Self::deposit_event(Event::<T>::ProposalStateChange);
+						Self::deposit_event(Event::<T>::ProposalStateChanged);
 
 						Ok(())
 					},
@@ -235,6 +233,7 @@ pub mod pallet {
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
+		/// - 'address': IPFS address of the proposal.
 		/// - `proposal`: A proposal like `Which language should we speak within the Community?`.
 		/// - `choices`: Choices for a given proposal.
 		/// - `is_historical`: A Proposal can be marked as historical.
@@ -302,9 +301,10 @@ pub mod pallet {
 			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
 			ensure!(Votes::<T>::contains_key(choice_id), Error::<T>::ChoiceDoesNotExist);
 
-			let proposal = Proposals::<T>::get(community_id, proposal_id).unwrap();
+			let proposal = Proposals::<T>::get(community_id, proposal_id)
+				.ok_or(Error::<T>::ProposalDoesNotExist)?;
 
-			ensure!(proposal.status == true, Error::<T>::ProposalNotActive);
+			ensure!(proposal.status, Error::<T>::ProposalNotActive);
 
 			Votes::<T>::try_mutate(choice_id, |vote| -> DispatchResult {
 				let new_count = vote.vote_count + 1;
@@ -339,7 +339,7 @@ impl<T: Config> Pallet<T> {
 		let new_proposal = Proposal {
 			proposer: proposer_account.clone(),
 			address,
-			description: bounded_proposal.clone(),
+			description: bounded_proposal,
 			historical: is_historical,
 			status: true,
 		};
