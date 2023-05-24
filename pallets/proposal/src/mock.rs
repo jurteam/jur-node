@@ -91,7 +91,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 }
 
 fn init_block() {
-	println!("Initializing {}", System::block_number());
 	System::on_initialize(System::block_number());
 	Proposal::on_initialize(System::block_number());
 
