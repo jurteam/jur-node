@@ -39,15 +39,15 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 	let community_id =
 		pallet_community::NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
 
-	let members = vec![account("sub", 1, SEED)];
+	let members = Some(vec![account("sub", 1, SEED)]);
 
 	pallet_community::Pallet::<T>::create_community(
 		RawOrigin::Signed(caller).into(),
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".as_bytes().to_vec(),
-		"Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into(),
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
+			.into()),
 		members,
 		Some(get_community_metadata::<T>()),
 	)

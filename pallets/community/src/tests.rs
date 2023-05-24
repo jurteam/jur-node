@@ -33,9 +33,9 @@ fn create_community() {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		"Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into(),
-		vec![1, 2],
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
+			.into()),
+		Some(vec![1, 2]),
 		Some(get_metadata()),
 	)
 	.unwrap();
@@ -46,6 +46,25 @@ fn create_community_works() {
 		assert!(!Communities::<Test>::contains_key(0));
 		create_community();
 		assert!(Communities::<Test>::contains_key(0));
+	});
+}
+
+#[test]
+fn create_community_works_only_with_name() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			None,
+			"Jur".into(),
+			None,
+			None,
+			None,
+		)
+			.unwrap();
+		assert!(Communities::<Test>::contains_key(0));
+		assert_eq!(Communities::<Test>::get(0).unwrap().name.to_vec(), "Jur".as_bytes().to_vec());
 	});
 }
 

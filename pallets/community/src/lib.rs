@@ -165,8 +165,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			logo: Option<Vec<u8>>,
 			name: Vec<u8>,
-			description: Vec<u8>,
-			members: Vec<T::AccountId>,
+			description: Option<Vec<u8>>,
+			members: Option<Vec<T::AccountId>>,
 			metadata: Option<CommunityMetaDataFor<T>>,
 		) -> DispatchResult {
 			let community_id =
@@ -304,17 +304,27 @@ impl<T: Config> Pallet<T> {
 		founder: T::AccountId,
 		logo: Option<Vec<u8>>,
 		name: Vec<u8>,
-		description: Vec<u8>,
-		members: Vec<T::AccountId>,
+		maybe_description: Option<Vec<u8>>,
+		maybe_members: Option<Vec<T::AccountId>>,
 		metadata: Option<CommunityMetaDataFor<T>>,
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
 
-		let bounded_description: BoundedVec<u8, T::DescriptionLimit> = description
-			.clone()
-			.try_into()
-			.map_err(|_| Error::<T>::BadDescription)?;
+		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
+			if let Some(desc) = maybe_description {
+			desc
+				.try_into()
+				.map_err(|_| Error::<T>::BadDescription)?
+		} else {
+			Default::default()
+		};
+
+		let members= if let Some(members) = maybe_members {
+			members
+		} else {
+			Vec::new()
+		};
 
 		let community = Community {
 			founder: founder.clone(),
