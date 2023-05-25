@@ -24,14 +24,13 @@
 //! * `submit_choice`
 //!
 
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
 mod types;
 use crate::types::{Choice, Proposal, Vote};
 use frame_support::{dispatch::DispatchResultWithPostInfo, BoundedVec};
-use primitives::Incrementable;
+use primitives::{Incrementable, BLOCKS_PER_DAY};
 use sp_std::vec::Vec;
 
 #[cfg(test)]
@@ -88,6 +87,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type LabelLimit: Get<u32>;
 
+		/// The maximum length of address.
+		#[pallet::constant]
+		type AddressLimit: Get<u32>;
+
 		#[cfg(feature = "runtime-benchmarks")]
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::ProposalId, Self::ChoiceId>;
@@ -109,9 +112,24 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::ProposalId,
-		Proposal<<T as Config>::DescriptionLimit>,
+		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId>,
 		OptionQuery,
 	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn proposal_details)]
+	pub type ProposalDetails<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		Vec<Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId>>,
+		ValueQuery,
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn proposal_expire)]
+	pub type ProposalExpireTime<T: Config> =
+		StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
 
 	/// Store Choices for a particular proposal
 	#[pallet::storage]
@@ -147,6 +165,8 @@ pub mod pallet {
 		CreatedProposal(Vec<u8>),
 		/// Submitted Proposal
 		SubmittedChoice,
+		/// Proposal state changed
+		ProposalStateChanged,
 	}
 
 	#[pallet::error]
@@ -163,10 +183,45 @@ pub mod pallet {
 		NotAllowed,
 		/// Invalid description given.
 		BadDescription,
+		/// Proposal got inactive.
+		ProposalNotActive,
 	}
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+			let option_proposal_expire = ProposalExpireTime::<T>::get(n);
+
+			if let Some((proposal_id, community_id)) = option_proposal_expire {
+				Proposals::<T>::try_mutate(
+					community_id,
+					proposal_id,
+					|proposal_detail| -> DispatchResult {
+						let all_proposal = proposal_detail
+							.as_mut()
+							.ok_or(Error::<T>::ProposalDoesNotExist)?;
+
+						all_proposal.status = false;
+						let proposer_account = &all_proposal.proposer;
+
+						ProposalDetails::<T>::mutate(proposer_account, |proposals| {
+							for proposal in proposals {
+								match &proposal {
+									_all_proposal => proposal.status = false,
+								}
+							}
+						});
+
+						Self::deposit_event(Event::<T>::ProposalStateChanged);
+
+						Ok(())
+					},
+				)
+				.expect("Proposal not found");
+			}
+			Weight::zero()
+		}
+	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -178,9 +233,11 @@ pub mod pallet {
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
+		/// - 'address': IPFS address of the proposal.
 		/// - `proposal`: A proposal like `Which language should we speak within the Community?`.
 		/// - `choices`: Choices for a given proposal.
 		/// - `is_historical`: A Proposal can be marked as historical.
+		/// - 'proposal_duration': Voting duration of the proposal.
 		/// 			In case it is flagged as such, the proposal becomes part of the History.
 		///
 		/// Emits `CreatedProposal` event when successful.
@@ -190,16 +247,26 @@ pub mod pallet {
 		pub fn create_proposal(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
+			address: BoundedVec<u8, T::AddressLimit>,
 			proposal: Vec<u8>,
 			choices: Vec<Vec<u8>>,
 			is_historical: bool,
+			proposal_duration: u32,
 		) -> DispatchResultWithPostInfo {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 			let origin = ensure_signed(origin)?;
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
-			Self::do_create_proposal(community_id, proposal, choices, is_historical)
+			Self::do_create_proposal(
+				origin,
+				community_id,
+				address,
+				proposal,
+				choices,
+				is_historical,
+				proposal_duration,
+			)
 		}
 
 		/// Submit a choice for a proposal.
@@ -234,6 +301,11 @@ pub mod pallet {
 			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
 			ensure!(Votes::<T>::contains_key(choice_id), Error::<T>::ChoiceDoesNotExist);
 
+			let proposal = Proposals::<T>::get(community_id, proposal_id)
+				.ok_or(Error::<T>::ProposalDoesNotExist)?;
+
+			ensure!(proposal.status, Error::<T>::ProposalNotActive);
+
 			Votes::<T>::try_mutate(choice_id, |vote| -> DispatchResult {
 				let new_count = vote.vote_count + 1;
 				*vote = Vote {
@@ -251,18 +323,26 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T> {
 	pub fn do_create_proposal(
+		proposer_account: T::AccountId,
 		community_id: T::CommunityId,
+		address: BoundedVec<u8, T::AddressLimit>,
 		proposal: Vec<u8>,
 		choices: Vec<Vec<u8>>,
 		is_historical: bool,
+		proposal_duration: u32,
 	) -> DispatchResultWithPostInfo {
 		let bounded_proposal: BoundedVec<u8, <T as Config>::DescriptionLimit> = proposal
 			.clone()
 			.try_into()
 			.map_err(|_| Error::<T>::BadDescription)?;
 
-		let new_proposal =
-			Proposal { description: bounded_proposal.clone(), historical: is_historical };
+		let new_proposal = Proposal {
+			proposer: proposer_account.clone(),
+			address,
+			description: bounded_proposal,
+			historical: is_historical,
+			status: true,
+		};
 
 		let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
 
@@ -286,7 +366,19 @@ impl<T: Config> Pallet<T> {
 			.collect::<Vec<_>>();
 
 		// Storing the proposal
-		<Proposals<T>>::insert(community_id, proposal_id, new_proposal);
+		<Proposals<T>>::insert(community_id, proposal_id, &new_proposal);
+
+		// set up the expire time of a particular proposal with community id.
+		let total_block = BLOCKS_PER_DAY * proposal_duration;
+
+		let expire_block = frame_system::Pallet::<T>::block_number() + total_block.into();
+		ProposalExpireTime::<T>::insert(expire_block, (proposal_id, community_id));
+
+		// fetch all the proposal of current account.
+		let mut all_proposal = ProposalDetails::<T>::get(proposer_account.clone());
+		all_proposal.push(new_proposal);
+		// Store the proposal of one account
+		ProposalDetails::<T>::insert(proposer_account, all_proposal);
 
 		let next_proposal_id = proposal_id.increment();
 		NextProposalId::<T>::set(Some(next_proposal_id));
