@@ -1,3 +1,57 @@
+
+//! # Jur Token Swap Pallet
+//! A pallet allowing users to submit a proof of deposit along with a signed message
+//! containing their Substrate address but signed with the Ethereum key (a secp256k1 signature).
+//!
+//! ## Motivation
+//!
+//! Currently JUR Token is hosted on VeChain (https://www.vechain.org/) with
+//! most Token probably being on the OceanEx exchange. Users need to be able to migrate their
+//! tokens over to the Polkadot/Substrate ecosystem. As many tokens are on exchanges taking
+//! a snapshot won’t work well.
+//! Instead users need to be able to migrate their tokens on their own.
+//!
+//! VeChain is an EVM-based chain written in Go. It is not a fork of Go-Ethereum
+//! but uses EVM and the same state model.
+//! There are a few changes which affect the Merkle trees, primarily the hash function and
+//! the account structure.
+//! It is not bridged to any other chain currently.
+//!
+//! ## Design
+//!
+//! To avoid having to either do a centralized token swap or a sophisticated bridge, a simple
+//! scheme was devised where tokens are locked in a contract on a smart contract on the VeChain
+//! side and the storage of that contract is verified on the Substrate side. In order to verify
+//! storage proofs Substrate needs to be aware of a recent VeChain state root.
+//! The correct state root can be easily verified by an auditing user on a VeChain block explorer.
+//! As long as the stored values in the smart contract only keep increasing
+//! (such as the total value locked per account) it is fine if the state root is older.
+//! The increased values can be proven once a newer state root is present.
+//!
+//! To prove a storage value from a state root several steps are needed:
+//! From the stateRoot field in the blockhash a MPT-Proof leads to the rlp-encoded
+//! account structure. The key in this MPT is the hashed address of the smart contract
+//! (which is a constant on the Substrate side).
+//! From the storageRoot field in the account structure a MPT-Proof can prove
+//! a single storage value. The key is the hash of the storage slot. The storage slot depends
+//! on the eth address in question and the exact layout of the smart contract.
+//! Most likely it will be something like keccak256(bytes32(address) ++ bytes32(0))
+//!
+//! The smart contract will record the total amount of JUR token an Ethereum address has locked
+//! into the contract. This value increases if the same address locks more tokens later.
+//! JUR tokens never leave the contract on the VeChain side.
+//!
+//! On the Substrate side users can submit a proof of deposit along with a signed message
+//! containing their Substrate address but signed with the Ethereum key (a secp256k1 signature).
+//! The pallet keeps track of how much JUR was already redeemed for this Ethereum address and mints
+//! new tokens to the Substrate address if the value has increased.
+//!
+//!  ## Overview
+//!
+//! * Keep track of a VeChain state root hash
+//! * Verification of storageRoot
+//! * Claim call
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
@@ -33,6 +87,7 @@ mod benchmarking;
 pub mod weights;
 pub use weights::WeightInfo;
 
+/// Ethereum Signature
 #[derive(Encode, Decode, Clone, TypeInfo)]
 pub struct EcdsaSignature(pub [u8; ETHEREUM_SIGNATURE_SIZE]);
 
@@ -48,15 +103,22 @@ impl sp_std::fmt::Debug for EcdsaSignature {
 	}
 }
 
+/// Information concerning the VeChain state root information
 #[derive(Default, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct RootInfo<BlockNumber> {
+	/// VeChain state root hash
 	pub storage_root: Vec<u8>,
+	///  An unverified block number as metadata for users
 	pub meta_block_number: BlockNumber,
+	/// An unverified string (IPFS path) as metadata for users
 	pub ipfs_path: Vec<u8>,
 }
 
+/// Asset id type alias.
 type AssetIdOf<T> =
 	<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::AssetId;
+
+/// Balance type alias.
 type BalanceOf<T> =
 	<<T as Config>::Assets as Inspects<<T as frame_system::Config>::AccountId>>::Balance;
 
@@ -77,24 +139,29 @@ pub mod pallet {
 		#[pallet::constant]
 		type DepositContractAddress: Get<EthereumAddress>;
 
+		/// Jur Specific Prefix
 		#[pallet::constant]
 		type Prefix: Get<&'static [u8]>;
 
+		/// Assets for deposit/withdraw  assets to/from token-swap module
 		type Assets: Transfers<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
 			+ Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
 			+ Mutates<Self::AccountId, AssetId = CurrencyId, Balance = Balance>;
 
+		/// Balances for deposit/withdraw  balance to/from account
 		type Balances: Inspect<Self::AccountId, Balance = Balance>
 			+ Mutate<Self::AccountId, Balance = Balance>
 			+ Transfer<Self::AccountId, Balance = Balance>
 			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
 
+		/// The asset id for native currency.
 		#[pallet::constant]
 		type NativeCurrencyId: Get<AssetIdOf<Self>>;
 
 		/// Specify which origin is allowed to update storage root.
 		type StorageRootOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 
+		/// Weight information
 		type WeightInfo: WeightInfo;
 	}
 
@@ -102,10 +169,12 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
+	/// Store new latest claimed balance
 	#[pallet::storage]
 	#[pallet::getter(fn latest_claimed_balance)]
 	pub type LatestClaimedBalance<T> = StorageMap<_, Identity, EthereumAddress, BalanceOf<T>>;
 
+	/// Store VeChain state root
 	#[pallet::storage]
 	#[pallet::getter(fn root_information)]
 	pub type RootInformation<T: Config> = StorageValue<_, RootInfo<T::BlockNumber>, ValueQuery>;
@@ -156,6 +225,21 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		/// Caller provides
+		/// * signed message from the Ethereum address which includes the Substrate account id and some jur-specific prefix
+		///		** uses the vechain Certification signing standard
+		///	    ** The message is “My Jur Address is SUBSTRATE_ADDRESS”
+		/// * proof from storageRoot to their latest locked balance
+		///
+		/// Functionalities:
+		/// - Verify the signed message to extract Ethereum address
+		/// - Verify the proof for the latest locked balance
+		/// - Verify that locked balance is greater than latest claimed balance
+		/// - Mint the difference in native currency
+		/// - Store new latest claimed balance
+		///
+		/// Emits `ClaimedToken` event when successful.
+		///
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::claim())]
 		pub fn claim(
@@ -170,6 +254,11 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Store VeChain state root information.
+		/// It can be updated by the root origin (e.g. through sudo or governance).
+		///
+		/// Emits `UpdatedStorageRoot` event when successful.
+		///
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::update_state_root())]
 		pub fn update_state_root(
@@ -202,6 +291,7 @@ pub mod pallet {
 	impl<T: Config> ValidateUnsigned for Pallet<T> {
 		type Call = Call<T>;
 
+		/// Verification of storageRoot. This proof is verified once at the same time as the update of the state root.
 		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
 
 			let (maybe_signer, maybe_json, storage_proof) = match call {

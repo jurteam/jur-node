@@ -1,0 +1,195 @@
+version: 2.1
+
+orbs:
+  terraform: circleci/terraform@3.2.1
+  docker: circleci/docker@1.7.0
+  gcp-gcr: circleci/gcp-gcr@0.15.1
+  gcp-cli: circleci/gcp-cli@2.4.1
+
+executors:
+  ubuntu-2204:
+    machine:
+      image: ubuntu-2204:2023.04.2
+
+# Commands
+commands:
+  extract_bootnode_id:
+    description: "Extract and set bootnode id"
+    parameters:
+      bootnode_instance:
+        type: string
+      peernode_instance:
+        type: string
+      zone:
+        type: string
+        default: us-central1-a
+    steps:
+      - run:
+          name: Extract Jur Node bootnode id and set it to << parameters.peernode_instance >>
+          command: |
+            gcloud --quiet compute scp circleci@<< parameters.bootnode_instance >>:./deployment/bootnode_id.txt ./deployment/bootnode_id.txt  --zone=<< parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.peernode_instance >> --command "rm -frd ./deployment && mkdir -p ./deployment" --zone << parameters.zone >>
+            gcloud --quiet compute scp ./deployment/bootnode_id.txt circleci@<< parameters.peernode_instance >>:./deployment --zone=<< parameters.zone >>
+
+  run-deploy-sh:
+    description: "Deploy Docker to GCP CE instance"
+    parameters:
+      instance:
+        type: string
+      zone:
+        type: string
+        default: us-central1-a
+    steps:
+      - run:
+          name: Deploy Docker to << parameters.instance >>
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ./deployment/key.json
+            echo $SSL_CERT_KEY | sed 's/\\n/\'$'\n''/g' > ./deployment/nginx/certificate/origin-server.pem
+            gcloud --quiet compute scp --recurse ./deployment/ circleci@<< parameters.instance >>:. --zone=<< parameters.zone >>
+            gcloud --quiet compute scp --recurse ./res/ circleci@<< parameters.instance >>:. --zone=<< parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "chmod +x ./deployment/deploy.sh" --zone << parameters.zone >>
+            gcloud --quiet compute ssh  circleci@<< parameters.instance >> --command "sudo ./deployment/deploy.sh $INSTANCE_1_AURA_KEY $INSTANCE_1_GRANPA_KEY $INSTANCE_2_AURA_KEY $INSTANCE_2_GRANPA_KEY $INSTANCE_3_AURA_KEY $INSTANCE_3_GRANPA_KEY" --zone << parameters.zone >>
+
+# Jobs
+jobs:
+  validate_infrastructure:
+    description: "Validate Infrastructure"
+    executor: ubuntu-2204
+    steps:
+      - checkout
+      - terraform/install:
+          arch: amd64
+          os: linux
+          terraform_version: 1.4.5
+      - terraform/init:
+          path: infrastructure
+      - terraform/validate:
+          path: infrastructure
+      - terraform/fmt:
+          path: infrastructure
+    working_directory: ~/src
+
+  apply_infrastructure:
+    parameters:
+      sub_domain:
+        type: string
+        default: "testnet"
+      deployment_environment:
+        type: string
+    description: "Apply Infrastructure"
+    executor: ubuntu-2204
+    environment:
+      TF_VAR_SUB_DOMAIN: << parameters.sub_domain >>
+      TF_VAR_DEPLOYMENT_ENVIRONMENT: << parameters.deployment_environment >>
+    steps:
+      - checkout
+      - terraform/install:
+          arch: amd64
+          os: linux
+          terraform_version: 1.4.5
+      - terraform/plan:
+          backend_config: "prefix=<< parameters.deployment_environment >>-l1-jur-node"
+          path: infrastructure
+      - terraform/apply:
+          backend_config: "prefix=<< parameters.deployment_environment >>-l1-jur-node"
+          path: infrastructure
+    working_directory: ~/src
+
+  build_and_push_docker_image:
+    description: "Build and Push Docker Image"
+    parameters:
+      deployment_environment:
+        type: string
+    executor: gcp-gcr/default
+    resource_class: xlarge
+    steps:
+      - checkout
+      - gcp-gcr/gcr-auth:
+          gcloud-service-key: GOOGLE_CREDENTIALS
+      - gcp-gcr/build-image:
+          image: jur-node-<< parameters.deployment_environment >>
+          no_output_timeout: 20m
+          registry-url: us.gcr.io
+      - gcp-gcr/push-image:
+          image: jur-node-<< parameters.deployment_environment >>
+          registry-url: us.gcr.io
+  deploy:
+    parameters:
+      deployment_environment:
+        type: string
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - gcp-cli/install
+      - gcp-cli/initialize
+      - run-deploy-sh:
+          instance: "<< parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1"
+      - extract_bootnode_id:
+          bootnode_instance: "<< parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1"
+          peernode_instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-2"
+      - run-deploy-sh:
+          instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-2"
+      - extract_bootnode_id:
+          bootnode_instance: "<< parameters.deployment_environment >>-l1-jur-node-archive-compute-instance-us-central1-a-1"
+          peernode_instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-3"
+      - run-deploy-sh:
+          instance: "<< parameters.deployment_environment >>-l1-jur-node-compute-instance-us-central1-a-3"
+
+# Workflows
+workflows:
+  staging:
+    jobs:
+      - validate_infrastructure:
+          filters:
+            branches:
+              only: staging
+      - approve:
+          description: "Approve"
+          type: approval
+          requires:
+            - validate_infrastructure
+      - apply_infrastructure:
+          requires:
+            - approve
+          sub_domain: "testnet"
+          deployment_environment: "staging"
+          context: jur-node-staging
+      - build_and_push_docker_image:
+          requires:
+            - approve
+          deployment_environment: "staging"
+      - deploy:
+          requires:
+            - apply_infrastructure
+            - build_and_push_docker_image
+          context: jur-node-staging
+          deployment_environment: "staging"
+
+  production:
+    jobs:
+      - validate_infrastructure:
+          filters:
+            branches:
+              only: main
+      - approve:
+          description: "Approve"
+          type: approval
+          requires:
+            - validate_infrastructure
+      - apply_infrastructure:
+          requires:
+            - approve
+          sub_domain: "chain"
+          deployment_environment: "production"
+          context: jur-node-production
+      - build_and_push_docker_image:
+          requires:
+            - approve
+          deployment_environment: "production"
+      - deploy:
+          requires:
+            - apply_infrastructure
+            - build_and_push_docker_image
+          context: jur-node-production
+          deployment_environment: "production"
