@@ -231,16 +231,20 @@ pub mod pallet {
 		pub fn update_community(
 			origin: OriginFor<T>,
 			logo: Option<Vec<u8>>,
-			description: Vec<u8>,
+			description: Option<Vec<u8>>,
 			community_id: T::CommunityId,
-			metadata: CommunityMetaDataFor<T>,
+			metadata: Option<CommunityMetaDataFor<T>>,
 		) -> DispatchResult {
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
-			let bounded_description: BoundedVec<u8, T::DescriptionLimit> = description
-				.clone()
-				.try_into()
-				.map_err(|_| Error::<T>::BadDescription)?;
+			let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
+				if let Some(desc) = description {
+					desc
+						.try_into()
+						.map_err(|_| Error::<T>::BadDescription)?
+				} else {
+					Default::default()
+				};
 
 			Communities::<T>::try_mutate(community_id, |maybe_community| {
 				let community = maybe_community
@@ -249,7 +253,7 @@ pub mod pallet {
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
 				community.logo = logo;
 				community.description = bounded_description;
-				community.metadata = Some(metadata);
+				community.metadata = metadata;
 				Self::deposit_event(Event::UpdatedCommunity(community_id));
 
 				Ok(())

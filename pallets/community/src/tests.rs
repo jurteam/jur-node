@@ -107,9 +107,9 @@ fn update_community_not_works_for_invalid_input() {
 			Community::update_community(
 				RuntimeOrigin::signed(1),
 				Some(logo.into()),
-				description.into(),
+				Some(description.into()),
 				0,
-				get_metadata()
+				Some(get_metadata())
 			),
 			Error::<Test>::CommunityNotExist
 		);
@@ -121,9 +121,9 @@ fn update_community_not_works_for_invalid_input() {
 			Community::update_community(
 				RuntimeOrigin::signed(2),
 				Some(logo.into()),
-				description.into(),
+				Some(description.into()),
 				0,
-				get_metadata()
+				Some(get_metadata())
 			),
 			Error::<Test>::NoPermission
 		);
@@ -159,7 +159,7 @@ fn update_community_works() {
         let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
         let description = "Jur is the core community of the Jur ecosystem";
 
-        assert_ok!(Community::update_community(RuntimeOrigin::signed(1), Some(logo.into()), description.into(), 0, metadata));
+        assert_ok!(Community::update_community(RuntimeOrigin::signed(1), Some(logo.into()), Some(description.into()), 0, Some(metadata)));
 
         assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
         assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, vec!["English".as_bytes().to_vec()]);

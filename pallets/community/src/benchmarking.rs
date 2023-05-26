@@ -108,7 +108,7 @@ benchmarks! {
 		let description = "Jur is the core community of the Jur ecosystem";
 
 	}: _(
-		RawOrigin::Signed(caller), Some(logo.into()), description.into(), T::Helper::community(0), metadata
+		RawOrigin::Signed(caller), Some(logo.into()), Some(description.into()), T::Helper::community(0), Some(metadata)
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::UpdatedCommunity(T::Helper::community(0)).into());
