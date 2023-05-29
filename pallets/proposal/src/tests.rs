@@ -32,9 +32,9 @@ fn create_community() {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		"Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into(),
-		vec![1, 2],
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
+			.into()),
+		Some(vec![1, 2]),
 		Some(get_community_metadata()),
 	)
 	.unwrap();

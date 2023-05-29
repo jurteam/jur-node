@@ -43,8 +43,8 @@ benchmarks! {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		"Jur is the core community of the Jur ecosystem, which includes all the contributors.".into(),
-		members,
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+		Some(members),
 		Some(get_metadata::<T>())
 	)
 	verify {
@@ -60,8 +60,8 @@ benchmarks! {
 			// hash of IPFS path of dummy logo
 			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 			"Jur".into(),
-			"Jur is the core community of the Jur ecosystem, which includes all the contributors.".into(),
-			members,
+			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+			Some(members),
 			Some(get_metadata::<T>())
 		).unwrap();
 
@@ -81,8 +81,8 @@ benchmarks! {
 			// hash of IPFS path of dummy logo
 			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 			"Jur".into(),
-			"Jur is the core community of the Jur ecosystem, which includes all the contributors.".into(),
-			members,
+			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+			Some(members),
 			Some(get_metadata::<T>())
 		).unwrap();
 
@@ -108,7 +108,7 @@ benchmarks! {
 		let description = "Jur is the core community of the Jur ecosystem";
 
 	}: _(
-		RawOrigin::Signed(caller), Some(logo.into()), description.into(), T::Helper::community(0), metadata
+		RawOrigin::Signed(caller), Some(logo.into()), Some(description.into()), T::Helper::community(0), Some(metadata)
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::UpdatedCommunity(T::Helper::community(0)).into());
@@ -123,8 +123,8 @@ benchmarks! {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		"Jur is the core community of the Jur ecosystem, which includes all the contributors.".into(),
-		members,
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+		Some(members),
 		Some(get_metadata::<T>())
 	).unwrap();
 

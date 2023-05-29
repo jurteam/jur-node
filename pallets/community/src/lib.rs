@@ -165,8 +165,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			logo: Option<Vec<u8>>,
 			name: Vec<u8>,
-			description: Vec<u8>,
-			members: Vec<T::AccountId>,
+			description: Option<Vec<u8>>,
+			members: Option<Vec<T::AccountId>>,
 			metadata: Option<CommunityMetaDataFor<T>>,
 		) -> DispatchResult {
 			let community_id =
@@ -231,16 +231,20 @@ pub mod pallet {
 		pub fn update_community(
 			origin: OriginFor<T>,
 			logo: Option<Vec<u8>>,
-			description: Vec<u8>,
+			description: Option<Vec<u8>>,
 			community_id: T::CommunityId,
-			metadata: CommunityMetaDataFor<T>,
+			metadata: Option<CommunityMetaDataFor<T>>,
 		) -> DispatchResult {
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
-			let bounded_description: BoundedVec<u8, T::DescriptionLimit> = description
-				.clone()
-				.try_into()
-				.map_err(|_| Error::<T>::BadDescription)?;
+			let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
+				if let Some(desc) = description {
+					desc
+						.try_into()
+						.map_err(|_| Error::<T>::BadDescription)?
+				} else {
+					Default::default()
+				};
 
 			Communities::<T>::try_mutate(community_id, |maybe_community| {
 				let community = maybe_community
@@ -249,7 +253,7 @@ pub mod pallet {
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
 				community.logo = logo;
 				community.description = bounded_description;
-				community.metadata = Some(metadata);
+				community.metadata = metadata;
 				Self::deposit_event(Event::UpdatedCommunity(community_id));
 
 				Ok(())
@@ -304,17 +308,27 @@ impl<T: Config> Pallet<T> {
 		founder: T::AccountId,
 		logo: Option<Vec<u8>>,
 		name: Vec<u8>,
-		description: Vec<u8>,
-		members: Vec<T::AccountId>,
+		maybe_description: Option<Vec<u8>>,
+		maybe_members: Option<Vec<T::AccountId>>,
 		metadata: Option<CommunityMetaDataFor<T>>,
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
 
-		let bounded_description: BoundedVec<u8, T::DescriptionLimit> = description
-			.clone()
-			.try_into()
-			.map_err(|_| Error::<T>::BadDescription)?;
+		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
+			if let Some(desc) = maybe_description {
+			desc
+				.try_into()
+				.map_err(|_| Error::<T>::BadDescription)?
+		} else {
+			Default::default()
+		};
+
+		let members= if let Some(members) = maybe_members {
+			members
+		} else {
+			Vec::new()
+		};
 
 		let community = Community {
 			founder: founder.clone(),
