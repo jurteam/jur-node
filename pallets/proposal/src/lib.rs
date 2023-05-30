@@ -190,8 +190,8 @@ pub mod pallet {
 		BadDescription,
 		/// Proposal got inactive.
 		ProposalNotActive,
-		ChoiceNotExist,
-		DupliicateVote,
+		/// Duplicate vote.
+		DuplicateVote,
 	}
 
 	#[pallet::hooks]
@@ -307,14 +307,16 @@ pub mod pallet {
 			);
 			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
 
-			// Get all the choices id from the current proposal and check if current choice_id is already present or not?
+			// Get all the choices id from the current proposal and
+			// check if current choice_id is already present or not?
 			let all_choices =
 				Choices::<T>::get(proposal_id).ok_or(Error::<T>::NoChoiceAvailable)?;
+
 			let mut all_choice_id = Vec::new();
-			for i in all_choices.iter() {
-				all_choice_id.push(i.id);
+			for choice in all_choices.iter() {
+				all_choice_id.push(choice.id);
 			}
-			ensure!(all_choice_id.contains(&choice_id), Error::<T>::ChoiceNotExist);
+			ensure!(all_choice_id.contains(&choice_id), Error::<T>::ChoiceDoesNotExist);
 
 			ensure!(Votes::<T>::contains_key(&choice_id), Error::<T>::ChoiceDoesNotExist);
 
@@ -325,10 +327,13 @@ pub mod pallet {
 
 			Votes::<T>::mutate(choice_id, |vote| -> DispatchResult {
 				let new_count = vote.clone().unwrap().vote_count + 1;
+
 				// Get all the accounts which have already voted on the current proposal.
 				let mut all_account = vote.clone().unwrap().who;
+
 				// Check for duplicate vote.
-				ensure!(all_account.contains(&origin), Error::<T>::DupliicateVote);
+				ensure!(!all_account.contains(&origin), Error::<T>::DuplicateVote);
+
 				// Add new account in the voting list.
 				all_account.push(origin.clone());
 				*vote = Some(Vote {

@@ -123,7 +123,7 @@ fn submit_choice_works() {
 		create_proposal();
 		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1,));
 
-		assert_eq!(Votes::<Test>::get(1).vote_count, 1);
+		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
 	});
 }
 
