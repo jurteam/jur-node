@@ -129,7 +129,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn proposal_expire)]
 	pub type ProposalExpireTime<T: Config> =
-	StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
+		StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
 
 	/// Store Choices for a particular proposal
 	#[pallet::storage]
@@ -192,6 +192,8 @@ pub mod pallet {
 		ProposalNotActive,
 		/// Duplicate vote.
 		DuplicateVote,
+		/// Vote Not found for given choice Id.
+		VotesNotFound,
 	}
 
 	#[pallet::hooks]
@@ -224,7 +226,7 @@ pub mod pallet {
 						Ok(())
 					},
 				)
-					.expect("Proposal not found");
+				.expect("Proposal not found");
 			}
 			Weight::zero()
 		}
@@ -325,17 +327,15 @@ pub mod pallet {
 
 			ensure!(proposal.status, Error::<T>::ProposalNotActive);
 
+			ensure!(!(proposal.voter_accounts).contains(&origin), Error::<T>::DuplicateVote);
+
+			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |vote| -> DispatchResult {
-				let new_count = vote.clone().unwrap().vote_count + 1;
+				let new_count: u64 = vote.clone().ok_or(Error::<T>::VotesNotFound)?.vote_count + 1;
 
 				// Get all the accounts which have already voted on the current proposal.
-				let mut all_account = vote.clone().unwrap().who;
+				let all_account = vote.clone().ok_or(Error::<T>::VotesNotFound)?.who;
 
-				// Check for duplicate vote.
-				ensure!(!all_account.contains(&origin), Error::<T>::DuplicateVote);
-
-				// Add new account in the voting list.
-				all_account.push(origin.clone());
 				*vote = Some(Vote {
 					who: all_account.clone(),
 					vote_count: new_count,
@@ -343,6 +343,24 @@ pub mod pallet {
 				});
 				Ok(())
 			})?;
+
+			// Add this account in voter_accounts list.
+			let mut all_voters = proposal.voter_accounts;
+			all_voters.push(origin.clone());
+
+			Proposals::<T>::mutate(
+				community_id,
+				proposal_id,
+				|proposal_details| -> DispatchResult {
+					let all_proposal = proposal_details
+						.as_mut()
+						.ok_or(Error::<T>::ProposalDoesNotExist)?;
+					all_proposal.voter_accounts = all_voters;
+
+					Ok(())
+				},
+			)
+			.expect("Proposal not found");
 
 			Self::deposit_event(Event::SubmittedChoice);
 			Ok(().into())
@@ -371,6 +389,7 @@ impl<T: Config> Pallet<T> {
 			description: bounded_proposal,
 			historical: is_historical,
 			status: true,
+			voter_accounts: Vec::new(),
 		};
 
 		let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());

@@ -11,6 +11,7 @@ pub struct Proposal<DescriptionLimit: Get<u32>, AddressLimit: Get<u32>, AccountI
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub historical: bool,
 	pub status: bool,
+	pub voter_accounts: Vec<AccountId>,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
