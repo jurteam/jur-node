@@ -1,6 +1,7 @@
 use codec::{Decode, Encode};
 use frame_support::{pallet_prelude::Get, BoundedVec, RuntimeDebug};
 use scale_info::TypeInfo;
+use sp_std::vec::Vec;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 #[scale_info(skip_type_params(DescriptionLimit, AddressLimit))]
@@ -20,7 +21,8 @@ pub struct Choice<ChoiceId, LabelLimit: Get<u32>> {
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-pub struct Vote<BlockNumber> {
+pub struct Vote<BlockNumber, AccountId> {
+	pub who: Vec<AccountId>,
 	pub vote_count: u64,
 	pub last_voted: BlockNumber,
 }

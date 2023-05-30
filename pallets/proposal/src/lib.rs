@@ -129,7 +129,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn proposal_expire)]
 	pub type ProposalExpireTime<T: Config> =
-		StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
+	StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
 
 	/// Store Choices for a particular proposal
 	#[pallet::storage]
@@ -145,8 +145,13 @@ pub mod pallet {
 	/// Store votes submitted for a choice
 	#[pallet::storage]
 	#[pallet::getter(fn votes)]
-	pub type Votes<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::ChoiceId, Vote<T::BlockNumber>, ValueQuery>;
+	pub type Votes<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::ChoiceId,
+		Vote<T::BlockNumber, T::AccountId>,
+		OptionQuery,
+	>;
 
 	/// Stores the `ProposalId` that is going to be used for the next proposal.
 	/// This gets incremented whenever a new proposal is created.
@@ -185,6 +190,8 @@ pub mod pallet {
 		BadDescription,
 		/// Proposal got inactive.
 		ProposalNotActive,
+		ChoiceNotExist,
+		DupliicateVote,
 	}
 
 	#[pallet::hooks]
@@ -217,7 +224,7 @@ pub mod pallet {
 						Ok(())
 					},
 				)
-				.expect("Proposal not found");
+					.expect("Proposal not found");
 			}
 			Weight::zero()
 		}
@@ -299,19 +306,36 @@ pub mod pallet {
 				Error::<T>::ProposalDoesNotExist
 			);
 			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
-			ensure!(Votes::<T>::contains_key(choice_id), Error::<T>::ChoiceDoesNotExist);
+
+			// Get all the choices id from the current proposal and check if current choice_id is already present or not?
+			let all_choices =
+				Choices::<T>::get(proposal_id).ok_or(Error::<T>::NoChoiceAvailable)?;
+			let mut all_choice_id = Vec::new();
+			for i in all_choices.iter() {
+				all_choice_id.push(i.id);
+			}
+			ensure!(all_choice_id.contains(&choice_id), Error::<T>::ChoiceNotExist);
+
+			ensure!(Votes::<T>::contains_key(&choice_id), Error::<T>::ChoiceDoesNotExist);
 
 			let proposal = Proposals::<T>::get(community_id, proposal_id)
 				.ok_or(Error::<T>::ProposalDoesNotExist)?;
 
 			ensure!(proposal.status, Error::<T>::ProposalNotActive);
 
-			Votes::<T>::try_mutate(choice_id, |vote| -> DispatchResult {
-				let new_count = vote.vote_count + 1;
-				*vote = Vote {
+			Votes::<T>::mutate(choice_id, |vote| -> DispatchResult {
+				let new_count = vote.clone().unwrap().vote_count + 1;
+				// Get all the accounts which have already voted on the current proposal.
+				let mut all_account = vote.clone().unwrap().who;
+				// Check for duplicate vote.
+				ensure!(all_account.contains(&origin), Error::<T>::DupliicateVote);
+				// Add new account in the voting list.
+				all_account.push(origin.clone());
+				*vote = Some(Vote {
+					who: all_account.clone(),
 					vote_count: new_count,
 					last_voted: <frame_system::Pallet<T>>::block_number(),
-				};
+				});
 				Ok(())
 			})?;
 
@@ -355,8 +379,11 @@ impl<T: Config> Pallet<T> {
 
 				let choice_id: T::ChoiceId =
 					NextChoiceId::<T>::get().unwrap_or(T::ChoiceId::initial_value());
-				let vote =
-					Vote { vote_count: 0, last_voted: <frame_system::Pallet<T>>::block_number() };
+				let vote = Vote {
+					who: Vec::new(),
+					vote_count: 0,
+					last_voted: <frame_system::Pallet<T>>::block_number(),
+				};
 				<Votes<T>>::insert(choice_id, vote);
 
 				let next_choice_id = choice_id.increment();
@@ -377,11 +404,13 @@ impl<T: Config> Pallet<T> {
 		// fetch all the proposal of current account.
 		let mut all_proposal = ProposalDetails::<T>::get(proposer_account.clone());
 		all_proposal.push(new_proposal);
+
 		// Store the proposal of one account
 		ProposalDetails::<T>::insert(proposer_account, all_proposal);
 
 		let next_proposal_id = proposal_id.increment();
 		NextProposalId::<T>::set(Some(next_proposal_id));
+
 		// Storing choices
 		if !choices.is_empty() {
 			<Choices<T>>::insert(proposal_id, new_choices);
