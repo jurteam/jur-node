@@ -48,9 +48,9 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".as_bytes().to_vec(),
-		"Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into(),
-		members,
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
+			.into()),
+		Some(members),
 		Some(get_community_metadata::<T>()),
 	)
 	.unwrap();

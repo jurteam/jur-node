@@ -3,6 +3,7 @@ use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
 };
+use frame_support::pallet_prelude::Hooks;
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -77,6 +78,7 @@ impl pallet_proposal::Config for Test {
 	type LabelLimit = ConstU32<250>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
+	type AddressLimit = ConstU32<60>;
 	type WeightInfo = ();
 }
 
@@ -86,4 +88,24 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 		.build_storage::<Test>()
 		.unwrap()
 		.into()
+}
+
+fn init_block() {
+	System::on_initialize(System::block_number());
+	Proposal::on_initialize(System::block_number());
+
+}
+
+pub fn run_to_block(n: u64) {
+	while System::block_number() < n {
+		let b = System::block_number();
+
+		if System::block_number() > 1 {
+			System::on_finalize(System::block_number());
+			Proposal::on_finalize(System::block_number());
+		}
+
+		System::set_block_number(b + 1);
+		init_block();
+	}
 }
