@@ -303,10 +303,9 @@ pub mod pallet {
 
 			ensure!(community.members.contains(&origin), Error::<T>::NotAllowed);
 
-			ensure!(
-				Proposals::<T>::contains_key(community_id, proposal_id),
-				Error::<T>::ProposalDoesNotExist
-			);
+			let proposal = Proposals::<T>::get(community_id, proposal_id)
+				.ok_or(Error::<T>::ProposalDoesNotExist)?;
+
 			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
 
 			// Get all the choices id from the current proposal and
@@ -314,40 +313,29 @@ pub mod pallet {
 			let all_choices =
 				Choices::<T>::get(proposal_id).ok_or(Error::<T>::NoChoiceAvailable)?;
 
-			let mut all_choice_id = Vec::new();
-			for choice in all_choices.iter() {
-				all_choice_id.push(choice.id);
-			}
-			ensure!(all_choice_id.contains(&choice_id), Error::<T>::ChoiceDoesNotExist);
+			all_choices
+				.into_iter()
+				.find(|choice| choice.id == choice_id)
+				.ok_or(Error::<T>::ChoiceDoesNotExist)?;
 
-			ensure!(Votes::<T>::contains_key(&choice_id), Error::<T>::ChoiceDoesNotExist);
-
-			let proposal = Proposals::<T>::get(community_id, proposal_id)
-				.ok_or(Error::<T>::ProposalDoesNotExist)?;
+			// ensure!(Votes::<T>::contains_key(&choice_id), Error::<T>::ChoiceDoesNotExist);
 
 			ensure!(proposal.status, Error::<T>::ProposalNotActive);
 
 			ensure!(!(proposal.voter_accounts).contains(&origin), Error::<T>::DuplicateVote);
 
 			// Adding the vote to the storage.
-			Votes::<T>::mutate(choice_id, |vote| -> DispatchResult {
-				let new_count: u64 = vote.clone().ok_or(Error::<T>::VotesNotFound)?.vote_count + 1;
-
-				// Get all the accounts which have already voted on the current proposal.
-				let all_account = vote.clone().ok_or(Error::<T>::VotesNotFound)?.who;
-
-				*vote = Some(Vote {
-					who: all_account.clone(),
-					vote_count: new_count,
+			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
+				let vote = optional_vote.clone().ok_or(Error::<T>::VotesNotFound)?;
+				*optional_vote = Some(Vote {
+					who: vote.who,
+					vote_count: vote.vote_count + 1,
 					last_voted: <frame_system::Pallet<T>>::block_number(),
 				});
 				Ok(())
 			})?;
 
 			// Add this account in voter_accounts list.
-			let mut all_voters = proposal.voter_accounts;
-			all_voters.push(origin.clone());
-
 			Proposals::<T>::mutate(
 				community_id,
 				proposal_id,
@@ -355,12 +343,10 @@ pub mod pallet {
 					let all_proposal = proposal_details
 						.as_mut()
 						.ok_or(Error::<T>::ProposalDoesNotExist)?;
-					all_proposal.voter_accounts = all_voters;
-
+					all_proposal.voter_accounts.push(origin);
 					Ok(())
 				},
-			)
-			.expect("Proposal not found");
+			)?;
 
 			Self::deposit_event(Event::SubmittedChoice);
 			Ok(().into())
