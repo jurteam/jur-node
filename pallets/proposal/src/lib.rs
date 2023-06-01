@@ -318,8 +318,6 @@ pub mod pallet {
 				.find(|choice| choice.id == choice_id)
 				.ok_or(Error::<T>::ChoiceDoesNotExist)?;
 
-			// ensure!(Votes::<T>::contains_key(&choice_id), Error::<T>::ChoiceDoesNotExist);
-
 			ensure!(proposal.status, Error::<T>::ProposalNotActive);
 
 			ensure!(!(proposal.voter_accounts).contains(&origin), Error::<T>::DuplicateVote);
