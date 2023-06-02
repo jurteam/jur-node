@@ -79,6 +79,7 @@ impl pallet_proposal::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type AddressLimit = ConstU32<60>;
+	type AccountLimit = ConstU32<1>;
 	type WeightInfo = ();
 }
 

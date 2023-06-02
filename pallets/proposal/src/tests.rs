@@ -251,3 +251,18 @@ fn submit_choice_not_works_for_unavailable_choice() {
 		);
 	});
 }
+
+#[test]
+fn submit_choice_not_works_for_account_limit_exceeds() {
+	new_test_ext().execute_with(|| {
+		create_proposal();
+		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1));
+
+		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
+
+		assert_noop!(
+			Proposal::submit_choice(RuntimeOrigin::signed(2), 0, 0, 1),
+			Error::<Test>::AccountLimitReached
+		);
+	});
+}

@@ -91,6 +91,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type AddressLimit: Get<u32>;
 
+		/// The maximum length of address.
+		#[pallet::constant]
+		type AccountLimit: Get<u32>;
+
 		#[cfg(feature = "runtime-benchmarks")]
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::ProposalId, Self::ChoiceId>;
@@ -112,7 +116,7 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::ProposalId,
-		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId>,
+		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId, T::AccountLimit>,
 		OptionQuery,
 	>;
 
@@ -122,7 +126,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::AccountId,
-		Vec<Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId>>,
+		Vec<Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId, T::AccountLimit>>,
 		ValueQuery,
 	>;
 
@@ -149,7 +153,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::ChoiceId,
-		Vote<T::BlockNumber, T::AccountId>,
+		Vote<T::BlockNumber, T::AccountId, T::AccountLimit>,
 		OptionQuery,
 	>;
 
@@ -194,6 +198,8 @@ pub mod pallet {
 		DuplicateVote,
 		/// Vote Not found for given choice Id.
 		VotesNotFound,
+		/// New account can't be added due to account limit.
+		AccountLimitReached,
 	}
 
 	#[pallet::hooks]
@@ -324,9 +330,9 @@ pub mod pallet {
 
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
-				let vote = optional_vote.clone().ok_or(Error::<T>::VotesNotFound)?;
+				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
 				*optional_vote = Some(Vote {
-					who: vote.who,
+					who: vote.who.clone(),
 					vote_count: vote.vote_count + 1,
 					last_voted: <frame_system::Pallet<T>>::block_number(),
 				});
@@ -341,7 +347,7 @@ pub mod pallet {
 					let all_proposal = proposal_details
 						.as_mut()
 						.ok_or(Error::<T>::ProposalDoesNotExist)?;
-					all_proposal.voter_accounts.push(origin);
+					all_proposal.voter_accounts.try_push(origin).ok().ok_or(Error::<T>::AccountLimitReached)?;
 					Ok(())
 				},
 			)?;
@@ -367,13 +373,18 @@ impl<T: Config> Pallet<T> {
 			.try_into()
 			.map_err(|_| Error::<T>::BadDescription)?;
 
+		let bounded_account: BoundedVec<T::AccountId, <T as Config>::AccountLimit> = Vec::new()
+			.clone()
+			.try_into()
+			.map_err(|_| Error::<T>::AccountLimitReached)?;
+
 		let new_proposal = Proposal {
 			proposer: proposer_account.clone(),
 			address,
 			description: bounded_proposal,
 			historical: is_historical,
 			status: true,
-			voter_accounts: Vec::new(),
+			voter_accounts: bounded_account.clone(),
 		};
 
 		let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
@@ -388,7 +399,7 @@ impl<T: Config> Pallet<T> {
 				let choice_id: T::ChoiceId =
 					NextChoiceId::<T>::get().unwrap_or(T::ChoiceId::initial_value());
 				let vote = Vote {
-					who: Vec::new(),
+					who: bounded_account.clone(),
 					vote_count: 0,
 					last_voted: <frame_system::Pallet<T>>::block_number(),
 				};
