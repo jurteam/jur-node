@@ -123,7 +123,7 @@ fn submit_choice_works() {
 		create_proposal();
 		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1,));
 
-		assert_eq!(Votes::<Test>::get(1).vote_count, 1);
+		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
 	});
 }
 
@@ -207,6 +207,62 @@ fn submit_proposal_not_work_for_after_proposal_deadline() {
 		assert_noop!(
 			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 0),
 			Error::<Test>::ProposalNotActive
+		);
+	});
+}
+
+#[test]
+fn submit_choice_not_works_for_duplicate_vote() {
+	new_test_ext().execute_with(|| {
+		create_proposal();
+		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1));
+
+		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
+
+		assert_noop!(
+			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1),
+			Error::<Test>::DuplicateVote
+		);
+	});
+}
+
+#[test]
+fn submit_choice_not_works_for_unavailable_choice() {
+	new_test_ext().execute_with(|| {
+		let proposal_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
+			proposal_address.try_into().unwrap();
+
+		create_community();
+		assert_ok!(Proposal::create_proposal(
+			RuntimeOrigin::signed(1),
+			0,
+			bounded_proposal_address,
+			"Which is your native country".into(),
+			vec![],
+			false,
+			5
+		));
+
+		assert_noop!(
+			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1),
+			Error::<Test>::NoChoiceAvailable
+		);
+	});
+}
+
+#[test]
+fn submit_choice_not_works_for_account_limit_exceeds() {
+	new_test_ext().execute_with(|| {
+		create_proposal();
+		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1));
+
+		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
+
+		assert_noop!(
+			Proposal::submit_choice(RuntimeOrigin::signed(2), 0, 0, 1),
+			Error::<Test>::AccountLimitReached
 		);
 	});
 }

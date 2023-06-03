@@ -413,6 +413,7 @@ impl pallet_proposal::Config for Runtime {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type AddressLimit = ConstU32<60>;
+	type AccountLimit = ConstU32<500>;
 	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
 }
 

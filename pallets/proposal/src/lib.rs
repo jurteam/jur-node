@@ -91,6 +91,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type AddressLimit: Get<u32>;
 
+		/// The maximum length of address.
+		#[pallet::constant]
+		type AccountLimit: Get<u32>;
+
 		#[cfg(feature = "runtime-benchmarks")]
 		/// A set of helper functions for benchmarking.
 		type Helper: BenchmarkHelper<Self::ProposalId, Self::ChoiceId>;
@@ -112,7 +116,7 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::ProposalId,
-		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId>,
+		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId, T::AccountLimit>,
 		OptionQuery,
 	>;
 
@@ -122,7 +126,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::AccountId,
-		Vec<Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId>>,
+		Vec<Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId, T::AccountLimit>>,
 		ValueQuery,
 	>;
 
@@ -145,8 +149,13 @@ pub mod pallet {
 	/// Store votes submitted for a choice
 	#[pallet::storage]
 	#[pallet::getter(fn votes)]
-	pub type Votes<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::ChoiceId, Vote<T::BlockNumber>, ValueQuery>;
+	pub type Votes<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::ChoiceId,
+		Vote<T::BlockNumber, T::AccountId, T::AccountLimit>,
+		OptionQuery,
+	>;
 
 	/// Stores the `ProposalId` that is going to be used for the next proposal.
 	/// This gets incremented whenever a new proposal is created.
@@ -185,6 +194,12 @@ pub mod pallet {
 		BadDescription,
 		/// Proposal got inactive.
 		ProposalNotActive,
+		/// Duplicate vote.
+		DuplicateVote,
+		/// Vote Not found for given choice Id.
+		VotesNotFound,
+		/// New account can't be added due to account limit.
+		AccountLimitReached,
 	}
 
 	#[pallet::hooks]
@@ -294,26 +309,48 @@ pub mod pallet {
 
 			ensure!(community.members.contains(&origin), Error::<T>::NotAllowed);
 
-			ensure!(
-				Proposals::<T>::contains_key(community_id, proposal_id),
-				Error::<T>::ProposalDoesNotExist
-			);
-			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
-			ensure!(Votes::<T>::contains_key(choice_id), Error::<T>::ChoiceDoesNotExist);
-
 			let proposal = Proposals::<T>::get(community_id, proposal_id)
 				.ok_or(Error::<T>::ProposalDoesNotExist)?;
 
+			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
+
+			// Get all the choices id from the current proposal and
+			// check if current choice_id is already present or not?
+			let all_choices =
+				Choices::<T>::get(proposal_id).ok_or(Error::<T>::NoChoiceAvailable)?;
+
+			all_choices
+				.into_iter()
+				.find(|choice| choice.id == choice_id)
+				.ok_or(Error::<T>::ChoiceDoesNotExist)?;
+
 			ensure!(proposal.status, Error::<T>::ProposalNotActive);
 
-			Votes::<T>::try_mutate(choice_id, |vote| -> DispatchResult {
-				let new_count = vote.vote_count + 1;
-				*vote = Vote {
-					vote_count: new_count,
+			ensure!(!(proposal.voter_accounts).contains(&origin), Error::<T>::DuplicateVote);
+
+			// Adding the vote to the storage.
+			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
+				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
+				*optional_vote = Some(Vote {
+					who: vote.who.clone(),
+					vote_count: vote.vote_count + 1,
 					last_voted: <frame_system::Pallet<T>>::block_number(),
-				};
+				});
 				Ok(())
 			})?;
+
+			// Add this account in voter_accounts list.
+			Proposals::<T>::mutate(
+				community_id,
+				proposal_id,
+				|proposal_details| -> DispatchResult {
+					let all_proposal = proposal_details
+						.as_mut()
+						.ok_or(Error::<T>::ProposalDoesNotExist)?;
+					all_proposal.voter_accounts.try_push(origin).ok().ok_or(Error::<T>::AccountLimitReached)?;
+					Ok(())
+				},
+			)?;
 
 			Self::deposit_event(Event::SubmittedChoice);
 			Ok(().into())
@@ -336,12 +373,18 @@ impl<T: Config> Pallet<T> {
 			.try_into()
 			.map_err(|_| Error::<T>::BadDescription)?;
 
+		let bounded_account: BoundedVec<T::AccountId, <T as Config>::AccountLimit> = Vec::new()
+			.clone()
+			.try_into()
+			.map_err(|_| Error::<T>::AccountLimitReached)?;
+
 		let new_proposal = Proposal {
 			proposer: proposer_account.clone(),
 			address,
 			description: bounded_proposal,
 			historical: is_historical,
 			status: true,
+			voter_accounts: bounded_account.clone(),
 		};
 
 		let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
@@ -355,8 +398,11 @@ impl<T: Config> Pallet<T> {
 
 				let choice_id: T::ChoiceId =
 					NextChoiceId::<T>::get().unwrap_or(T::ChoiceId::initial_value());
-				let vote =
-					Vote { vote_count: 0, last_voted: <frame_system::Pallet<T>>::block_number() };
+				let vote = Vote {
+					who: bounded_account.clone(),
+					vote_count: 0,
+					last_voted: <frame_system::Pallet<T>>::block_number(),
+				};
 				<Votes<T>>::insert(choice_id, vote);
 
 				let next_choice_id = choice_id.increment();
@@ -377,11 +423,13 @@ impl<T: Config> Pallet<T> {
 		// fetch all the proposal of current account.
 		let mut all_proposal = ProposalDetails::<T>::get(proposer_account.clone());
 		all_proposal.push(new_proposal);
+
 		// Store the proposal of one account
 		ProposalDetails::<T>::insert(proposer_account, all_proposal);
 
 		let next_proposal_id = proposal_id.increment();
 		NextProposalId::<T>::set(Some(next_proposal_id));
+
 		// Storing choices
 		if !choices.is_empty() {
 			<Choices<T>>::insert(proposal_id, new_choices);
