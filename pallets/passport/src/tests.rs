@@ -7,21 +7,21 @@ use sp_core::H256;
 
 fn get_community_metadata() -> CommunityMetaData<u64, H256> {
 	let community_metadata = CommunityMetaData {
-		community_type: CommunityType::Nation,
-		customs: vec![
+		community_type: Some(CommunityType::Nation),
+		customs: Some(vec![
 			"in public transport young people should leave the seat to elderly or pregnant women"
 				.into(),
 			"name newborns with a name that starts with the letter A".into(),
-		],
-		languages: vec!["English".into(), "German".into()],
-		norms: vec![],
-		religions: vec!["Christianity".into(), "Buddhism".into()],
-		territories: vec!["Mars".into()],
-		traditions: vec![
+		]),
+		languages: Some(vec!["English".into(), "German".into()]),
+		norms: Some(vec![]),
+		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+		territories: Some(vec!["Mars".into()]),
+		traditions: Some(vec![
 			"Exchange gifts for Christmas".into(),
 			"Organize one charity event every 100 blocks".into(),
-		],
-		values: vec!["Peace".into(), "No gender discrimination".into()],
+		]),
+		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
 	};
 
 	community_metadata

@@ -124,6 +124,8 @@ pub mod pallet {
 		UpdatedCommunity(T::CommunityId),
 		/// Updated Community [community]
 		AddedMembers(T::CommunityId),
+		/// Updated Community Metadata [community]
+		UpdatedMetadata(T::CommunityId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -222,7 +224,6 @@ pub mod pallet {
 		/// - `logo`: This is an image file (also a GIF is valid) that is uploaded on IPFS.
 		/// - `description`: Information about community
 		/// - `community_id`: Id of the community to be updated
-		/// - `metadata`: Other customizable fields like community_type, custom, language, norms etc.
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		///
@@ -230,10 +231,9 @@ pub mod pallet {
 		#[pallet::weight(T::WeightInfo::update_community())]
 		pub fn update_community(
 			origin: OriginFor<T>,
+			community_id: T::CommunityId,
 			logo: Option<Vec<u8>>,
 			description: Option<Vec<u8>>,
-			community_id: T::CommunityId,
-			metadata: Option<CommunityMetaDataFor<T>>,
 		) -> DispatchResult {
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
@@ -253,7 +253,37 @@ pub mod pallet {
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
 				community.logo = logo;
 				community.description = bounded_description;
-				community.metadata = metadata;
+				Self::deposit_event(Event::UpdatedCommunity(community_id));
+
+				Ok(())
+			})
+		}
+
+		/// Update a particular community metadata from a privileged origin.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be updated.
+		/// - `metadata`: Other customizable fields like community_type, custom, language, norms etc.
+		///
+		/// Emits `UpdatedMetadata` event when successful.
+		///
+		#[pallet::call_index(3)]
+		#[pallet::weight(T::WeightInfo::update_community())]
+		pub fn update_metadata(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+			metadata: CommunityMetaDataFor<T>,
+		) -> DispatchResult {
+			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			Communities::<T>::try_mutate(community_id, |maybe_community| {
+				let community = maybe_community
+					.as_mut()
+					.ok_or(Error::<T>::CommunityNotExist)?;
+				ensure!(founder == community.founder, Error::<T>::NoPermission);
+				community.metadata = Option::from(metadata);
 				Self::deposit_event(Event::UpdatedCommunity(community_id));
 
 				Ok(())
@@ -269,7 +299,7 @@ pub mod pallet {
 		/// - `members`: Members of teh community
 		///
 		/// Emits `UpdatedCommunity` event when successful.
-		#[pallet::call_index(3)]
+		#[pallet::call_index(4)]
 		#[pallet::weight(10_000)]
 		pub fn add_members(
 			origin: OriginFor<T>,

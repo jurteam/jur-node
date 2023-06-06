@@ -16,21 +16,21 @@ fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
 
 fn get_metadata<T: Config>() -> CommunityMetaData<T::AccountId, T::Hash> {
 	CommunityMetaData {
-		community_type: CommunityType::Nation,
-		customs: vec![
+		community_type: Some(CommunityType::Nation),
+		customs: Some(vec![
 			"in public transport young people should leave the seat to elderly or pregnant women"
 				.into(),
 			"name newborns with a name that starts with the letter A".into(),
-		],
-		languages: vec!["English".into(), "German".into()],
-		norms: vec![],
-		religions: vec!["Christianity".into(), "Buddhism".into()],
-		territories: vec!["Mars".into()],
-		traditions: vec![
+		]),
+		languages: Some(vec!["English".into(), "German".into()]),
+		norms: Some(vec![]),
+		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+		territories: Some(vec!["Mars".into()]),
+		traditions: Some(vec![
 			"Exchange gifts for Christmas".into(),
 			"Organize one charity event every 100 blocks".into(),
-		],
-		values: vec!["Peace".into(), "No gender discrimination".into()],
+		]),
+		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
 	}
 }
 benchmarks! {
@@ -86,29 +86,11 @@ benchmarks! {
 			Some(get_metadata::<T>())
 		).unwrap();
 
-		let metadata: CommunityMetaData<T::AccountId, T::Hash> = CommunityMetaData {
-			community_type: CommunityType::Nation,
-			customs: vec![
-				"in public transport young people should leave the seat to elderly or pregnant women"
-					.into(),
-				"name newborns with a name that starts with the letter A".into(),
-			],
-			languages: vec!["English".into()],
-			norms: vec![],
-			religions: vec!["Christianity".into()],
-			territories: vec!["Mars".into()],
-			traditions: vec![
-				"Exchange gifts for Christmas".into(),
-				"Organize one charity event every 100 blocks".into(),
-			],
-			values: vec!["Peace".into(), "No gender discrimination".into()],
-		};
-
 		let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
 		let description = "Jur is the core community of the Jur ecosystem";
 
 	}: _(
-		RawOrigin::Signed(caller), Some(logo.into()), Some(description.into()), T::Helper::community(0), Some(metadata)
+		RawOrigin::Signed(caller), T::Helper::community(0), Some(logo.into()), Some(description.into())
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::UpdatedCommunity(T::Helper::community(0)).into());

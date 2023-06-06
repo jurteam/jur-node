@@ -8,21 +8,21 @@ use sp_core::H256;
 
 fn get_metadata() -> CommunityMetaData<u64, H256> {
 	let community_metadata = CommunityMetaData {
-		community_type: CommunityType::Nation,
-		customs: vec![
+		community_type: Some(CommunityType::Nation),
+		customs: Some(vec![
 			"in public transport young people should leave the seat to elderly or pregnant women"
 				.into(),
 			"name newborns with a name that starts with the letter A".into(),
-		],
-		languages: vec!["English".into(), "German".into()],
-		norms: vec![],
-		religions: vec!["Christianity".into(), "Buddhism".into()],
-		territories: vec!["Mars".into()],
-		traditions: vec![
+		]),
+		languages: Some(vec!["English".into(), "German".into()]),
+		norms: Some(vec![]),
+		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+		territories: Some(vec!["Mars".into()]),
+		traditions: Some(vec![
 			"Exchange gifts for Christmas".into(),
 			"Organize one charity event every 100 blocks".into(),
-		],
-		values: vec!["Peace".into(), "No gender discrimination".into()],
+		]),
+		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
 	};
 
 	community_metadata
@@ -106,10 +106,9 @@ fn update_community_not_works_for_invalid_input() {
 		assert_noop!(
 			Community::update_community(
 				RuntimeOrigin::signed(1),
-				Some(logo.into()),
-				Some(description.into()),
 				0,
-				Some(get_metadata())
+				Some(logo.into()),
+				Some(description.into())
 			),
 			Error::<Test>::CommunityNotExist
 		);
@@ -120,10 +119,9 @@ fn update_community_not_works_for_invalid_input() {
 		assert_noop!(
 			Community::update_community(
 				RuntimeOrigin::signed(2),
-				Some(logo.into()),
-				Some(description.into()),
 				0,
-				Some(get_metadata())
+				Some(logo.into()),
+				Some(description.into())
 			),
 			Error::<Test>::NoPermission
 		);
@@ -136,34 +134,14 @@ fn update_community_works() {
         create_community();
         assert!(Communities::<Test>::contains_key(0));
 
-        assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]);
-
-        let metadata = CommunityMetaData {
-            community_type: CommunityType::Nation,
-            customs: vec![
-                "in public transport young people should leave the seat to elderly or pregnant women"
-                    .into(),
-                "name newborns with a name that starts with the letter A".into(),
-            ],
-            languages: vec!["English".into()],
-            norms: vec![],
-            religions: vec!["Christianity".into()],
-            territories: vec!["Mars".into()],
-            traditions: vec![
-                "Exchange gifts for Christmas".into(),
-                "Organize one charity event every 100 blocks".into(),
-            ],
-            values: vec!["Peace".into(), "No gender discrimination".into()],
-        };
+        assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), "bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".as_bytes().to_vec());
 
         let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
         let description = "Jur is the core community of the Jur ecosystem";
 
-        assert_ok!(Community::update_community(RuntimeOrigin::signed(1), Some(logo.into()), Some(description.into()), 0, Some(metadata)));
+        assert_ok!(Community::update_community(RuntimeOrigin::signed(1), 0, Some(logo.into()), Some(description.into())));
 
         assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
-        assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, vec!["English".as_bytes().to_vec()]);
-        assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().religions, vec!["Christianity".as_bytes().to_vec()]);
 
     });
 }
