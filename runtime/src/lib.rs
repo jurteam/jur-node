@@ -10,11 +10,7 @@ use frame_support::{
 	pallet_prelude::DispatchClass,
 	traits::{AsEnsureOriginWithArg, LockIdentifier},
 };
-use frame_system::{
-	EnsureSigned,
-	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
-};
+use frame_system::{EnsureSigned, limits::{BlockLength, BlockWeights}, EnsureRoot};
 use hex_literal::hex;
 use pallet_grandpa::AuthorityId as GrandpaId;
 use sp_api::impl_runtime_apis;
@@ -50,6 +46,8 @@ use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
+
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
@@ -313,7 +311,7 @@ impl pallet_assets::Config for Runtime {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -425,6 +423,73 @@ impl pallet_passport::Config for Runtime {
 	type Helper = ();
 	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
 }
+
+type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
+
+pub struct Author;
+impl OnUnbalanced<NegativeImbalance> for Author {
+	fn on_nonzero_unbalanced(amount: NegativeImbalance) {
+		if let Some(author) = Authorship::author() {
+			Balances::resolve_creating(&author, amount);
+		}
+	}
+}
+
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance> for DealWithFees {
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
+		if let Some(fees) = fees_then_tips.next() {
+			let mut split = fees.ration(80, 20);
+			if let Some(tips) = fees_then_tips.next() {
+				tips.ration_merge_into(0, 100, &mut split);
+			}
+			Treasury::on_unbalanced(split.0);
+			Author::on_unbalanced(split.1);
+		}
+	}
+}
+
+
+pub struct AuraAccountAdapter;
+impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
+	fn find_author<'a, I>(digests: I) -> Option<AccountId>
+		where I: 'a + IntoIterator<Item=(frame_support::ConsensusEngineId, &'a [u8])>
+	{
+		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests).and_then(|k| {
+			AccountId::try_from(k.as_ref()).ok()
+		})
+	}
+}
+
+impl pallet_authorship::Config for Runtime {
+	type FindAuthor = AuraAccountAdapter;
+	type EventHandler = ();
+}
+
+parameter_types! {
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const Burn: Permill = Permill::from_percent(0);
+	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+}
+
+impl pallet_treasury::Config for Runtime {
+	type PalletId = TreasuryPalletId;
+	type Currency = Balances;
+	type ApproveOrigin = EnsureRoot<AccountId>;
+	type RejectOrigin = EnsureRoot<AccountId>;
+	type RuntimeEvent = RuntimeEvent;
+	type OnSlash = ();
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ConstU128<{ 1 * DOLLARS }>;
+	type ProposalBondMaximum = ();
+	type SpendPeriod = ConstU32<{ 1 * DAYS }>;
+	type Burn = Burn;
+	type BurnDestination = ();
+	type SpendFunds = ();
+	type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
+	type MaxApprovals = ConstU32<100>;
+	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
+}
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -446,6 +511,8 @@ construct_runtime!(
 		Community: pallet_community,
 		Proposal: pallet_proposal,
 		Passport: pallet_passport,
+		Authorship: pallet_authorship,
+		Treasury: pallet_treasury,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 	}

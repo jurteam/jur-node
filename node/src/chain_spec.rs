@@ -124,5 +124,6 @@ fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		assets: Default::default(),
+		treasury: Default::default(),
 	}
 }
