@@ -182,3 +182,70 @@ fn add_members_not_works_for_invalid_input() {
 		);
 	});
 }
+
+#[test]
+fn update_metadata_works() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		assert!(Communities::<Test>::contains_key(0));
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]));
+
+		let community_metadata = CommunityMetaData {
+			community_type: Some(CommunityType::Nation),
+			customs: Some(vec![
+				"in public transport young people should leave the seat to elderly or pregnant women"
+					.into(),
+				"name newborns with a name that starts with the letter A".into(),
+			]),
+			languages: Some(vec!["Spanish".into(), "Swish".into()]),
+			norms: None,
+			religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+			territories: None,
+			traditions: Some(vec![
+				"Exchange gifts for Christmas".into(),
+				"Organize one charity event every 100 blocks".into(),
+			]),
+			values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
+		};
+
+		assert_ok!(Community::update_metadata(RuntimeOrigin::signed(1), 0, community_metadata));
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["Spanish".as_bytes().to_vec(), "Swish".as_bytes().to_vec()]));
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().territories, None);
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().norms, None);
+
+	});
+}
+
+#[test]
+fn update_metadata_not_works_for_invalid_community_id() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		assert!(Communities::<Test>::contains_key(0));
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]));
+
+		assert_noop!(
+			Community::update_metadata(RuntimeOrigin::signed(1), 1, get_metadata()),
+			Error::<Test>::CommunityNotExist
+		);
+	});
+}
+
+#[test]
+fn update_metadata_not_works_for_invalid_caller() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		assert!(Communities::<Test>::contains_key(0));
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]));
+
+		assert_noop!(
+			Community::update_metadata(RuntimeOrigin::signed(2), 0, get_metadata()),
+			Error::<Test>::NoPermission
+		);
+	});
+}

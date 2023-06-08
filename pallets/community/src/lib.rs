@@ -282,9 +282,12 @@ pub mod pallet {
 				let community = maybe_community
 					.as_mut()
 					.ok_or(Error::<T>::CommunityNotExist)?;
+
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
+
 				community.metadata = Option::from(metadata);
-				Self::deposit_event(Event::UpdatedCommunity(community_id));
+
+				Self::deposit_event(Event::UpdatedMetadata(community_id));
 
 				Ok(())
 			})
