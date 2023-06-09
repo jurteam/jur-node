@@ -15,6 +15,7 @@
 //!
 //! * `create_community`
 //! * `update_community`
+//! * `update_metadata`
 //! * `delete_community`
 //! * `add_members`
 //!
@@ -221,9 +222,9 @@ pub mod pallet {
 		/// The origin must conform to `CreateOrigin`.
 		///
 		/// Parameters:
+		/// - `community_id`: Id of the community to be updated.
 		/// - `logo`: This is an image file (also a GIF is valid) that is uploaded on IPFS.
-		/// - `description`: Information about community
-		/// - `community_id`: Id of the community to be updated
+		/// - `description`: Information about community.
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		///
@@ -248,9 +249,12 @@ pub mod pallet {
 				let community = maybe_community
 					.as_mut()
 					.ok_or(Error::<T>::CommunityNotExist)?;
+
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
+
 				community.logo = logo;
 				community.description = bounded_description;
+
 				Self::deposit_event(Event::UpdatedCommunity(community_id));
 
 				Ok(())
@@ -268,7 +272,7 @@ pub mod pallet {
 		/// Emits `UpdatedMetadata` event when successful.
 		///
 		#[pallet::call_index(3)]
-		#[pallet::weight(T::WeightInfo::update_community())]
+		#[pallet::weight(T::WeightInfo::update_metadata())]
 		pub fn update_metadata(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
