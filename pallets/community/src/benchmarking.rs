@@ -96,6 +96,45 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::UpdatedCommunity(T::Helper::community(0)).into());
 	}
 
+	update_metadata {
+		let caller: T::AccountId = whitelisted_caller();
+		let members = vec![account("sub", 1, SEED)];
+
+		Community::<T>::create_community(
+			RawOrigin::Signed(caller.clone()).into(),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur".into(),
+			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+			Some(members),
+			Some(get_metadata::<T>())
+		).unwrap();
+
+		let community_metadata = CommunityMetaData {
+			community_type: Some(CommunityType::Nation),
+			customs: Some(vec![
+				"in public transport young people should leave the seat to elderly or pregnant women"
+					.into(),
+				"name newborns with a name that starts with the letter A".into(),
+			]),
+			languages: Some(vec!["Spanish".into(), "Swish".into()]),
+			norms: None,
+			religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+			territories: None,
+			traditions: Some(vec![
+				"Exchange gifts for Christmas".into(),
+				"Organize one charity event every 100 blocks".into(),
+			]),
+			values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
+		};
+
+	}: _(
+		RawOrigin::Signed(caller), T::Helper::community(0), community_metadata
+	)
+	verify {
+		assert_last_event::<T>(Event::<T>::UpdatedMetadata(T::Helper::community(0)).into());
+	}
+
 	add_members {
 	let caller: T::AccountId = whitelisted_caller();
 	let members = vec![account("sub", 1, SEED)];
