@@ -438,13 +438,32 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
+
+		let burn_fee_account: AccountId = hex!["04063fc1cbba917ced6c45091bf631de6a4db584dd55c1d67431661a5d57a575"].into();
+		let society_reward_account: AccountId = hex!["cc5245e57dcf6c8f051e012beceaa1683578ae873223d3ef4f8cbd85a62e1536"].into();
+
 		if let Some(fees) = fees_then_tips.next() {
-			let mut split = fees.ration(80, 20);
+			// for fees, 40% to fee_split, which will further split into collator and burn fees.
+			// for fee, 60% goes to pool_split, which will further split into society and ecosystem pool.
+			let split = fees.ration(40, 60);
+
+			// Fee split contains collator fees and burn fees.
+			let fee_split = split.0.ration(50, 50);
+
+			// Pool split contains society and ecosystem pool.
+			let mut pool_split = split.1.ration(67, 33);
+
+			// if any tips received it will got to jur ecosystem pool.
 			if let Some(tips) = fees_then_tips.next() {
-				tips.ration_merge_into(0, 100, &mut split);
+				// for tips, if any, 100% to ecosystem pool
+				tips.merge_into(&mut pool_split.1);
 			}
-			Treasury::on_unbalanced(split.0);
-			Author::on_unbalanced(split.1);
+
+			Author::on_unbalanced(fee_split.0);
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(&burn_fee_account, fee_split.1.into());
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(&society_reward_account, pool_split.0.into());
+			Treasury::on_unbalanced(pool_split.1);
+
 		}
 	}
 }
