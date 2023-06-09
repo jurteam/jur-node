@@ -33,8 +33,10 @@ fn create_community() {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into()),
+		Some(
+			"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+				.into(),
+		),
 		Some(vec![1, 2]),
 		Some(get_metadata()),
 	)
@@ -62,7 +64,7 @@ fn create_community_works_only_with_name() {
 			None,
 			None,
 		)
-			.unwrap();
+		.unwrap();
 		assert!(Communities::<Test>::contains_key(0));
 		assert_eq!(Communities::<Test>::get(0).unwrap().name.to_vec(), "Jur".as_bytes().to_vec());
 	});
@@ -131,19 +133,28 @@ fn update_community_not_works_for_invalid_input() {
 #[test]
 fn update_community_works() {
 	new_test_ext().execute_with(|| {
-        create_community();
-        assert!(Communities::<Test>::contains_key(0));
+		create_community();
+		assert!(Communities::<Test>::contains_key(0));
 
-        assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), "bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".as_bytes().to_vec());
+		assert_eq!(
+			Communities::<Test>::get(0).unwrap().logo.unwrap(),
+			"bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq"
+				.as_bytes()
+				.to_vec()
+		);
 
-        let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
-        let description = "Jur is the core community of the Jur ecosystem";
+		let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
+		let description = "Jur is the core community of the Jur ecosystem";
 
-        assert_ok!(Community::update_community(RuntimeOrigin::signed(1), 0, Some(logo.into()), Some(description.into())));
+		assert_ok!(Community::update_community(
+			RuntimeOrigin::signed(1),
+			0,
+			Some(logo.into()),
+			Some(description.into())
+		));
 
-        assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
-
-    });
+		assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
+	});
 }
 
 #[test]
@@ -189,7 +200,14 @@ fn update_metadata_works() {
 		create_community();
 		assert!(Communities::<Test>::contains_key(0));
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]));
+		assert_eq!(
+			Communities::<Test>::get(0)
+				.unwrap()
+				.metadata
+				.unwrap()
+				.languages,
+			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
+		);
 
 		let community_metadata = CommunityMetaData {
 			community_type: Some(CommunityType::Nation),
@@ -211,12 +229,25 @@ fn update_metadata_works() {
 
 		assert_ok!(Community::update_metadata(RuntimeOrigin::signed(1), 0, community_metadata));
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["Spanish".as_bytes().to_vec(), "Swish".as_bytes().to_vec()]));
+		assert_eq!(
+			Communities::<Test>::get(0)
+				.unwrap()
+				.metadata
+				.unwrap()
+				.languages,
+			Some(vec!["Spanish".as_bytes().to_vec(), "Swish".as_bytes().to_vec()])
+		);
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().territories, None);
+		assert_eq!(
+			Communities::<Test>::get(0)
+				.unwrap()
+				.metadata
+				.unwrap()
+				.territories,
+			None
+		);
 
 		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().norms, None);
-
 	});
 }
 
@@ -226,7 +257,14 @@ fn update_metadata_not_works_for_invalid_community_id() {
 		create_community();
 		assert!(Communities::<Test>::contains_key(0));
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]));
+		assert_eq!(
+			Communities::<Test>::get(0)
+				.unwrap()
+				.metadata
+				.unwrap()
+				.languages,
+			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
+		);
 
 		assert_noop!(
 			Community::update_metadata(RuntimeOrigin::signed(1), 1, get_metadata()),
@@ -241,7 +279,14 @@ fn update_metadata_not_works_for_invalid_caller() {
 		create_community();
 		assert!(Communities::<Test>::contains_key(0));
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().languages, Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()]));
+		assert_eq!(
+			Communities::<Test>::get(0)
+				.unwrap()
+				.metadata
+				.unwrap()
+				.languages,
+			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
+		);
 
 		assert_noop!(
 			Community::update_metadata(RuntimeOrigin::signed(2), 0, get_metadata()),

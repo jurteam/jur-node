@@ -239,9 +239,7 @@ pub mod pallet {
 
 			let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
 				if let Some(desc) = description {
-					desc
-						.try_into()
-						.map_err(|_| Error::<T>::BadDescription)?
+					desc.try_into().map_err(|_| Error::<T>::BadDescription)?
 				} else {
 					Default::default()
 				};
@@ -350,18 +348,12 @@ impl<T: Config> Pallet<T> {
 
 		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
 			if let Some(desc) = maybe_description {
-			desc
-				.try_into()
-				.map_err(|_| Error::<T>::BadDescription)?
-		} else {
-			Default::default()
-		};
+				desc.try_into().map_err(|_| Error::<T>::BadDescription)?
+			} else {
+				Default::default()
+			};
 
-		let members= if let Some(members) = maybe_members {
-			members
-		} else {
-			Vec::new()
-		};
+		let members = if let Some(members) = maybe_members { members } else { Vec::new() };
 
 		let community = Community {
 			founder: founder.clone(),
