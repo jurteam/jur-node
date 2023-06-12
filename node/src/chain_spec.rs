@@ -238,16 +238,20 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![
 					(
-						hex!["f24380855d8cf4a6f2c4c4b72af1f4d3b95636e046734a84e679c14bba271443"].unchecked_into(),
-						hex!["4db5ea0c4b773a739434614a1c1fd4c5c5784477f8846d41a981303a9f23584b"].unchecked_into()
+						hex!["3a7ba9a4e315a6ce061338c3605d4f2b4de436b29e8c6a44ef7a9f6c06670523"].unchecked_into(),
+						hex!["2ad9eddbc9a121413f0658b798bc9fedc9ebfaa03979844871780f97e32cddea"].unchecked_into()
 					),
 					(
-						hex!["c461a33a4f82c99cc8bb228f6833a88ab729f5ddae32bba566664b5f7135a74c"].unchecked_into(),
-						hex!["d6ceedaeacb4db68ef681811bd2b9b0f4cf55fd5fc37bf2dde4296c7f0b63d50"].unchecked_into()
+						hex!["28799c33bdff7174671cdf00a31de7072db82c3e0caf7b07bf308f191511db48"].unchecked_into(),
+						hex!["2f030305d54e650281312ed900590ad0b560fcd02b7efaedbd8ab7e3d0c05752"].unchecked_into()
 					),
 					(
-						hex!["20ad8cebd0e0083dd308f37c77b6e037beeb725f1bec71933c465866062ac110"].unchecked_into(),
-						hex!["41138203ec4b40ab6840ca5dd713c5a728577089f6fcb3175d883901f7a3aa4b"].unchecked_into()
+						hex!["2e7bffef555f987c9c63bffdb52c0fbf32c713bfe62ffd8d300f26a1531d5c69"].unchecked_into(),
+						hex!["a1ad48550ce00756b725d57926988771f6a960fc3ac414a0dcd4ea87a0d46618"].unchecked_into()
+					),
+					(
+						hex!["a459a5db296d38e80e38ea5cb863c7f88b5ba6ea5dc2f888cae9726e8f908c36"].unchecked_into(),
+						hex!["f87122bdc0f31343bba1c1b8f11e1584e5ed42234ce479df89608aecde43260d"].unchecked_into()
 					)
 				],
 				// Sudo account
@@ -256,12 +260,10 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 				vec![
 					// Endow the Sudo account
 					sudo_account_mainnet(),
-					hex!["f24380855d8cf4a6f2c4c4b72af1f4d3b95636e046734a84e679c14bba271443"].into(),
-					hex!["c461a33a4f82c99cc8bb228f6833a88ab729f5ddae32bba566664b5f7135a74c"].into(),
-					hex!["20ad8cebd0e0083dd308f37c77b6e037beeb725f1bec71933c465866062ac110"].into(),
-					hex!["867ec61710c3a5eaf7260f37a820d76071c3d151efc7084be689f6b147fa3e66"].into(),
-					hex!["18c5b57615cdfb62396bdae7b1bbc33657fbd6037c3640cefbe19ef2ab33a649"].into(),
-					hex!["7e94f48c642d79a9e6b6c07bc2b17ac27f9810034bd7a50839cf3613b03e5536"].into(),
+					hex!["3a7ba9a4e315a6ce061338c3605d4f2b4de436b29e8c6a44ef7a9f6c06670523"].into(),
+					hex!["28799c33bdff7174671cdf00a31de7072db82c3e0caf7b07bf308f191511db48"].into(),
+					hex!["2e7bffef555f987c9c63bffdb52c0fbf32c713bfe62ffd8d300f26a1531d5c69"].into(),
+					hex!["a459a5db296d38e80e38ea5cb863c7f88b5ba6ea5dc2f888cae9726e8f908c36"].into(),
 				],
 				true
 			)
@@ -271,7 +273,7 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("jur_mainnet"),
+		Some("jur-mainnet"),
 		// Properties
 		None,
 		Some(properties),
