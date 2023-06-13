@@ -2,7 +2,12 @@
   "name": "Jur Mainnet",
   "id": "jur_mainnet",
   "chainType": "Live",
-  "bootNodes": [],
+  "bootNodes": [
+    "/ip4/80.64.208.148/tcp/30333/p2p/12D3KooWDkXCjvyDqxBZ5MSRKcXRHdoQdt9A6jcQbgtWtXRvwnwL",
+    "/ip4/50.21.173.86/tcp/30333/p2p/12D3KooWFYWEbk7AFck5wzEcdqeRfBkdsbWNuvcutHkkoUzNQqY3",
+    "/ip4/178.32.114.102/tcp/30333/ws/p2p/12D3KooWF8vpQQf1fwvCCLGpKE4rto8po1FpUXuVmZXenmRLzf7x",
+    "/ip4/178.32.114.155/tcp/30333/ws/p2p/12D3KooW9sMSrA6vsi1ZR4V6499TVvWdxWLHBTHJNpMhpSXV9eUn"
+  ],
   "telemetryEndpoints": null,
   "protocolId": "jur-mainnet",
   "properties": {
