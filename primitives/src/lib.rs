@@ -2,6 +2,7 @@
 
 pub mod proof;
 
+pub mod macros;
 #[cfg(test)]
 mod tests;
 
@@ -9,12 +10,20 @@ use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
-use sp_runtime::RuntimeDebug;
+use sp_runtime::{traits::Saturating, RuntimeDebug};
 
 /// Balance of an account.
 pub type Balance = u128;
 
 pub type CurrencyId = u32;
+
+pub type CommunityId = u32;
+
+pub type PassportId = u32;
+
+pub type ProposalId = u32;
+
+pub type ChoiceId = u32;
 
 pub type VechainHash = [u8; 32];
 
@@ -85,6 +94,10 @@ pub const INVALID_INPUT_ERR_CODE: u8 = 6;
 
 pub const INVALID_PROOF_ERR_CODE: u8 = 7;
 
+/// Blocks per day is a assumption of block generating by chain in 24 hours
+/// Assuming chain generating the blocks in every 6 second. 1 Block = 6 second
+pub const BLOCKS_PER_DAY: u32 = 14_400;
+
 /// An Ethereum address (i.e. 20 bytes, used to represent an Ethereum account).
 ///
 /// This gets serialized to the 0x-prefixed hex representation.
@@ -94,8 +107,8 @@ pub struct EthereumAddress(pub [u8; ETHEREUM_ADDRESS_SIZE]);
 #[cfg(feature = "std")]
 impl Serialize for EthereumAddress {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-		where
-			S: Serializer,
+	where
+		S: Serializer,
 	{
 		let hex: String = rustc_hex::ToHex::to_hex(&self.0[..]);
 		serializer.serialize_str(&format!("0x{}", hex))
@@ -105,8 +118,8 @@ impl Serialize for EthereumAddress {
 #[cfg(feature = "std")]
 impl<'de> Deserialize<'de> for EthereumAddress {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-		where
-			D: Deserializer<'de>,
+	where
+		D: Deserializer<'de>,
 	{
 		let base_string = String::deserialize(deserializer)?;
 		let offset = if base_string.starts_with("0x") { OFFSET_INDEX } else { INITIAL_INDEX };
@@ -150,3 +163,10 @@ impl From<ValidityError> for u8 {
 		err as u8
 	}
 }
+
+pub trait Incrementable {
+	fn increment(&self) -> Self;
+	fn initial_value() -> Self;
+}
+
+impl_incrementable!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
