@@ -10,7 +10,10 @@ use frame_support::{
 	pallet_prelude::DispatchClass,
 	traits::{AsEnsureOriginWithArg, LockIdentifier},
 };
-use frame_system::{EnsureSigned, limits::{BlockLength, BlockWeights}, EnsureRoot};
+use frame_system::{
+	limits::{BlockLength, BlockWeights},
+	EnsureRoot, EnsureSigned,
+};
 use hex_literal::hex;
 use pallet_grandpa::AuthorityId as GrandpaId;
 use sp_api::impl_runtime_apis;
@@ -30,11 +33,13 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse, EqualPrivilegeOnly, KeyOwnerProofSystem,
-		Randomness, StorageInfo,
+		ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse, EqualPrivilegeOnly,
+		KeyOwnerProofSystem, Randomness, StorageInfo,
 	},
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
+		constants::{
+			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
+		},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
@@ -51,7 +56,9 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
-use primitives::{Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, JUR, PassportId, ProposalId};
+use primitives::{
+	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR,
+};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -113,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 105,
+	spec_version: 101,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -388,9 +395,6 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 16;
 }
 
-
-
-
 impl pallet_community::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type CommunityId = CommunityId;
@@ -438,9 +442,10 @@ impl OnUnbalanced<NegativeImbalance> for Author {
 pub struct DealWithFees;
 impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
-
-		let burn_fee_account: AccountId = hex!["04063fc1cbba917ced6c45091bf631de6a4db584dd55c1d67431661a5d57a575"].into();
-		let society_reward_account: AccountId = hex!["cc5245e57dcf6c8f051e012beceaa1683578ae873223d3ef4f8cbd85a62e1536"].into();
+		let burn_fee_account: AccountId =
+			hex!["667fa660fb3e790615c5754cb563f5dc8ace8760be9517c9096ca58f2f60854d"].into();
+		let society_reward_account: AccountId =
+			hex!["a6466db43c1b7fde023144197c2b6f9e92001493fc5b4a135372f6631c4f1675"].into();
 
 		if let Some(fees) = fees_then_tips.next() {
 			// for fees, 40% to fee_split, which will further split into collator and burn fees.
@@ -460,14 +465,18 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 			}
 
 			Author::on_unbalanced(fee_split.0);
-			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(&burn_fee_account, fee_split.1.into());
-			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(&society_reward_account, pool_split.0.into());
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+				&burn_fee_account,
+				fee_split.1.into(),
+			);
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+				&society_reward_account,
+				pool_split.0.into(),
+			);
 			Treasury::on_unbalanced(pool_split.1);
-
 		}
 	}
 }
-
 
 pub struct AuraAccountAdapter;
 impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {

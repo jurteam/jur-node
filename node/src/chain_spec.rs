@@ -48,7 +48,7 @@ pub fn sudo_account_testnet() -> AccountId {
 }
 
 pub fn sudo_account_mainnet() -> AccountId {
-	AccountId32::from_str(&"5DUzXPgapc76wzmA5vpyjt2SiQpsKZg3xbvsZuKxf8yG6gUp".to_string()).expect("Invalid Account Id")
+	AccountId32::from_str(&"5H13qUDnaSjaahePMYTQoqezHGHWwQGreM5kkEbuMUHu5Vjn".to_string()).expect("Invalid Account Id")
 }
 
 
