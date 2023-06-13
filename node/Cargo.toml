@@ -1,6 +1,6 @@
 [package]
 name = "jur-node"
-version = "v1.0.0"
+version = "1.0.0"
 edition = "2021"
 license = "Unlicense"
 publish = false
@@ -54,7 +54,7 @@ frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/parityte
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 # Local Dependencies
-jur-node-runtime = { version = "4.0.0-dev", path = "../runtime" }
+jur-node-runtime = { version = "1.0.0", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }
 
 # CLI-specific dependencies
