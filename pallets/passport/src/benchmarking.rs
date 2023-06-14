@@ -19,21 +19,21 @@ fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
 
 fn get_community_metadata<T: Config>() -> CommunityMetaData<T::AccountId, T::Hash> {
 	CommunityMetaData {
-		community_type: CommunityType::Nation,
-		customs: vec![
+		community_type: Some(CommunityType::Nation),
+		customs: Some(vec![
 			"in public transport young people should leave the seat to elderly or pregnant women"
 				.into(),
 			"name newborns with a name that starts with the letter A".into(),
-		],
-		languages: vec!["English".into(), "German".into()],
-		norms: vec![],
-		religions: vec!["Christianity".into(), "Buddhism".into()],
-		territories: vec!["Mars".into()],
-		traditions: vec![
+		]),
+		languages: Some(vec!["English".into(), "German".into()]),
+		norms: Some(vec![]),
+		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+		territories: Some(vec!["Mars".into()]),
+		traditions: Some(vec![
 			"Exchange gifts for Christmas".into(),
 			"Organize one charity event every 100 blocks".into(),
-		],
-		values: vec!["Peace".into(), "No gender discrimination".into()],
+		]),
+		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
 	}
 }
 
@@ -48,8 +48,10 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".as_bytes().to_vec(),
-		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into()),
+		Some(
+			"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+				.into(),
+		),
 		Some(members),
 		Some(get_community_metadata::<T>()),
 	)
