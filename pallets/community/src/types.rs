@@ -20,14 +20,14 @@ pub struct Community<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 pub struct CommunityMetaData<AccountId, Hash> {
-	pub community_type: CommunityType<AccountId, Hash>,
-	pub customs: Vec<Vec<u8>>,
-	pub languages: Vec<Vec<u8>>,
-	pub norms: Vec<Hash>,
-	pub religions: Vec<Vec<u8>>,
-	pub territories: Vec<Vec<u8>>,
-	pub traditions: Vec<Vec<u8>>,
-	pub values: Vec<Vec<u8>>,
+	pub community_type: Option<CommunityType<AccountId, Hash>>,
+	pub customs: Option<Vec<Vec<u8>>>,
+	pub languages: Option<Vec<Vec<u8>>>,
+	pub norms: Option<Vec<Hash>>,
+	pub religions: Option<Vec<Vec<u8>>>,
+	pub territories: Option<Vec<Vec<u8>>>,
+	pub traditions: Option<Vec<Vec<u8>>>,
+	pub values: Option<Vec<Vec<u8>>>,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
@@ -36,7 +36,7 @@ pub struct State<AccountId, Hash> {
 	pub government: Vec<AccountId>,
 	pub citizens: Vec<AccountId>,
 }
-/// Different types of Communitie.
+/// Different types of Communities.
 #[derive(Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, Encode, Decode)]
 pub enum CommunityType<AccountId, Hash> {
 	/// Community Type.
