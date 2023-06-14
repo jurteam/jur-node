@@ -1,6 +1,6 @@
 [package]
 name = "jur-node"
-version = "4.0.0-dev"
+version = "1.0.1"
 edition = "2021"
 license = "Unlicense"
 publish = false
@@ -14,6 +14,7 @@ name = "jur-node"
 
 [dependencies]
 clap = { version = "4.0.9", features = ["derive"] }
+hex-literal = '0.3.4'
 futures = { version = "0.3.21", features = ["thread-pool"]}
 sc-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 sp-core = { version = "7.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
@@ -53,7 +54,7 @@ frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/parityte
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 # Local Dependencies
-jur-node-runtime = { version = "4.0.0-dev", path = "../runtime" }
+jur-node-runtime = { version = "1.0.1", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }
 
 # CLI-specific dependencies

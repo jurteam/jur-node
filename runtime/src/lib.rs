@@ -11,9 +11,8 @@ use frame_support::{
 	traits::{AsEnsureOriginWithArg, LockIdentifier},
 };
 use frame_system::{
-	EnsureSigned,
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
+	EnsureRoot, EnsureSigned,
 };
 use hex_literal::hex;
 use pallet_grandpa::AuthorityId as GrandpaId;
@@ -34,11 +33,13 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse, EqualPrivilegeOnly, KeyOwnerProofSystem,
-		Randomness, StorageInfo,
+		ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse, EqualPrivilegeOnly,
+		KeyOwnerProofSystem, Randomness, StorageInfo,
 	},
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
+		constants::{
+			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
+		},
 		IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
@@ -51,9 +52,13 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
 
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
+
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
-use primitives::{Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, JUR, PassportId, ProposalId};
+use primitives::{
+	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR,
+};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -115,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 106,
+	spec_version: 102,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -313,7 +318,7 @@ impl pallet_assets::Config for Runtime {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -390,9 +395,6 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 16;
 }
 
-
-
-
 impl pallet_community::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type CommunityId = CommunityId;
@@ -413,6 +415,7 @@ impl pallet_proposal::Config for Runtime {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type AddressLimit = ConstU32<60>;
+	type AccountLimit = ConstU32<500>;
 	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
 }
 
@@ -423,6 +426,97 @@ impl pallet_passport::Config for Runtime {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
+}
+
+type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
+
+pub struct Author;
+impl OnUnbalanced<NegativeImbalance> for Author {
+	fn on_nonzero_unbalanced(amount: NegativeImbalance) {
+		if let Some(author) = Authorship::author() {
+			Balances::resolve_creating(&author, amount);
+		}
+	}
+}
+
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance> for DealWithFees {
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
+		let burn_fee_account: AccountId =
+			hex!["667fa660fb3e790615c5754cb563f5dc8ace8760be9517c9096ca58f2f60854d"].into();
+		let society_reward_account: AccountId =
+			hex!["a6466db43c1b7fde023144197c2b6f9e92001493fc5b4a135372f6631c4f1675"].into();
+
+		if let Some(fees) = fees_then_tips.next() {
+			// for fees, 40% to fee_split, which will further split into collator and burn fees.
+			// for fee, 60% goes to pool_split, which will further split into society and ecosystem pool.
+			let split = fees.ration(40, 60);
+
+			// Fee split contains collator fees and burn fees.
+			let fee_split = split.0.ration(50, 50);
+
+			// Pool split contains society and ecosystem pool.
+			let mut pool_split = split.1.ration(67, 33);
+
+			// if any tips received it will got to jur ecosystem pool.
+			if let Some(tips) = fees_then_tips.next() {
+				// for tips, if any, 100% to ecosystem pool
+				tips.merge_into(&mut pool_split.1);
+			}
+
+			Author::on_unbalanced(fee_split.0);
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+				&burn_fee_account,
+				fee_split.1.into(),
+			);
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+				&society_reward_account,
+				pool_split.0.into(),
+			);
+			Treasury::on_unbalanced(pool_split.1);
+		}
+	}
+}
+
+pub struct AuraAccountAdapter;
+impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
+	fn find_author<'a, I>(digests: I) -> Option<AccountId>
+		where I: 'a + IntoIterator<Item=(frame_support::ConsensusEngineId, &'a [u8])>
+	{
+		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests).and_then(|k| {
+			AccountId::try_from(k.as_ref()).ok()
+		})
+	}
+}
+
+impl pallet_authorship::Config for Runtime {
+	type FindAuthor = AuraAccountAdapter;
+	type EventHandler = ();
+}
+
+parameter_types! {
+	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const Burn: Permill = Permill::from_percent(0);
+	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+}
+
+impl pallet_treasury::Config for Runtime {
+	type PalletId = TreasuryPalletId;
+	type Currency = Balances;
+	type ApproveOrigin = EnsureRoot<AccountId>;
+	type RejectOrigin = EnsureRoot<AccountId>;
+	type RuntimeEvent = RuntimeEvent;
+	type OnSlash = ();
+	type ProposalBond = ProposalBond;
+	type ProposalBondMinimum = ConstU128<{ 1 * DOLLARS }>;
+	type ProposalBondMaximum = ();
+	type SpendPeriod = ConstU32<{ 1 * DAYS }>;
+	type Burn = Burn;
+	type BurnDestination = ();
+	type SpendFunds = ();
+	type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
+	type MaxApprovals = ConstU32<100>;
+	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 }
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -445,6 +539,8 @@ construct_runtime!(
 		Community: pallet_community,
 		Proposal: pallet_proposal,
 		Passport: pallet_passport,
+		Authorship: pallet_authorship,
+		Treasury: pallet_treasury,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 	}
