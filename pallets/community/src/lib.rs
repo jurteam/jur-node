@@ -18,6 +18,7 @@
 //! * `update_metadata`
 //! * `delete_community`
 //! * `add_members`
+//! * `join_community`
 //!
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -127,6 +128,8 @@ pub mod pallet {
 		AddedMembers(T::CommunityId),
 		/// Updated Community Metadata [community]
 		UpdatedMetadata(T::CommunityId),
+		/// Joined Community [community]
+		JoinedCommunity(T::CommunityId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -140,6 +143,8 @@ pub mod pallet {
 		BadName,
 		/// Invalid description given.
 		BadDescription,
+		/// Already a member of the community.
+		AlreadyMember,
 	}
 
 	#[pallet::hooks]
@@ -330,6 +335,40 @@ pub mod pallet {
 				community.members = community_members;
 
 				Self::deposit_event(Event::AddedMembers(community_id));
+
+				Ok(())
+			})
+		}
+
+		/// Join anu particular public community.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be updated
+		///
+		/// Emits `JoinedCommunity` event when successful.
+		#[pallet::call_index(5)]
+		#[pallet::weight(10_000)]
+		pub fn join_community(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+		) -> DispatchResult {
+			let member = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			Communities::<T>::try_mutate(community_id, |maybe_community| {
+				let community = maybe_community
+					.as_mut()
+					.ok_or(Error::<T>::CommunityNotExist)?;
+
+				let mut community_members = community.members.clone();
+
+				ensure!(!community_members.contains(&member), Error::<T>::AlreadyMember);
+				community_members.push(member.clone());
+
+				community.members = community_members;
+
+				Self::deposit_event(Event::UpdatedCommunity(community_id));
 
 				Ok(())
 			})
