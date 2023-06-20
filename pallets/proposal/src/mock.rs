@@ -22,6 +22,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip::{Pallet, Storage},
 		Community: pallet_community::{Pallet, Call, Storage, Event<T>},
 		Proposal: pallet_proposal::{Pallet, Call, Storage, Event<T>},
 	}
@@ -59,6 +60,8 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+impl pallet_insecure_randomness_collective_flip::Config for Test {}
+
 impl pallet_community::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type CommunityId = u32;
@@ -68,6 +71,7 @@ impl pallet_community::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = ();
+	type MyRandomness = RandomnessCollectiveFlip;
 }
 
 impl pallet_proposal::Config for Test {

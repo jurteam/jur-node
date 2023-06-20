@@ -42,12 +42,17 @@ fn create_community() {
 	)
 	.unwrap();
 }
+
 #[test]
 fn create_community_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
+		assert_eq!(System::block_number(), 0);
 		create_community();
 		assert!(Communities::<Test>::contains_key(0));
+		setup_blocks(5);
+		create_community();
+		assert_ne!(Some(Communities::<Test>::get(1).unwrap().reference_id), Some(Communities::<Test>::get(0).unwrap().reference_id));
 	});
 }
 
