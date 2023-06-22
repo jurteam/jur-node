@@ -1,4 +1,3 @@
-use frame_benchmarking::frame_support::sp_io;
 use crate::{
 	benchmarking::{inherent_benchmark_data, RemarkBuilder, TransferKeepAliveBuilder},
 	chain_spec,
