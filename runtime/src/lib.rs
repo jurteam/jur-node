@@ -579,6 +579,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations
 >;
 
 pub type Migrations = pallet_community::migration::v1::MigrateToV1<Runtime>;
