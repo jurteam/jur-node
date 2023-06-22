@@ -119,17 +119,23 @@ runtime-benchmarks = [
 	"pallet-passport/runtime-benchmarks"
 ]
 try-runtime = [
+	"frame-try-runtime/try-runtime",
 	"frame-executive/try-runtime",
-	"frame-try-runtime",
 	"frame-system/try-runtime",
+	"frame-support/try-runtime",
+	"pallet-aura/try-runtime",
+	"pallet-assets/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-authorship/try-runtime",
 	"pallet-multisig/try-runtime",
 	"pallet-token-swap/try-runtime",
 	"pallet-community/try-runtime",
 	"pallet-proposal/try-runtime",
-	"pallet-passport/try-runtime"
+	"pallet-passport/try-runtime",
+	"pallet-insecure-randomness-collective-flip/try-runtime",
 ]

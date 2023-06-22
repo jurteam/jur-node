@@ -10,6 +10,7 @@ use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, Header as _, IdentityLookup},
 };
+use crate::{CommunityMetaData, CommunityType};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -92,4 +93,42 @@ pub fn setup_blocks(blocks: u64) {
 		parent_hash = header.hash();
 		System::set_block_number(*header.number());
 	}
+}
+
+pub fn get_metadata() -> CommunityMetaData<u64, H256> {
+	let community_metadata = CommunityMetaData {
+		community_type: Some(CommunityType::Nation),
+		customs: Some(vec![
+			"in public transport young people should leave the seat to elderly or pregnant women"
+				.into(),
+			"name newborns with a name that starts with the letter A".into(),
+		]),
+		languages: Some(vec!["English".into(), "German".into()]),
+		norms: Some(vec![]),
+		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
+		territories: Some(vec!["Mars".into()]),
+		traditions: Some(vec![
+			"Exchange gifts for Christmas".into(),
+			"Organize one charity event every 100 blocks".into(),
+		]),
+		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
+	};
+
+	community_metadata
+}
+
+pub fn create_community() {
+	Community::create_community(
+		RuntimeOrigin::signed(1),
+		// hash of IPFS path of dummy logo
+		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+		"Jur".into(),
+		Some(
+			"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+				.into(),
+		),
+		Some(vec![1, 2]),
+		Some(get_metadata()),
+	)
+		.unwrap();
 }

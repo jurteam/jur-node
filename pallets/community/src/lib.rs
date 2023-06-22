@@ -43,6 +43,9 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 pub mod weights;
+pub mod migration;
+
+const LOG_TARGET: &str = "runtime::community";
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -50,6 +53,9 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 
 	use super::*;
+
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -100,6 +106,7 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// To be used in generating refernce number

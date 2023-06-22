@@ -581,6 +581,8 @@ pub type Executive = frame_executive::Executive<
 	AllPalletsWithSystem,
 >;
 
+pub type Migrations = pallet_community::migration::v1::MigrateToV1<Runtime>;
+
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
 extern crate frame_benchmarking;
@@ -812,7 +814,7 @@ impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade(checks: bool) -> (Weight, Weight) {
+		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
 			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
 			// right here and right now.
@@ -820,8 +822,15 @@ impl_runtime_apis! {
 			(weight, RuntimeBlockWeights::get().max_block)
 		}
 
-		fn execute_block_no_check(block: Block) -> Weight {
-			Executive::execute_block_no_check(block)
+		fn execute_block(
+			block: Block,
+			state_root_check: bool,
+			signature_check: bool,
+			select: frame_try_runtime::TryStateSelect
+		) -> Weight {
+			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
+			// have a backtrace here.
+			Executive::try_execute_block(block, state_root_check, signature_check, select).expect("try_execute_block failed")
 		}
 	}
 }
