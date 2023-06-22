@@ -41,14 +41,15 @@ pub mod v1 {
 
             if onchain_version == 0 && current_version == 1 {
                 let mut translated = 0u64;
+                let mut nonce = Nonce::<T>::get();
                 Communities::<T>::translate::<
                     OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
                     _,
                 >(|_key, old_value| {
                     translated.saturating_inc();
                     // Random value.
-                    let nonce = Nonce::<T>::get();
-                    Nonce::<T>::put(nonce.wrapping_add(1));
+                    nonce.saturating_inc();
+                    Nonce::<T>::put(nonce);
                     let nonce = nonce.encode();
                     let (random_value, _) = T::MyRandomness::random(&nonce);
                     Some(old_value.migrate_to_v1(random_value))
