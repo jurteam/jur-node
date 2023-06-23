@@ -261,3 +261,38 @@ fn update_metadata_not_works_for_invalid_caller() {
 		);
 	});
 }
+
+#[test]
+fn join_community_works() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_ok!(Community::join_community(RuntimeOrigin::signed(3), 0));
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2, 3]);
+	});
+}
+
+#[test]
+fn join_community_not_works_for_already_joined() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_noop!(Community::join_community(RuntimeOrigin::signed(2), 0), Error::<Test>::AlreadyMember);
+	});
+}
+
+#[test]
+fn join_community_not_works_for_invalid_community() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_noop!(Community::join_community(RuntimeOrigin::signed(2), 1), Error::<Test>::CommunityNotExist);
+	});
+}

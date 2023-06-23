@@ -158,5 +158,28 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::AddedMembers(T::Helper::community(0)).into());
 	}
 
+	join_community {
+	let caller: T::AccountId = whitelisted_caller();
+	let members = vec![account("sub", 1, SEED)];
+
+	Community::<T>::create_community(
+		RawOrigin::Signed(caller.clone()).into(),
+		// hash of IPFS path of dummy logo
+		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+		"Jur".into(),
+		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+		Some(members),
+		Some(get_metadata::<T>())
+	).unwrap();
+
+		let member: T::AccountId = whitelisted_caller();
+
+	}: _(
+		RawOrigin::Signed(member), T::Helper::community(0)
+	)
+	verify {
+		assert_last_event::<T>(Event::<T>::JoinedCommunity(T::Helper::community(0)).into());
+	}
+
 	impl_benchmark_test_suite!(Community, crate::mock::new_test_ext(), crate::mock::Test);
 }
