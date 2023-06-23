@@ -131,6 +131,7 @@ mod test {
 
             assert_eq!(Communities::<T>::iter_values().count() as u32, 2);
             assert_eq!(StorageVersion::get::<Pallet<T>>(), 1);
+            assert_ne!(Some(Communities::<Test>::get(1).unwrap().reference_id), Some(Communities::<Test>::get(0).unwrap().reference_id));
         });
     }
 }
