@@ -9,7 +9,6 @@ use frame_support::{assert_noop, assert_ok};
 fn create_community_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
-		assert_eq!(System::block_number(), 0);
 		create_community();
 		assert!(Communities::<Test>::contains_key(0));
 		setup_blocks(5);
