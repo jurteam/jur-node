@@ -24,7 +24,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::Encode;
-use frame_support::{dispatch::DispatchResult, BoundedVec, traits::Randomness};
+use frame_support::{dispatch::DispatchResult, traits::Randomness, BoundedVec};
 pub use pallet::*;
 use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
@@ -43,8 +43,8 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
 pub mod migration;
+pub mod weights;
 
 const LOG_TARGET: &str = "runtime::community";
 
@@ -423,7 +423,7 @@ impl<T: Config> Pallet<T> {
 			description: bounded_description,
 			members,
 			metadata,
-			reference_id: random_value
+			reference_id: random_value,
 		};
 
 		<Communities<T>>::insert(community_id, community);
