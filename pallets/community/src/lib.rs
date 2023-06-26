@@ -23,7 +23,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{dispatch::DispatchResult, BoundedVec};
+use codec::Encode;
+use frame_support::{dispatch::DispatchResult, BoundedVec, traits::Randomness};
 pub use pallet::*;
 use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
@@ -43,6 +44,9 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 pub mod weights;
+pub mod migration;
+
+const LOG_TARGET: &str = "runtime::community";
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -50,6 +54,9 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 
 	use super::*;
+
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -94,11 +101,18 @@ pub mod pallet {
 
 		/// Weight information
 		type WeightInfo: WeightInfo;
+
+		type MyRandomness: Randomness<Self::Hash, Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
+
+	/// To be used in generating refernce number
+	#[pallet::storage]
+	pub(crate) type Nonce<T: Config> = StorageValue<_, u64, ValueQuery>;
 
 	/// Store the community with community id
 	#[pallet::storage]
@@ -398,6 +412,10 @@ impl<T: Config> Pallet<T> {
 
 		let members = if let Some(members) = maybe_members { members } else { Vec::new() };
 
+		// Random value.
+		let nonce = Self::get_and_increment_nonce();
+		let (random_value, _) = T::MyRandomness::random(&nonce);
+
 		let community = Community {
 			founder: founder.clone(),
 			logo,
@@ -405,6 +423,7 @@ impl<T: Config> Pallet<T> {
 			description: bounded_description,
 			members,
 			metadata,
+			reference_id: random_value
 		};
 
 		<Communities<T>>::insert(community_id, community);
@@ -415,5 +434,11 @@ impl<T: Config> Pallet<T> {
 		Self::deposit_event(Event::CreatedCommunity(community_id, founder));
 
 		Ok(())
+	}
+
+	fn get_and_increment_nonce() -> Vec<u8> {
+		let nonce = Nonce::<T>::get();
+		Nonce::<T>::put(nonce.wrapping_add(1));
+		nonce.encode()
 	}
 }

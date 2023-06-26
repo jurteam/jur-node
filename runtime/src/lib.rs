@@ -395,6 +395,40 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 16;
 }
 
+impl pallet_community::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type CommunityId = CommunityId;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type NameLimit = ConstU32<50>;
+	type DescriptionLimit = ConstU32<250>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_community::weights::SubstrateWeight<Runtime>;
+	type MyRandomness = RandomnessCollectiveFlip;
+}
+
+impl pallet_proposal::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ProposalId = ProposalId;
+	type ChoiceId = ChoiceId;
+	type DescriptionLimit = ConstU32<250>;
+	type LabelLimit = ConstU32<250>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type AddressLimit = ConstU32<60>;
+	type AccountLimit = ConstU32<500>;
+	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_passport::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PassportId = PassportId;
+	type AddressLimit = ConstU32<60>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -485,6 +519,9 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ConstU32<100>;
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 }
+
+impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -507,6 +544,7 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 	}
 );
 
@@ -538,7 +576,10 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations
 >;
+
+pub type Migrations = pallet_community::migration::v1::MigrateToV1<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
@@ -768,7 +809,7 @@ impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade(checks: bool) -> (Weight, Weight) {
+		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
 			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
 			// right here and right now.
@@ -776,8 +817,15 @@ impl_runtime_apis! {
 			(weight, RuntimeBlockWeights::get().max_block)
 		}
 
-		fn execute_block_no_check(block: Block) -> Weight {
-			Executive::execute_block_no_check(block)
+		fn execute_block(
+			block: Block,
+			state_root_check: bool,
+			signature_check: bool,
+			select: frame_try_runtime::TryStateSelect
+		) -> Weight {
+			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
+			// have a backtrace here.
+			Executive::try_execute_block(block, state_root_check, signature_check, select).expect("try_execute_block failed")
 		}
 	}
 }
