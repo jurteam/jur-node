@@ -47,7 +47,17 @@ fn mint_passport() {
 }
 
 #[test]
-fn mint_passport_works() {
+fn mint_passport_works_for_founder() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 0));
+
+		assert!(Passports::<Test>::get(0, 1).is_some());
+	});
+}
+
+#[test]
+fn mint_passport_works_for_member() {
 	new_test_ext().execute_with(|| {
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
