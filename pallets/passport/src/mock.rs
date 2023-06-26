@@ -21,6 +21,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip::{Pallet, Storage},
 		Community: pallet_community::{Pallet, Call, Storage, Event<T>},
 		Passport: pallet_passport,
 	}
@@ -57,6 +58,7 @@ impl system::Config for Test {
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
+impl pallet_insecure_randomness_collective_flip::Config for Test {}
 
 impl pallet_community::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
@@ -67,6 +69,7 @@ impl pallet_community::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = ();
+	type MyRandomness = RandomnessCollectiveFlip;
 }
 
 impl pallet_passport::Config for Test {
@@ -80,8 +83,7 @@ impl pallet_passport::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default()
-		.build_storage::<Test>()
-		.unwrap()
-		.into()
+	let mut ext: sp_io::TestExternalities = system::GenesisConfig::default().build_storage::<Test>().unwrap().into();
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }
