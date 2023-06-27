@@ -3111,11 +3111,8 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
- "pallet-community",
  "pallet-grandpa",
  "pallet-multisig",
- "pallet-passport",
- "pallet-proposal",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-token-swap",
@@ -4541,23 +4538,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-community"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "jur-primitives",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.41#3bd809d59c31c7205a0f36c6ddcba603e43051fc"
@@ -4591,42 +4571,6 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-passport"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "jur-primitives",
- "pallet-community",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-proposal"
-version = "0.1.0"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "jur-primitives",
- "pallet-community",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
