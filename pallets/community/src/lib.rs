@@ -18,11 +18,13 @@
 //! * `update_metadata`
 //! * `delete_community`
 //! * `add_members`
+//! * `join_community`
 //!
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{dispatch::DispatchResult, BoundedVec};
+use codec::Encode;
+use frame_support::{dispatch::DispatchResult, traits::Randomness, BoundedVec};
 pub use pallet::*;
 use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
@@ -41,7 +43,10 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+pub mod migration;
 pub mod weights;
+
+const LOG_TARGET: &str = "runtime::community";
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -49,6 +54,9 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 
 	use super::*;
+
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -93,11 +101,18 @@ pub mod pallet {
 
 		/// Weight information
 		type WeightInfo: WeightInfo;
+
+		type MyRandomness: Randomness<Self::Hash, Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
+
+	/// To be used in generating refernce number
+	#[pallet::storage]
+	pub(crate) type Nonce<T: Config> = StorageValue<_, u64, ValueQuery>;
 
 	/// Store the community with community id
 	#[pallet::storage]
@@ -127,6 +142,8 @@ pub mod pallet {
 		AddedMembers(T::CommunityId),
 		/// Updated Community Metadata [community]
 		UpdatedMetadata(T::CommunityId),
+		/// Joined Community [community]
+		JoinedCommunity(T::CommunityId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -140,6 +157,8 @@ pub mod pallet {
 		BadName,
 		/// Invalid description given.
 		BadDescription,
+		/// Already a member of the community.
+		AlreadyMember,
 	}
 
 	#[pallet::hooks]
@@ -305,7 +324,7 @@ pub mod pallet {
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		#[pallet::call_index(4)]
-		#[pallet::weight(10_000)]
+		#[pallet::weight(T::WeightInfo::add_members())]
 		pub fn add_members(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -330,6 +349,40 @@ pub mod pallet {
 				community.members = community_members;
 
 				Self::deposit_event(Event::AddedMembers(community_id));
+
+				Ok(())
+			})
+		}
+
+		/// Join any particular public community.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be updated
+		///
+		/// Emits `JoinedCommunity` event when successful.
+		#[pallet::call_index(5)]
+		#[pallet::weight(T::WeightInfo::join_community())]
+		pub fn join_community(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+		) -> DispatchResult {
+			let member = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			Communities::<T>::try_mutate(community_id, |maybe_community| {
+				let community = maybe_community
+					.as_mut()
+					.ok_or(Error::<T>::CommunityNotExist)?;
+
+				let mut community_members = community.members.clone();
+
+				ensure!(!community_members.contains(&member), Error::<T>::AlreadyMember);
+				community_members.push(member.clone());
+
+				community.members = community_members;
+
+				Self::deposit_event(Event::JoinedCommunity(community_id));
 
 				Ok(())
 			})
@@ -359,6 +412,10 @@ impl<T: Config> Pallet<T> {
 
 		let members = if let Some(members) = maybe_members { members } else { Vec::new() };
 
+		// Random value.
+		let nonce = Self::get_and_increment_nonce();
+		let (random_value, _) = T::MyRandomness::random(&nonce);
+
 		let community = Community {
 			founder: founder.clone(),
 			logo,
@@ -366,6 +423,7 @@ impl<T: Config> Pallet<T> {
 			description: bounded_description,
 			members,
 			metadata,
+			reference_id: random_value,
 		};
 
 		<Communities<T>>::insert(community_id, community);
@@ -376,5 +434,11 @@ impl<T: Config> Pallet<T> {
 		Self::deposit_event(Event::CreatedCommunity(community_id, founder));
 
 		Ok(())
+	}
+
+	fn get_and_increment_nonce() -> Vec<u8> {
+		let nonce = Nonce::<T>::get();
+		Nonce::<T>::put(nonce.wrapping_add(1));
+		nonce.encode()
 	}
 }
