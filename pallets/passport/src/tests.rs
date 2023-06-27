@@ -43,14 +43,24 @@ fn create_community() {
 
 fn mint_passport() {
 	create_community();
-	Passport::mint(RuntimeOrigin::signed(1), 2, 0).unwrap();
+	Passport::mint(RuntimeOrigin::signed(2), 0).unwrap();
 }
 
 #[test]
-fn mint_passport_works() {
+fn mint_passport_works_for_founder() {
 	new_test_ext().execute_with(|| {
 		create_community();
-		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 2, 0));
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 0));
+
+		assert!(Passports::<Test>::get(0, 1).is_some());
+	});
+}
+
+#[test]
+fn mint_passport_works_for_member() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
 
 		assert!(Passports::<Test>::get(0, 2).is_some());
 	});
@@ -60,7 +70,7 @@ fn mint_passport_works() {
 fn mint_passport_not_works_if_user_is_not_founder() {
 	new_test_ext().execute_with(|| {
 		create_community();
-		assert_noop!(Passport::mint(RuntimeOrigin::signed(2), 12, 0), Error::<Test>::NotAllowed);
+		assert_noop!(Passport::mint(RuntimeOrigin::signed(12), 0), Error::<Test>::MemberDoesNotExist);
 	});
 }
 
@@ -69,7 +79,7 @@ fn mint_passport_not_works_for_invalid_community() {
 	new_test_ext().execute_with(|| {
 		create_community();
 		assert_noop!(
-			Passport::mint(RuntimeOrigin::signed(1), 2, 1),
+			Passport::mint(RuntimeOrigin::signed(2), 1),
 			Error::<Test>::CommunityDoesNotExist
 		);
 	});
@@ -80,7 +90,7 @@ fn mint_passport_not_works_when_member_not_part_of_community() {
 	new_test_ext().execute_with(|| {
 		create_community();
 		assert_noop!(
-			Passport::mint(RuntimeOrigin::signed(1), 12, 0),
+			Passport::mint(RuntimeOrigin::signed(12), 0),
 			Error::<Test>::MemberDoesNotExist
 		);
 	});
@@ -92,7 +102,7 @@ fn mint_passport_not_works_when_passport_already_minted() {
 		create_community();
 		mint_passport();
 		assert_noop!(
-			Passport::mint(RuntimeOrigin::signed(1), 2, 0),
+			Passport::mint(RuntimeOrigin::signed(2), 0),
 			Error::<Test>::PassportAlreadyMinted
 		);
 	});

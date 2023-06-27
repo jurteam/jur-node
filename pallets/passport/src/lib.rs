@@ -134,11 +134,10 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Mint a new passport
 		///
-		/// The origin must be Signed and the founder of the community.
+		/// The origin must be Signed and the founder/member of the community.
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
-		/// - `member`: Member of the community.
 		///
 		/// Emits `MintedPassport` event when successful.
 		///
@@ -146,18 +145,15 @@ pub mod pallet {
 		#[pallet::weight(<T as Config>::WeightInfo::mint())]
 		pub fn mint(
 			origin: OriginFor<T>,
-			member: T::AccountId,
 			community_id: T::CommunityId,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
-			ensure!(origin == community.founder, Error::<T>::NotAllowed);
+			ensure!(origin == community.founder || community.members.contains(&origin), Error::<T>::MemberDoesNotExist);
 
-			ensure!(community.members.contains(&member), Error::<T>::MemberDoesNotExist);
-
-			let maybe_passport = Passports::<T>::get(community_id, &member);
+			let maybe_passport = Passports::<T>::get(community_id, &origin);
 			ensure!(maybe_passport.is_some() == false, Error::<T>::PassportAlreadyMinted);
 
 			let passport_id = NextPassportId::<T>::get().unwrap_or(T::PassportId::initial_value());
@@ -165,7 +161,7 @@ pub mod pallet {
 			let passport_details =
 				PassportDetails { id: passport_id, address: None, stamps: None, avatar: None };
 
-			<Passports<T>>::insert(community_id, &member, passport_details);
+			<Passports<T>>::insert(community_id, &origin, passport_details);
 
 			let next_id = passport_id.increment();
 			NextPassportId::<T>::set(Some(next_id));
