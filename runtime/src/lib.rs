@@ -552,9 +552,6 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_token_swap, TokenSwap]
-		[pallet_community, Community]
-		[pallet_proposal, Proposal]
-		[pallet_passport, Passport]
 	);
 }
 
