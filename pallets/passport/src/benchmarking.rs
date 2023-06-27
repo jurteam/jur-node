@@ -63,11 +63,9 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 benchmarks! {
 	mint {
 		let caller: T::AccountId = whitelisted_caller();
-		let member: T::AccountId = account("sub", 1, SEED);
 		let community_id = create_community::<T>(caller.clone());
 	}: _(
 		RawOrigin::Signed(caller.clone()),
-		member,
 		community_id
 	)
 	verify {
@@ -83,8 +81,7 @@ benchmarks! {
 		let community_id = create_community::<T>(caller.clone());
 
 		Passport::<T>::mint(
-		RawOrigin::Signed(caller.clone()).into(),
-		member.clone(),
+		RawOrigin::Signed(member.clone()).into(),
 		community_id.clone()
 		).unwrap();
 
@@ -106,8 +103,7 @@ benchmarks! {
 		let community_id = create_community::<T>(caller.clone());
 
 		Passport::<T>::mint(
-		RawOrigin::Signed(caller.clone()).into(),
-		member.clone(),
+		RawOrigin::Signed(member.clone()).into(),
 		community_id.clone()
 		).unwrap();
 
@@ -129,8 +125,7 @@ benchmarks! {
 		let community_id = create_community::<T>(caller.clone());
 
 		Passport::<T>::mint(
-		RawOrigin::Signed(caller.clone()).into(),
-		member.clone(),
+		RawOrigin::Signed(member.clone()).into(),
 		community_id.clone()
 		).unwrap();
 

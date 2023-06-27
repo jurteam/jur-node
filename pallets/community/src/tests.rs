@@ -13,7 +13,10 @@ fn create_community_works() {
 		assert!(Communities::<Test>::contains_key(0));
 		setup_blocks(5);
 		create_community();
-		assert_ne!(Some(Communities::<Test>::get(1).unwrap().reference_id), Some(Communities::<Test>::get(0).unwrap().reference_id));
+		assert_ne!(
+			Some(Communities::<Test>::get(1).unwrap().reference_id),
+			Some(Communities::<Test>::get(0).unwrap().reference_id)
+		);
 	});
 }
 
@@ -281,7 +284,10 @@ fn join_community_not_works_for_already_joined() {
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
-		assert_noop!(Community::join_community(RuntimeOrigin::signed(2), 0), Error::<Test>::AlreadyMember);
+		assert_noop!(
+			Community::join_community(RuntimeOrigin::signed(2), 0),
+			Error::<Test>::AlreadyMember
+		);
 	});
 }
 
@@ -292,6 +298,9 @@ fn join_community_not_works_for_invalid_community() {
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
-		assert_noop!(Community::join_community(RuntimeOrigin::signed(2), 1), Error::<Test>::CommunityNotExist);
+		assert_noop!(
+			Community::join_community(RuntimeOrigin::signed(2), 1),
+			Error::<Test>::CommunityNotExist
+		);
 	});
 }
