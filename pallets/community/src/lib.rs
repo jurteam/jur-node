@@ -134,8 +134,6 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Created Community [community, founder]
 		CreatedCommunity(T::CommunityId, T::AccountId),
-		/// Deleted Community [community]
-		DeletedCommunity(T::CommunityId),
 		/// Updated Community [community]
 		UpdatedCommunity(T::CommunityId),
 		/// Updated Community [community]
@@ -207,35 +205,6 @@ pub mod pallet {
 			)
 		}
 
-		/// Delete a particular community from a privileged origin.
-		///
-		/// The origin must conform to `CreateOrigin`.
-		///
-		/// Parameters:
-		/// - `community_id`: Id of the community to be deleted
-		///
-		/// Emits `DeletedCommunity` event when successful.
-		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::delete_community())]
-		pub fn delete_community(
-			origin: OriginFor<T>,
-			community_id: T::CommunityId,
-		) -> DispatchResult {
-			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
-
-			let community =
-				Communities::<T>::get(community_id).ok_or(Error::<T>::CommunityNotExist)?;
-
-			ensure!(founder == community.founder, Error::<T>::NoPermission);
-
-			// TODO Also need to delete associated proposal
-			<Communities<T>>::remove(community_id);
-
-			Self::deposit_event(Event::DeletedCommunity(community_id));
-
-			Ok(())
-		}
-
 		/// Update a particular community from a privileged origin.
 		///
 		/// The origin must conform to `CreateOrigin`.
@@ -247,7 +216,7 @@ pub mod pallet {
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		///
-		#[pallet::call_index(2)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::update_community())]
 		pub fn update_community(
 			origin: OriginFor<T>,
@@ -290,7 +259,7 @@ pub mod pallet {
 		///
 		/// Emits `UpdatedMetadata` event when successful.
 		///
-		#[pallet::call_index(3)]
+		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::update_metadata())]
 		pub fn update_metadata(
 			origin: OriginFor<T>,
@@ -323,7 +292,7 @@ pub mod pallet {
 		/// - `members`: Members of teh community
 		///
 		/// Emits `UpdatedCommunity` event when successful.
-		#[pallet::call_index(4)]
+		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::add_members())]
 		pub fn add_members(
 			origin: OriginFor<T>,
@@ -362,7 +331,7 @@ pub mod pallet {
 		/// - `community_id`: Id of the community to be updated
 		///
 		/// Emits `JoinedCommunity` event when successful.
-		#[pallet::call_index(5)]
+		#[pallet::call_index(4)]
 		#[pallet::weight(T::WeightInfo::join_community())]
 		pub fn join_community(
 			origin: OriginFor<T>,

@@ -40,35 +40,6 @@ fn create_community_works_only_with_name() {
 }
 
 #[test]
-fn delete_community_works() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		assert!(Communities::<Test>::contains_key(0));
-
-		assert_ok!(Community::delete_community(RuntimeOrigin::signed(1), 0));
-		assert!(!Communities::<Test>::contains_key(0));
-	});
-}
-
-#[test]
-fn delete_community_not_works_for_invalid_input() {
-	new_test_ext().execute_with(|| {
-		assert_noop!(
-			Community::delete_community(RuntimeOrigin::signed(1), 0),
-			Error::<Test>::CommunityNotExist
-		);
-
-		create_community();
-		assert!(Communities::<Test>::contains_key(0));
-
-		assert_noop!(
-			Community::delete_community(RuntimeOrigin::signed(2), 0),
-			Error::<Test>::NoPermission
-		);
-	});
-}
-
-#[test]
 fn update_community_not_works_for_invalid_input() {
 	let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
 	let description = "Jur is the core community of the Jur ecosystem";

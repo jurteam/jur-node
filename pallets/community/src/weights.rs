@@ -31,7 +31,6 @@ use sp_std::marker::PhantomData;
 /// Weight functions needed for pallet_community.
 pub trait WeightInfo {
 	fn create_community() -> Weight;
-	fn delete_community() -> Weight;
 	fn update_community() -> Weight;
 	fn update_metadata() -> Weight;
 	fn add_members() -> Weight;
@@ -53,17 +52,6 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		Weight::from_parts(16_000_000, 1569)
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(2_u64))
-	}
-	/// Storage: Community Communities (r:1 w:1)
-	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
-	fn delete_community() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `633`
-		//  Estimated: `4098`
-		// Minimum execution time: 15_000_000 picoseconds.
-		Weight::from_parts(16_000_000, 4098)
-			.saturating_add(T::DbWeight::get().reads(1_u64))
-			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	/// Storage: Community Communities (r:1 w:1)
 	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
@@ -125,17 +113,6 @@ impl WeightInfo for () {
 		Weight::from_parts(16_000_000, 1569)
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(2_u64))
-	}
-	/// Storage: Community Communities (r:1 w:1)
-	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
-	fn delete_community() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `633`
-		//  Estimated: `4098`
-		// Minimum execution time: 15_000_000 picoseconds.
-		Weight::from_parts(16_000_000, 4098)
-			.saturating_add(RocksDbWeight::get().reads(1_u64))
-			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	/// Storage: Community Communities (r:1 w:1)
 	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
