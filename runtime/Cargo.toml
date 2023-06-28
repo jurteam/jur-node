@@ -51,9 +51,6 @@ hex-literal = "0.3.4"
 
 # Local Dependencies
 pallet-token-swap = { version = "0.1.0", default-features = false, path = "../pallets/token-swap" }
-pallet-community = { version = "0.1.0", default-features = false, path = "../pallets/community" }
-pallet-proposal = { version = "0.1.0", default-features = false, path = "../pallets/proposal" }
-pallet-passport = { version = "0.1.0", default-features = false, path = "../pallets/passport" }
 
 primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
 
@@ -97,9 +94,6 @@ std = [
 	"pallet-multisig/std",
 	"primitives/std",
 	"sp-consensus-grandpa/std",
-	"pallet-community/std",
-	"pallet-proposal/std",
-	"pallet-passport/std",
 	"pallet-treasury/std",
 	"pallet-authorship/std",
 ]
@@ -111,10 +105,7 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
-	"pallet-token-swap/runtime-benchmarks",
-	"pallet-community/runtime-benchmarks",
-	"pallet-proposal/runtime-benchmarks",
-	"pallet-passport/runtime-benchmarks"
+	"pallet-token-swap/runtime-benchmarks"
 ]
 try-runtime = [
 	"frame-executive/try-runtime",
@@ -126,8 +117,5 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-multisig/try-runtime",
-	"pallet-token-swap/try-runtime",
-	"pallet-community/try-runtime",
-	"pallet-proposal/try-runtime",
-	"pallet-passport/try-runtime"
+	"pallet-token-swap/try-runtime"
 ]

@@ -57,7 +57,7 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
 use primitives::{
-	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR,
+	Balance, CurrencyId, EthereumAddress, JUR,
 };
 
 /// An index to a block.
@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 102,
+	spec_version: 103,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -395,39 +395,6 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 16;
 }
 
-impl pallet_community::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type CommunityId = CommunityId;
-	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
-	type NameLimit = ConstU32<50>;
-	type DescriptionLimit = ConstU32<250>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = ();
-	type WeightInfo = pallet_community::weights::SubstrateWeight<Runtime>;
-}
-
-impl pallet_proposal::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ProposalId = ProposalId;
-	type ChoiceId = ChoiceId;
-	type DescriptionLimit = ConstU32<250>;
-	type LabelLimit = ConstU32<250>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = ();
-	type AddressLimit = ConstU32<60>;
-	type AccountLimit = ConstU32<500>;
-	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
-}
-
-impl pallet_passport::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type PassportId = PassportId;
-	type AddressLimit = ConstU32<60>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = ();
-	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
-}
-
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -536,9 +503,6 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Local Pallet
 		TokenSwap: pallet_token_swap,
-		Community: pallet_community,
-		Proposal: pallet_proposal,
-		Passport: pallet_passport,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 
@@ -588,9 +552,6 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_token_swap, TokenSwap]
-		[pallet_community, Community]
-		[pallet_proposal, Proposal]
-		[pallet_passport, Passport]
 	);
 }
 
