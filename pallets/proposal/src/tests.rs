@@ -3,9 +3,8 @@ use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
 use pallet_community::types::{CommunityMetaData, CommunityType};
-use sp_core::H256;
 
-fn get_community_metadata() -> CommunityMetaData<u64, H256> {
+fn get_community_metadata() -> CommunityMetaData<u64> {
 	let community_metadata = CommunityMetaData {
 		community_type: Some(CommunityType::Nation),
 		customs: Some(vec![

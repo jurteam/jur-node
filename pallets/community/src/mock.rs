@@ -94,7 +94,7 @@ pub fn setup_blocks(blocks: u64) {
 	}
 }
 
-pub fn get_metadata() -> CommunityMetaData<u64, H256> {
+pub fn get_metadata() -> CommunityMetaData<u64> {
 	let community_metadata = CommunityMetaData {
 		community_type: Some(CommunityType::Nation),
 		customs: Some(vec![
