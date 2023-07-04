@@ -275,3 +275,89 @@ fn join_community_not_works_for_invalid_community() {
 		);
 	});
 }
+
+#[test]
+fn leave_community_works() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_ok!(Community::leave_community(RuntimeOrigin::signed(2), 0));
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1]);
+	});
+}
+
+#[test]
+fn leave_community_not_work_for_member_not_part_of_community() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_noop!(
+			Community::leave_community(RuntimeOrigin::signed(3), 0),
+			Error::<Test>::NotMember
+		);
+	});
+}
+
+#[test]
+fn leave_community_not_work_for_invalid_community() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_noop!(
+			Community::leave_community(RuntimeOrigin::signed(2), 1),
+			Error::<Test>::CommunityNotExist
+		);
+	});
+}
+
+#[test]
+fn remove_member_works() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_ok!(Community::remove_member(RuntimeOrigin::signed(1), 2, 0));
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1]);
+	});
+}
+
+#[test]
+fn remove_member_not_work_for_member_not_part_of_community() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_noop!(
+			Community::remove_member(RuntimeOrigin::signed(1), 3, 0),
+			Error::<Test>::NotMember
+		);
+	});
+}
+
+#[test]
+fn remove_member_not_work_for_invalid_community() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(0));
+		create_community();
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+
+		assert_noop!(
+			Community::remove_member(RuntimeOrigin::signed(1), 2,  1),
+			Error::<Test>::CommunityNotExist
+		);
+	});
+}
