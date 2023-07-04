@@ -372,7 +372,7 @@ pub mod pallet {
 		///
 		/// Emits `LeavedCommunity` event when successful.
 		#[pallet::call_index(5)]
-		#[pallet::weight(T::WeightInfo::join_community())]
+		#[pallet::weight(T::WeightInfo::leave_community())]
 		pub fn leave_community(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -405,11 +405,12 @@ pub mod pallet {
 		/// The origin must conform to `CreateOrigin`.
 		///
 		/// Parameters:
+		/// - `member`: member Account which founder want to remove from community
 		/// - `community_id`: Id of the community to be updated
 		///
 		/// Emits `RemovedMember` event when successful.
 		#[pallet::call_index(6)]
-		#[pallet::weight(T::WeightInfo::join_community())]
+		#[pallet::weight(T::WeightInfo::remove_member())]
 		pub fn remove_member(
 			origin: OriginFor<T>,
 			member: T::AccountId,
@@ -422,6 +423,7 @@ pub mod pallet {
 					.as_mut()
 					.ok_or(Error::<T>::CommunityNotExist)?;
 
+				// TODO update below check to restrict this extrinsic for private communities
 				// ensure!(community.type == "Private", Error::<T>::NoPermission);
 
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
