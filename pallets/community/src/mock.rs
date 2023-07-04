@@ -1,16 +1,16 @@
 use crate as pallet_community;
+use crate::{CommunityMetaData, CommunityType};
+use frame_support::pallet_prelude::Hooks;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
 };
 use frame_system as system;
-use frame_support::pallet_prelude::Hooks;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, Header as _, IdentityLookup},
 };
-use crate::{CommunityMetaData, CommunityType};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -75,7 +75,10 @@ impl pallet_community::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut ext: sp_io::TestExternalities = system::GenesisConfig::default().build_storage::<Test>().unwrap().into();
+	let mut ext: sp_io::TestExternalities = system::GenesisConfig::default()
+		.build_storage::<Test>()
+		.unwrap()
+		.into();
 	ext.execute_with(|| System::set_block_number(1));
 	ext
 }
@@ -129,5 +132,5 @@ pub fn create_community() {
 		Some(vec![1, 2]),
 		Some(get_metadata()),
 	)
-		.unwrap();
+	.unwrap();
 }

@@ -356,7 +356,7 @@ fn remove_member_not_work_for_invalid_community() {
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::remove_member(RuntimeOrigin::signed(1), 2,  1),
+			Community::remove_member(RuntimeOrigin::signed(1), 2, 1),
 			Error::<Test>::CommunityNotExist
 		);
 	});
