@@ -155,7 +155,8 @@ pub fn native_version() -> NativeVersion {
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 2 seconds of compute with a 6 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
+const MAXIMUM_BLOCK_WEIGHT: Weight =
+	Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = JUR;
 
@@ -482,11 +483,11 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 pub struct AuraAccountAdapter;
 impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
 	fn find_author<'a, I>(digests: I) -> Option<AccountId>
-		where I: 'a + IntoIterator<Item=(frame_support::ConsensusEngineId, &'a [u8])>
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
-		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests).and_then(|k| {
-			AccountId::try_from(k.as_ref()).ok()
-		})
+		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests)
+			.and_then(|k| AccountId::try_from(k.as_ref()).ok())
 	}
 }
 
@@ -566,7 +567,8 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
@@ -576,7 +578,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	Migrations
+	Migrations,
 >;
 
 pub type Migrations = pallet_community::migration::v1::MigrateToV1<Runtime>;

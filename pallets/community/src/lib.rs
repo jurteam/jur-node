@@ -388,7 +388,10 @@ pub mod pallet {
 
 				ensure!(community_members.contains(&member), Error::<T>::NotMember);
 
-				let index = community_members.iter().position(|value| *value == member.clone()).expect("Member not found.");
+				let index = community_members
+					.iter()
+					.position(|value| *value == member.clone())
+					.expect("Member not found.");
 
 				community_members.remove(index);
 
@@ -432,7 +435,10 @@ pub mod pallet {
 
 				ensure!(community_members.contains(&member), Error::<T>::NotMember);
 
-				let index = community_members.iter().position(|value| *value == member.clone()).expect("Member not found.");
+				let index = community_members
+					.iter()
+					.position(|value| *value == member.clone())
+					.expect("Member not found.");
 
 				community_members.remove(index);
 
