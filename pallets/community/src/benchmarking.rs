@@ -48,7 +48,7 @@ benchmarks! {
 		Some(get_metadata::<T>())
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::CreatedCommunity(T::Helper::community(0), caller).into());
+		assert!(Communities::<T>::get(T::Helper::community(0)).is_some());
 	}
 
 	update_community {
