@@ -132,8 +132,8 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Created Community [community, founder]
-		CreatedCommunity(T::CommunityId, T::AccountId),
+		/// Created Community [communityId, referenceId, founder]
+		CreatedCommunity(T::CommunityId, T::Hash, T::AccountId),
 		/// Updated Community [community]
 		UpdatedCommunity(T::CommunityId),
 		/// Updated Community [community]
@@ -400,7 +400,7 @@ impl<T: Config> Pallet<T> {
 		let next_id = community_id.increment();
 		NextCommunityId::<T>::set(Some(next_id));
 
-		Self::deposit_event(Event::CreatedCommunity(community_id, founder));
+		Self::deposit_event(Event::CreatedCommunity(community_id, random_value, founder));
 
 		Ok(())
 	}
