@@ -142,6 +142,10 @@ pub mod pallet {
 		UpdatedMetadata(T::CommunityId),
 		/// Joined Community [community]
 		JoinedCommunity(T::CommunityId),
+		/// Leaved Community [community]
+		LeavedCommunity(T::CommunityId),
+		/// Removed member from community [member]
+		RemovedMember(T::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -157,6 +161,8 @@ pub mod pallet {
 		BadDescription,
 		/// Already a member of the community.
 		AlreadyMember,
+		/// Not member of given community.
+		NotMember,
 	}
 
 	#[pallet::hooks]
@@ -352,6 +358,93 @@ pub mod pallet {
 				community.members = community_members;
 
 				Self::deposit_event(Event::JoinedCommunity(community_id));
+
+				Ok(())
+			})
+		}
+
+		/// Leave any particular private/public community.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be updated
+		///
+		/// Emits `LeavedCommunity` event when successful.
+		#[pallet::call_index(5)]
+		#[pallet::weight(T::WeightInfo::leave_community())]
+		pub fn leave_community(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+		) -> DispatchResult {
+			let member = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			Communities::<T>::try_mutate(community_id, |maybe_community| {
+				let community = maybe_community
+					.as_mut()
+					.ok_or(Error::<T>::CommunityNotExist)?;
+
+				let mut community_members = community.members.clone();
+
+				ensure!(community_members.contains(&member), Error::<T>::NotMember);
+
+				let index = community_members
+					.iter()
+					.position(|value| *value == member.clone())
+					.expect("Member not found.");
+
+				community_members.remove(index);
+
+				community.members = community_members;
+
+				Self::deposit_event(Event::LeavedCommunity(community_id));
+
+				Ok(())
+			})
+		}
+
+		/// Remove member from private community.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `member`: member Account which founder want to remove from community
+		/// - `community_id`: Id of the community to be updated
+		///
+		/// Emits `RemovedMember` event when successful.
+		#[pallet::call_index(6)]
+		#[pallet::weight(T::WeightInfo::remove_member())]
+		pub fn remove_member(
+			origin: OriginFor<T>,
+			member: T::AccountId,
+			community_id: T::CommunityId,
+		) -> DispatchResult {
+			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			Communities::<T>::try_mutate(community_id, |maybe_community| {
+				let community = maybe_community
+					.as_mut()
+					.ok_or(Error::<T>::CommunityNotExist)?;
+
+				// TODO update below check to restrict this extrinsic for private communities
+				// ensure!(community.type == "Private", Error::<T>::NoPermission);
+
+				ensure!(founder == community.founder, Error::<T>::NoPermission);
+
+				let mut community_members = community.members.clone();
+
+				ensure!(community_members.contains(&member), Error::<T>::NotMember);
+
+				let index = community_members
+					.iter()
+					.position(|value| *value == member.clone())
+					.expect("Member not found.");
+
+				community_members.remove(index);
+
+				community.members = community_members;
+
+				Self::deposit_event(Event::RemovedMember(member));
 
 				Ok(())
 			})
