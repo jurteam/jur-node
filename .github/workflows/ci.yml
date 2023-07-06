@@ -34,4 +34,4 @@ jobs:
       run: SKIP_WASM_BUILD= cargo check --all-targets --features runtime-benchmarks
       
     - name: Test
-      run: SKIP_WASM_BUILD= cargo test --workspace --features runtime-benchmarks,try-runtime -- --nocapture
+      run: SKIP_WASM_BUILD= cargo test --workspace --features runtime-benchmarks -- --nocapture

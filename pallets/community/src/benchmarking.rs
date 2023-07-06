@@ -14,7 +14,7 @@ fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
 	frame_system::Pallet::<T>::assert_last_event(generic_event.into());
 }
 
-fn get_metadata<T: Config>() -> CommunityMetaData<T::AccountId, T::Hash> {
+fn get_metadata<T: Config>() -> CommunityMetaData<T::AccountId,> {
 	CommunityMetaData {
 		community_type: Some(CommunityType::Nation),
 		customs: Some(vec![
