@@ -2,7 +2,7 @@ use super::*;
 use frame_support::{log, traits::OnRuntimeUpgrade};
 use sp_runtime::Saturating;
 
-pub mod v1 {
+pub mod v2 {
     use frame_support::{pallet_prelude::*, weights::Weight};
 
     use super::*;
@@ -14,11 +14,65 @@ pub mod v1 {
         pub name: BoundedVec<u8, NameLimit>,
         pub description: BoundedVec<u8, DescriptionLimit>,
         pub members: Vec<AccountId>,
-        pub metadata: Option<CommunityMetaData<AccountId, Hash>>,
+        pub metadata: Option<OldCommunityMetaData<AccountId, Hash>>,
+        pub reference_id: Hash
+    }
+
+
+    #[derive(Decode)]
+    pub struct OldCommunityMetaData<AccountId, Hash> {
+        pub community_type: Option<OldCommunityType<AccountId, Hash>>,
+        pub customs: Option<Vec<Vec<u8>>>,
+        pub languages: Option<Vec<Vec<u8>>>,
+        pub norms: Option<Vec<Hash>>,
+        pub religions: Option<Vec<Vec<u8>>>,
+        pub territories: Option<Vec<Vec<u8>>>,
+        pub traditions: Option<Vec<Vec<u8>>>,
+        pub values: Option<Vec<Vec<u8>>>,
+    }
+
+
+    #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
+    pub struct OldState<AccountId, Hash> {
+        pub constitution: Vec<Hash>,
+        pub government: Vec<AccountId>,
+        pub citizens: Vec<AccountId>,
+    }
+    /// Different types of Communities.
+    #[derive(Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, Encode, Decode)]
+    pub enum OldCommunityType<AccountId, Hash> {
+        /// Community Type.
+        Community,
+        /// A community of entities and people united by a commonality.
+        Nation,
+        /// A State is the next step of a Nation.
+        State(OldState<AccountId, Hash>),
+    }
+
+    impl<AccountId, Hash> OldCommunityMetaData<AccountId, Hash> {
+        fn migrate_to_v2(self) -> CommunityMetaData<AccountId> {
+
+            CommunityMetaData {
+                community_type: None,
+                customs: self.customs,
+                languages: self.languages,
+                norms: None,
+                religions: self.religions,
+                territories: self.territories,
+                traditions: self.traditions,
+                values: self.values
+            }
+        }
     }
 
     impl<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> OldCommunity<AccountId, Hash, NameLimit, DescriptionLimit> {
-        fn migrate_to_v1(self, random_value: Hash) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
+        fn migrate_to_v2(self) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
+
+            let metadata: Option<CommunityMetaData<AccountId>> = if let Some(m) = self.metadata {
+                Some(m.migrate_to_v2())
+            } else {
+                None
+            };
 
             Community {
                 founder: self.founder,
@@ -26,33 +80,28 @@ pub mod v1 {
                 name: self.name,
                 description: self.description,
                 members: self.members,
-                metadata: self.metadata,
-                reference_id: random_value
+                metadata,
+                reference_id: self.reference_id
             }
         }
     }
 
-    pub struct MigrateToV1<T>(sp_std::marker::PhantomData<T>);
-    impl<T: Config> OnRuntimeUpgrade for MigrateToV1<T> {
+    pub struct MigrateToV2<T>(sp_std::marker::PhantomData<T>);
+    impl<T: Config> OnRuntimeUpgrade for MigrateToV2<T> {
 
         fn on_runtime_upgrade() -> Weight {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            if onchain_version == 0 && current_version == 1 {
+            if onchain_version == 1 && current_version == 2 {
                 let mut translated = 0u64;
-                let mut nonce = Nonce::<T>::get();
                 Communities::<T>::translate::<
                     OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
                     _,
                 >(|_key, old_value| {
                     translated.saturating_inc();
-                    // Random value.
-                    nonce.saturating_inc();
-                    Nonce::<T>::put(nonce);
-                    let nonce = nonce.encode();
-                    let (random_value, _) = T::MyRandomness::random(&nonce);
-                    Some(old_value.migrate_to_v1(random_value))
+
+                    Some(old_value.migrate_to_v2())
                 });
                 current_version.put::<Pallet<T>>();
                 log::info!(
@@ -74,7 +123,7 @@ pub mod v1 {
         #[cfg(feature = "try-runtime")]
         fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
             frame_support::ensure!(
-				Pallet::<T>::on_chain_storage_version() == 0,
+				Pallet::<T>::on_chain_storage_version() == 1,
 				"must upgrade linearly"
 			);
             let prev_count = Communities::<T>::iter().count();
@@ -95,7 +144,7 @@ pub mod v1 {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            frame_support::ensure!(current_version == 1, "must_upgrade");
+            frame_support::ensure!(current_version == 2, "must_upgrade");
             assert_eq!(
                 current_version, onchain_version,
                 "after migration, the current_version and onchain_version should be the same"
@@ -117,7 +166,7 @@ mod test {
     #[test]
     fn migration_works() {
         new_test_ext().execute_with(|| {
-            assert_eq!(StorageVersion::get::<Pallet<T>>(), 0);
+            assert_eq!(StorageVersion::get::<Pallet<T>>(), 1);
 
             create_community();
             setup_blocks(5);
@@ -125,12 +174,12 @@ mod test {
 
             assert_eq!(Communities::<T>::iter_values().count() as u32, 2);
 
-            let state = v1::MigrateToV1::<T>::pre_upgrade().unwrap();
-            let _w = v1::MigrateToV1::<T>::on_runtime_upgrade();
-            v1::MigrateToV1::<T>::post_upgrade(state).unwrap();
+            let state = v2::MigrateToV2::<T>::pre_upgrade().unwrap();
+            let _w = v2::MigrateToV2::<T>::on_runtime_upgrade();
+            v2::MigrateToV2::<T>::post_upgrade(state).unwrap();
 
             assert_eq!(Communities::<T>::iter_values().count() as u32, 2);
-            assert_eq!(StorageVersion::get::<Pallet<T>>(), 1);
+            assert_eq!(StorageVersion::get::<Pallet<T>>(), 2);
             assert_ne!(Some(Communities::<Test>::get(1).unwrap().reference_id), Some(Communities::<Test>::get(0).unwrap().reference_id));
         });
     }
