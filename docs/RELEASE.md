@@ -8,7 +8,7 @@ We use [semantic versioning](https://semver.org).
 
 1. Create a new branch for the future version from `staging`: `release/vMAJ.MIN.PATCH`
 2. Create a PR and include the following changes:
-   * bump up the `spec-version` [field](https://github.com/jurteam/jur-node/blob/main/runtime/src/lib.rs#L123) right away
+   * Bump up the `spec-version` [field](https://github.com/jurteam/jur-node/blob/main/runtime/src/lib.rs#L123) right away.
    * Update the `version` file in the `runtime/Cargo.toml` file accordingly.
 4. All new changes to the new release will be merged into the new branch.
 5. Open a PR against staging ASAP.
