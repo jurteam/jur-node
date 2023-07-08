@@ -54,6 +54,16 @@ pallet-transaction-payment-rpc = { version = "4.0.0-dev", git = "https://github.
 frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
+# Whitelisting feature.
+# This dependency is necessary to enable the address whitelisting
+# that is used by all verisons of the node software that are
+# pre-stable release.
+# The antspam feature we are working out and that will be released
+# with the first stable version of the software will supersede
+# whitelisting and make it entirely unnecessary.
+
+access-control = { version = "0.1.0", default-features = false, git = "https://github.com/WunderbarNetwork/access-control" }
+
 # Local Dependencies
 jur-node-runtime = { version = "1.0.1", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }

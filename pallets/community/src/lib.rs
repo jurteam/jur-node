@@ -30,6 +30,7 @@ use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 pub use weights::WeightInfo;
+use access_control::traits::VerifyAccess;
 
 use crate::types::*;
 
@@ -86,6 +87,8 @@ pub mod pallet {
 			Self::CommunityId,
 			Success = Self::AccountId,
 		>;
+
+		type VerifyAccess: VerifyAccess<Self::AccountId>;
 
 		/// The maximum length of name.
 		#[pallet::constant]
@@ -464,6 +467,19 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
+
+			match T::VerifyAccess::verify_execute_access(
+				signer,
+				"MyCustomPallet".as_bytes().to_vec(),
+				"do_something".as_bytes().to_vec(),
+			) {
+				Ok(_) => {
+					info!("Successfully verified access")
+					// Additional logic
+				},
+					// Return an Error
+					Err(_e) => return Err(frame_support::error::BadOrigin.into()),
+				}
 
 		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
 			if let Some(desc) = maybe_description {

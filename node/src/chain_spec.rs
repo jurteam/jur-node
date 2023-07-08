@@ -1,7 +1,7 @@
 use jur_node_runtime::{
 	AccountId, AuraConfig, BalancesConfig,
 	GenesisConfig, GrandpaConfig, Signature, SudoConfig, SystemConfig,
-	WASM_BINARY,
+	WASM_BINARY, access_control, AccessControlConfig,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;

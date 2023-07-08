@@ -60,6 +60,8 @@ use primitives::{
 	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR,
 };
 
+pub use access_control;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -523,6 +525,11 @@ impl pallet_treasury::Config for Runtime {
 
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 
+impl access_control::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type AdminOrigin = EnsureRoot<AccountId>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -549,6 +556,8 @@ construct_runtime!(
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
+
+		AccessControl: access_control,
 	}
 );
 
@@ -568,6 +577,7 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	access_control::Authorize<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
