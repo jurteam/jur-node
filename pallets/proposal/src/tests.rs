@@ -35,6 +35,7 @@ fn create_community() {
 			.into()),
 		Some(vec![1, 2]),
 		Some(get_community_metadata()),
+		false
 	)
 	.unwrap();
 }

@@ -54,6 +54,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		),
 		Some(members),
 		Some(get_community_metadata::<T>()),
+		false
 	)
 	.unwrap();
 

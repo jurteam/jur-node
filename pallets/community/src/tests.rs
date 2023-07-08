@@ -32,6 +32,7 @@ fn create_community_works_only_with_name() {
 			None,
 			None,
 			None,
+			false
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(0));
@@ -101,7 +102,20 @@ fn update_community_works() {
 fn add_members_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
-		create_community();
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			true
+		)
+			.unwrap();
 
 		let new_members = vec![3, 4];
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
