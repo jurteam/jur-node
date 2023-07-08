@@ -2,7 +2,7 @@ use super::*;
 use frame_support::{log, traits::OnRuntimeUpgrade};
 use sp_runtime::Saturating;
 
-pub mod v2 {
+pub mod v3 {
     use frame_support::{pallet_prelude::*, weights::Weight};
 
     use super::*;
@@ -14,65 +14,12 @@ pub mod v2 {
         pub name: BoundedVec<u8, NameLimit>,
         pub description: BoundedVec<u8, DescriptionLimit>,
         pub members: Vec<AccountId>,
-        pub metadata: Option<OldCommunityMetaData<AccountId, Hash>>,
+        pub metadata: Option<CommunityMetaData<AccountId>>,
         pub reference_id: Hash
     }
 
-
-    #[derive(Decode)]
-    pub struct OldCommunityMetaData<AccountId, Hash> {
-        pub community_type: Option<OldCommunityType<AccountId, Hash>>,
-        pub customs: Option<Vec<Vec<u8>>>,
-        pub languages: Option<Vec<Vec<u8>>>,
-        pub norms: Option<Vec<Hash>>,
-        pub religions: Option<Vec<Vec<u8>>>,
-        pub territories: Option<Vec<Vec<u8>>>,
-        pub traditions: Option<Vec<Vec<u8>>>,
-        pub values: Option<Vec<Vec<u8>>>,
-    }
-
-
-    #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-    pub struct OldState<AccountId, Hash> {
-        pub constitution: Vec<Hash>,
-        pub government: Vec<AccountId>,
-        pub citizens: Vec<AccountId>,
-    }
-    /// Different types of Communities.
-    #[derive(Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, Encode, Decode)]
-    pub enum OldCommunityType<AccountId, Hash> {
-        /// Community Type.
-        Community,
-        /// A community of entities and people united by a commonality.
-        Nation,
-        /// A State is the next step of a Nation.
-        State(OldState<AccountId, Hash>),
-    }
-
-    impl<AccountId, Hash> OldCommunityMetaData<AccountId, Hash> {
-        fn migrate_to_v2(self) -> CommunityMetaData<AccountId> {
-
-            CommunityMetaData {
-                community_type: None,
-                customs: self.customs,
-                languages: self.languages,
-                norms: None,
-                religions: self.religions,
-                territories: self.territories,
-                traditions: self.traditions,
-                values: self.values
-            }
-        }
-    }
-
     impl<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> OldCommunity<AccountId, Hash, NameLimit, DescriptionLimit> {
-        fn migrate_to_v2(self) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
-
-            let metadata: Option<CommunityMetaData<AccountId>> = if let Some(m) = self.metadata {
-                Some(m.migrate_to_v2())
-            } else {
-                None
-            };
+        fn migrate_to_v3(self) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
 
             Community {
                 founder: self.founder,
@@ -80,20 +27,21 @@ pub mod v2 {
                 name: self.name,
                 description: self.description,
                 members: self.members,
-                metadata,
-                reference_id: self.reference_id
+                metadata: self.metadata,
+                reference_id: self.reference_id,
+                is_private: false
             }
         }
     }
 
-    pub struct MigrateToV2<T>(sp_std::marker::PhantomData<T>);
-    impl<T: Config> OnRuntimeUpgrade for MigrateToV2<T> {
+    pub struct MigrateToV3<T>(sp_std::marker::PhantomData<T>);
+    impl<T: Config> OnRuntimeUpgrade for MigrateToV3<T> {
 
         fn on_runtime_upgrade() -> Weight {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            if onchain_version == 1 && current_version == 2 {
+            if onchain_version == 2 && current_version == 3 {
                 let mut translated = 0u64;
                 Communities::<T>::translate::<
                     OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
@@ -101,7 +49,7 @@ pub mod v2 {
                 >(|_key, old_value| {
                     translated.saturating_inc();
 
-                    Some(old_value.migrate_to_v2())
+                    Some(old_value.migrate_to_v3())
                 });
                 current_version.put::<Pallet<T>>();
                 log::info!(

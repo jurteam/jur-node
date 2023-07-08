@@ -16,7 +16,8 @@ pub struct Community<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub members: Vec<AccountId>,
 	pub metadata: Option<CommunityMetaData<AccountId>>,
-	pub reference_id: Hash
+	pub reference_id: Hash,
+	pub is_private: bool
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
