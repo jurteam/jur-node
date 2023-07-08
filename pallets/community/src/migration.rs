@@ -114,7 +114,7 @@ mod test {
     #[test]
     fn migration_works() {
         new_test_ext().execute_with(|| {
-            assert_eq!(StorageVersion::get::<Pallet<T>>(), 1);
+            assert_eq!(StorageVersion::get::<Pallet<T>>(), 0);
 
             create_community();
             setup_blocks(5);
@@ -122,9 +122,9 @@ mod test {
 
             assert_eq!(Communities::<T>::iter_values().count() as u32, 2);
 
-            let state = v2::MigrateToV2::<T>::pre_upgrade().unwrap();
-            let _w = v2::MigrateToV2::<T>::on_runtime_upgrade();
-            v2::MigrateToV2::<T>::post_upgrade(state).unwrap();
+            let state = v3::MigrateToV3::<T>::pre_upgrade().unwrap();
+            let _w = v3::MigrateToV3::<T>::on_runtime_upgrade();
+            v3::MigrateToV3::<T>::post_upgrade(state).unwrap();
 
             assert_eq!(Communities::<T>::iter_values().count() as u32, 2);
             assert_eq!(StorageVersion::get::<Pallet<T>>(), 2);

@@ -45,7 +45,8 @@ benchmarks! {
 		"Jur".into(),
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(members),
-		Some(get_metadata::<T>())
+		Some(get_metadata::<T>()),
+		false
 	)
 	verify {
 		assert!(Communities::<T>::get(T::Helper::community(0)).is_some());
@@ -62,7 +63,8 @@ benchmarks! {
 			"Jur".into(),
 			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 			Some(members),
-			Some(get_metadata::<T>())
+			Some(get_metadata::<T>()),
+			false
 		).unwrap();
 
 		let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
@@ -86,7 +88,8 @@ benchmarks! {
 			"Jur".into(),
 			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 			Some(members),
-			Some(get_metadata::<T>())
+			Some(get_metadata::<T>()),
+			false
 		).unwrap();
 
 		let community_metadata = CommunityMetaData {
@@ -125,7 +128,8 @@ benchmarks! {
 		"Jur".into(),
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(members),
-		Some(get_metadata::<T>())
+		Some(get_metadata::<T>()),
+		true
 	).unwrap();
 
 	let members = vec![account("sub", 2, SEED), account("sub", 3, SEED)];
@@ -148,7 +152,8 @@ benchmarks! {
 		"Jur".into(),
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(members),
-		Some(get_metadata::<T>())
+		Some(get_metadata::<T>()),
+		false
 	).unwrap();
 
 		let member: T::AccountId = whitelisted_caller();
@@ -171,7 +176,8 @@ benchmarks! {
 		"Jur".into(),
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(vec![member.clone()]),
-		Some(get_metadata::<T>())
+		Some(get_metadata::<T>()),
+		false
 	).unwrap();
 
 	}: _(
@@ -192,7 +198,8 @@ benchmarks! {
 		"Jur".into(),
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(vec![member.clone()]),
-		Some(get_metadata::<T>())
+		Some(get_metadata::<T>()),
+		false
 	).unwrap();
 
 	}: _(
