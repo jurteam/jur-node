@@ -17,7 +17,7 @@
 //! * `update_community`
 //! * `update_metadata`
 //! * `delete_community`
-//! * `add_members`
+//! * `accept_members`
 //! * `join_community`
 //!
 
@@ -303,8 +303,8 @@ pub mod pallet {
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		#[pallet::call_index(3)]
-		#[pallet::weight(T::WeightInfo::add_members())]
-		pub fn add_members(
+		#[pallet::weight(T::WeightInfo::accept_members())]
+		pub fn accept_members(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
 			members: Vec<T::AccountId>,

@@ -99,7 +99,7 @@ fn update_community_works() {
 }
 
 #[test]
-fn add_members_works() {
+fn accept_members_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
 		Community::create_community(
@@ -120,20 +120,32 @@ fn add_members_works() {
 		let new_members = vec![3, 4];
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
 
-		assert_ok!(Community::add_members(RuntimeOrigin::signed(1), 0, new_members));
+		assert_ok!(Community::accept_members(RuntimeOrigin::signed(1), 0, new_members));
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2, 3, 4]);
 	});
 }
 
 #[test]
-fn add_members_not_works_for_invalid_input() {
+fn accept_members_should_not_work_public_community() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		let new_members = vec![3, 4];
+		assert_noop!(
+			Community::accept_members(RuntimeOrigin::signed(1), 0, new_members),
+			Error::<Test>::NotAllowedForPublicCommunity
+		);
+	});
+}
+
+#[test]
+fn accept_members_not_works_for_invalid_input() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
 
 		let new_members = vec![3, 4];
 
 		assert_noop!(
-			Community::add_members(RuntimeOrigin::signed(1), 1, new_members.clone()),
+			Community::accept_members(RuntimeOrigin::signed(1), 1, new_members.clone()),
 			Error::<Test>::CommunityNotExist
 		);
 
@@ -142,7 +154,7 @@ fn add_members_not_works_for_invalid_input() {
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::add_members(RuntimeOrigin::signed(2), 0, new_members),
+			Community::accept_members(RuntimeOrigin::signed(2), 0, new_members),
 			Error::<Test>::NoPermission
 		);
 	});

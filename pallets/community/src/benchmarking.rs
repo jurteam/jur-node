@@ -117,7 +117,7 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::UpdatedMetadata(T::Helper::community(0)).into());
 	}
 
-	add_members {
+	accept_members {
 	let caller: T::AccountId = whitelisted_caller();
 	let members = vec![account("sub", 1, SEED)];
 
