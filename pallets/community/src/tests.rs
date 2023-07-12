@@ -32,6 +32,7 @@ fn create_community_works_only_with_name() {
 			None,
 			None,
 			None,
+			false
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(0));
@@ -98,28 +99,53 @@ fn update_community_works() {
 }
 
 #[test]
-fn add_members_works() {
+fn accept_members_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
-		create_community();
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			true
+		)
+			.unwrap();
 
 		let new_members = vec![3, 4];
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
 
-		assert_ok!(Community::add_members(RuntimeOrigin::signed(1), 0, new_members));
+		assert_ok!(Community::accept_members(RuntimeOrigin::signed(1), 0, new_members));
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2, 3, 4]);
 	});
 }
 
 #[test]
-fn add_members_not_works_for_invalid_input() {
+fn accept_members_should_not_work_public_community() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		let new_members = vec![3, 4];
+		assert_noop!(
+			Community::accept_members(RuntimeOrigin::signed(1), 0, new_members),
+			Error::<Test>::NotAllowedForPublicCommunity
+		);
+	});
+}
+
+#[test]
+fn accept_members_not_works_for_invalid_input() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
 
 		let new_members = vec![3, 4];
 
 		assert_noop!(
-			Community::add_members(RuntimeOrigin::signed(1), 1, new_members.clone()),
+			Community::accept_members(RuntimeOrigin::signed(1), 1, new_members.clone()),
 			Error::<Test>::CommunityNotExist
 		);
 
@@ -128,7 +154,7 @@ fn add_members_not_works_for_invalid_input() {
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::add_members(RuntimeOrigin::signed(2), 0, new_members),
+			Community::accept_members(RuntimeOrigin::signed(2), 0, new_members),
 			Error::<Test>::NoPermission
 		);
 	});

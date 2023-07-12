@@ -131,6 +131,7 @@ pub fn create_community() {
 		),
 		Some(vec![1, 2]),
 		Some(get_metadata()),
+		false
 	)
 	.unwrap();
 }
