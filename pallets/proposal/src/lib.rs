@@ -234,18 +234,17 @@ pub mod pallet {
 							.ok_or(Error::<T>::ProposalDoesNotExist)?;
 
 						// Add the proposalResult storage to add the result after the deadline of proposal voting.
-						let all_voters = &proposal_data.voter_accounts.len();
+						let voters_count = &proposal_data.voter_accounts.len();
 
 						// find all the choice id's for the current proposal.
 						// iterate for all the choice id's and get the total no of votes for it.
-
-						let choice_ids = Choices::<T>::get(proposal_id).unwrap();
+						let choice_ids = Choices::<T>::get(proposal_id).ok_or(Error::<T>::ChoiceDoesNotExist)?;
 
 						// get all the votes for all the choice id's
 						for choice in choice_ids.iter() {
-							let all_votes = Votes::<T>::get(choice.id).unwrap();
+							let vote_data = Votes::<T>::get(choice.id).ok_or(Error::<T>::VotesNotFound)?;
 
-							if all_votes.vote_count >= (2 * (*all_voters as u64)) / 3 {
+							if vote_data.vote_count >= (1 * (*voters_count as u64)) / 2 {
 								ProposalResult::<T>::insert(proposal_id, (choice.label.clone(), all_votes));
 							}
 						}
