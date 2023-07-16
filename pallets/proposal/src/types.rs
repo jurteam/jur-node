@@ -3,10 +3,10 @@ use frame_support::{pallet_prelude::Get, BoundedVec, RuntimeDebug};
 use scale_info::TypeInfo;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-#[scale_info(skip_type_params(DescriptionLimit, AddressLimit, AccountLimit))]
-pub struct Proposal<DescriptionLimit: Get<u32>, AddressLimit: Get<u32>, AccountId, AccountLimit: Get<u32>> {
+#[scale_info(skip_type_params(DescriptionLimit, NameLimit, AccountLimit))]
+pub struct Proposal<DescriptionLimit: Get<u32>, NameLimit: Get<u32>, AccountId, AccountLimit: Get<u32>> {
 	pub proposer: AccountId,
-	pub address: BoundedVec<u8, AddressLimit>,
+	pub name: BoundedVec<u8, NameLimit>,
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub historical: bool,
 	pub status: bool,
