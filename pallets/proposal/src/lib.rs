@@ -242,9 +242,9 @@ pub mod pallet {
 
 						// get all the votes for all the choice id's
 						for choice in choice_ids.iter() {
-							let vote_data = Votes::<T>::get(choice.id).ok_or(Error::<T>::VotesNotFound)?;
+							let vote_info = Votes::<T>::get(choice.id).ok_or(Error::<T>::VotesNotFound)?;
 
-							if vote_data.vote_count >= (1 * (*voters_count as u64)) / 2 {
+							if vote_info.vote_count >= (1 * (*voters_count as u64)) / 2 {
 								ProposalResult::<T>::insert(proposal_id, (choice.label.clone(), all_votes));
 							}
 						}
@@ -255,7 +255,7 @@ pub mod pallet {
 						ProposalDetails::<T>::mutate(proposer_account, |proposals| {
 							for proposal in proposals {
 								match &proposal {
-									_proposal => proposal.status = false,
+									_proposal_info => proposal.status = false,
 								}
 							}
 						});
