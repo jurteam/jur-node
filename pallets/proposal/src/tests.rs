@@ -157,14 +157,14 @@ fn cast_votes_not_work_for_invalid_input() {
 			0,
 			bounded_proposal_name.clone(),
 			bounded_proposal_description.clone(),
-			vec![],
+			vec!["Yes".into(), "No".into()],
 			false,
 			5
 		));
 
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1,),
-			Error::<Test>::NoChoiceAvailable
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 2),
+			Error::<Test>::ChoiceDoesNotExist
 		);
 
 		assert_ok!(Proposal::create_proposal(
@@ -172,13 +172,13 @@ fn cast_votes_not_work_for_invalid_input() {
 			0,
 			bounded_proposal_name,
 			bounded_proposal_description,
-			vec!["English".as_bytes().to_vec()],
+			vec!["English".into(), "German".into()],
 			false,
 			5
 		));
 
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 1, 3,),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 1, 5),
 			Error::<Test>::ChoiceDoesNotExist
 		);
 	});
@@ -247,14 +247,14 @@ fn cast_vote_not_works_for_unavailable_choice() {
 			0,
 			bounded_proposal_name,
 			bounded_proposal_description,
-			vec![],
+			vec!["Yes".into(), "No".into()],
 			false,
 			5
 		));
 
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1),
-			Error::<Test>::NoChoiceAvailable
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 2),
+			Error::<Test>::ChoiceDoesNotExist
 		);
 	});
 }

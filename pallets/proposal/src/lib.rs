@@ -184,10 +184,10 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Created Proposals [Proposal Id]
 		CreatedProposal(T::ProposalId),
-		/// Submitted Proposal
-		VoteCasted,
-		/// Proposal state changed
-		ProposalStateChanged,
+		/// Submitted Proposal [Proposal Id]
+		VoteCasted(T::ProposalId),
+		/// Proposal state changed [Proposal Id]
+		ProposalStateChanged(T::ProposalId),
 	}
 
 	#[pallet::error]
@@ -212,12 +212,16 @@ pub mod pallet {
 		VotesNotFound,
 		/// New account can't be added due to account limit.
 		AccountLimitReached,
+		/// Invalid Proposal duration.
+		InvalidProposalDuration,
+		/// Invalid Choices given during creating proposal.
+		InvalidChoicesGiven,
 	}
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
-			let option_proposal_expire = ProposalExpireTime::<T>::get(n);
+		fn on_initialize(block_number: BlockNumberFor<T>) -> Weight {
+			let option_proposal_expire = ProposalExpireTime::<T>::get(block_number);
 
 			if let Some((proposal_id, community_id)) = option_proposal_expire {
 				Proposals::<T>::try_mutate(
@@ -246,19 +250,18 @@ pub mod pallet {
 							}
 						}
 
-
 						proposal_data.status = false;
 						let proposer_account = &proposal_data.proposer;
 
 						ProposalDetails::<T>::mutate(proposer_account, |proposals| {
 							for proposal in proposals {
 								match &proposal {
-									_all_proposal => proposal.status = false,
+									_proposal => proposal.status = false,
 								}
 							}
 						});
 
-						Self::deposit_event(Event::<T>::ProposalStateChanged);
+						Self::deposit_event(Event::<T>::ProposalStateChanged(proposal_id));
 
 						Ok(())
 					},
@@ -301,8 +304,12 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
+
 			let origin = ensure_signed(origin)?;
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
+
+			ensure!(choices.len() >= 2, Error::<T>::InvalidChoicesGiven);
+			ensure!(proposal_duration >= 1, Error::<T>::InvalidProposalDuration);
 
 			Self::do_create_proposal(
 				origin,
@@ -347,10 +354,10 @@ pub mod pallet {
 
 			// Get all the choices id from the current proposal and
 			// check if current choice_id is already present or not?
-			let all_choices =
+			let proposal_choices =
 				Choices::<T>::get(proposal_id).ok_or(Error::<T>::NoChoiceAvailable)?;
 
-			all_choices
+			proposal_choices
 				.into_iter()
 				.find(|choice| choice.id == choice_id)
 				.ok_or(Error::<T>::ChoiceDoesNotExist)?;
@@ -362,7 +369,7 @@ pub mod pallet {
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
 				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
-				let _voter = vote.who.try_push(origin.clone()).ok().ok_or(Error::<T>::AccountLimitReached)?;
+				let _voters = vote.who.try_push(origin.clone()).ok().ok_or(Error::<T>::AccountLimitReached)?;
 				*optional_vote = Some(Vote {
 					who: vote.who.clone(),
 					vote_count: vote.vote_count + 1,
@@ -397,7 +404,7 @@ pub mod pallet {
 				},
 			)?;
 
-			Self::deposit_event(Event::VoteCasted);
+			Self::deposit_event(Event::VoteCasted(proposal_id));
 			Ok(().into())
 		}
 	}
@@ -413,10 +420,6 @@ impl<T: Config> Pallet<T> {
 		is_historical: bool,
 		proposal_duration: u32,
 	) -> DispatchResultWithPostInfo {
-		let bounded_proposal: BoundedVec<u8, <T as Config>::DescriptionLimit> = description
-			.clone()
-			.try_into()
-			.map_err(|_| Error::<T>::BadDescription)?;
 
 		let bounded_account: BoundedVec<T::AccountId, <T as Config>::AccountLimit> = Vec::new()
 			.clone()
@@ -426,7 +429,7 @@ impl<T: Config> Pallet<T> {
 		let new_proposal = Proposal {
 			proposer: proposer_account.clone(),
 			name,
-			description: bounded_proposal,
+			description,
 			historical: is_historical,
 			status: true,
 			voter_accounts: bounded_account.clone(),
@@ -439,7 +442,7 @@ impl<T: Config> Pallet<T> {
 			.into_iter()
 			.map(|choice| {
 				let bounded_choice: BoundedVec<u8, <T as Config>::LabelLimit> =
-					choice.try_into().expect("Invalid choice given.");
+					choice.try_into().expect("Choice Label Limit Exceeded.");
 
 				let choice_id: T::ChoiceId =
 					NextChoiceId::<T>::get().unwrap_or(T::ChoiceId::initial_value());
@@ -459,8 +462,8 @@ impl<T: Config> Pallet<T> {
 		// Storing the proposal
 		<Proposals<T>>::insert(community_id, proposal_id, &new_proposal);
 
-		// set up the expire time of a particular proposal with community id.
-		let total_block = BLOCKS_PER_DAY * proposal_duration;
+		// Set up the expire time of a particular proposal with community id.
+		let total_block: u32 = BLOCKS_PER_DAY * proposal_duration;
 
 		let expire_block = frame_system::Pallet::<T>::block_number() + total_block.into();
 		ProposalExpireTime::<T>::insert(expire_block, (proposal_id, community_id));

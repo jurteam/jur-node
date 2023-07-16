@@ -121,7 +121,7 @@ benchmarks! {
 
 	}: _(RawOrigin::Signed(member), community_id, proposal_id, choice_id)
 	verify {
-		assert_last_event::<T>(Event::<T>::VoteCasted.into());
+		assert_last_event::<T>(Event::<T>::VoteCasted(proposal_id).into());
 	}
 
 	impl_benchmark_test_suite!(Proposal, crate::mock::new_test_ext(), crate::mock::Test);

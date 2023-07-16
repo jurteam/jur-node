@@ -414,7 +414,7 @@ impl pallet_proposal::Config for Runtime {
 	type ChoiceId = ChoiceId;
 	type NameLimit = ConstU32<512>;
 	type DescriptionLimit = ConstU32<8192>;
-	type LabelLimit = ConstU32<250>;
+	type LabelLimit = ConstU32<10>;
 	type AccountLimit = ConstU32<500>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
