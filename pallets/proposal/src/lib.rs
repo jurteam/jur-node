@@ -21,7 +21,7 @@
 //! ## Interface
 //!
 //! * `create_proposal`
-//! * `submit_choice`
+//! * `cast_vote`
 //!
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -79,17 +79,17 @@ pub mod pallet {
 		/// Identifier for the Choice.
 		type ChoiceId: Member + Parameter + MaxEncodedLen + Copy + Incrementable;
 
-		/// The maximum length of any description.
+		/// The maximum length of proposal name/title.
+		#[pallet::constant]
+		type NameLimit: Get<u32>;
+
+		/// The maximum length of proposal description.
 		#[pallet::constant]
 		type DescriptionLimit: Get<u32>;
 
-		/// The maximum length of any label.
+		/// The maximum length of choice label.
 		#[pallet::constant]
 		type LabelLimit: Get<u32>;
-
-		/// The maximum length of address.
-		#[pallet::constant]
-		type AddressLimit: Get<u32>;
 
 		/// The maximum length of address.
 		#[pallet::constant]
@@ -116,17 +116,18 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::ProposalId,
-		Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId, T::AccountLimit>,
+		Proposal<<T as Config>::DescriptionLimit, <T as pallet::Config>::NameLimit, T::AccountId, T::AccountLimit>,
 		OptionQuery,
 	>;
 
+	/// Store all the proposals for the particular accounts
 	#[pallet::storage]
 	#[pallet::getter(fn proposal_details)]
 	pub type ProposalDetails<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
 		T::AccountId,
-		Vec<Proposal<<T as Config>::DescriptionLimit, T::AddressLimit, T::AccountId, T::AccountLimit>>,
+		Vec<Proposal<<T as Config>::DescriptionLimit, <T as pallet::Config>::NameLimit, T::AccountId, T::AccountLimit>>,
 		ValueQuery,
 	>;
 
@@ -167,13 +168,24 @@ pub mod pallet {
 	#[pallet::storage]
 	pub(super) type NextChoiceId<T: Config> = StorageValue<_, T::ChoiceId, OptionQuery>;
 
+	/// Store the `Proposal Result`
+	#[pallet::storage]
+	pub(super) type ProposalResult<T: Config> =
+	StorageMap<
+		_,
+		Blake2_128Concat,
+		T::ProposalId,
+		(BoundedVec<u8, <T as pallet::Config>::LabelLimit>, Vote<T::BlockNumber, T::AccountId, T::AccountLimit>),
+		OptionQuery,
+	>;
+
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Created Proposals [description]
-		CreatedProposal(Vec<u8>),
+		/// Created Proposals [Proposal Id]
+		CreatedProposal(T::ProposalId),
 		/// Submitted Proposal
-		SubmittedChoice,
+		VoteCasted,
 		/// Proposal state changed
 		ProposalStateChanged,
 	}
@@ -212,12 +224,31 @@ pub mod pallet {
 					community_id,
 					proposal_id,
 					|proposal_detail| -> DispatchResult {
-						let all_proposal = proposal_detail
+
+						let proposal_data = proposal_detail
 							.as_mut()
 							.ok_or(Error::<T>::ProposalDoesNotExist)?;
 
-						all_proposal.status = false;
-						let proposer_account = &all_proposal.proposer;
+						// Add the proposalResult storage to add the result after the deadline of proposal voting.
+						let all_voters = &proposal_data.voter_accounts.len();
+
+						// find all the choice id's for the current proposal.
+						// iterate for all the choice id's and get the total no of votes for it.
+
+						let choice_ids = Choices::<T>::get(proposal_id).unwrap();
+
+						// get all the votes for all the choice id's
+						for choice in choice_ids.iter() {
+							let all_votes = Votes::<T>::get(choice.id).unwrap();
+
+							if all_votes.vote_count >= (2 * (*all_voters as u64)) / 3 {
+								ProposalResult::<T>::insert(proposal_id, (choice.label.clone(), all_votes));
+							}
+						}
+
+
+						proposal_data.status = false;
+						let proposer_account = &proposal_data.proposer;
 
 						ProposalDetails::<T>::mutate(proposer_account, |proposals| {
 							for proposal in proposals {
@@ -248,11 +279,11 @@ pub mod pallet {
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
-		/// - 'address': IPFS address of the proposal.
-		/// - `proposal`: A proposal like `Which language should we speak within the Community?`.
+		/// - `name`: name/title of the proposal.
+		/// - `description`: description of the proposal.
 		/// - `choices`: Choices for a given proposal.
 		/// - `is_historical`: A Proposal can be marked as historical.
-		/// - 'proposal_duration': Voting duration of the proposal.
+		/// - `proposal_duration`: Voting duration of the proposal.
 		/// 			In case it is flagged as such, the proposal becomes part of the History.
 		///
 		/// Emits `CreatedProposal` event when successful.
@@ -262,8 +293,8 @@ pub mod pallet {
 		pub fn create_proposal(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
-			address: BoundedVec<u8, T::AddressLimit>,
-			proposal: Vec<u8>,
+			name: BoundedVec<u8, <T as pallet::Config>::NameLimit>,
+			description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit>,
 			choices: Vec<Vec<u8>>,
 			is_historical: bool,
 			proposal_duration: u32,
@@ -276,28 +307,28 @@ pub mod pallet {
 			Self::do_create_proposal(
 				origin,
 				community_id,
-				address,
-				proposal,
+				name,
+				description,
 				choices,
 				is_historical,
 				proposal_duration,
 			)
 		}
 
-		/// Submit a choice for a proposal.
+		/// cast a vote for a proposal.
 		///
 		/// The origin must be Signed and the member of the community.
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
 		/// - `proposal_id`: Id of the proposal.
-		/// - `choice_id`: Id of the coice.
+		/// - `choice_id`: Id of the choice.
 		///
-		/// Emits `SubmittedChoice` event when successful.
+		/// Emits `cast_vote` event when successful.
 		///
 		#[pallet::call_index(1)]
-		#[pallet::weight(<T as Config>::WeightInfo::submit_choice())]
-		pub fn submit_choice(
+		#[pallet::weight(<T as Config>::WeightInfo::cast_vote())]
+		pub fn cast_vote(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
 			proposal_id: T::ProposalId,
@@ -331,6 +362,7 @@ pub mod pallet {
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
 				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
+				let _voter = vote.who.try_push(origin.clone()).ok().ok_or(Error::<T>::AccountLimitReached)?;
 				*optional_vote = Some(Vote {
 					who: vote.who.clone(),
 					vote_count: vote.vote_count + 1,
@@ -344,15 +376,28 @@ pub mod pallet {
 				community_id,
 				proposal_id,
 				|proposal_details| -> DispatchResult {
-					let all_proposal = proposal_details
+					let proposal_info = proposal_details
 						.as_mut()
 						.ok_or(Error::<T>::ProposalDoesNotExist)?;
-					all_proposal.voter_accounts.try_push(origin).ok().ok_or(Error::<T>::AccountLimitReached)?;
+
+					proposal_info.voter_accounts.try_push(origin.clone()).ok().ok_or(Error::<T>::AccountLimitReached)?;
+
+					// get proposer of the current proposal
+					let proposer  = proposal_info.proposer.clone();
+
+					ProposalDetails::<T>::mutate(proposer, |proposals| {
+						for proposal in proposals {
+							match &proposal{
+								_proposal_info => proposal.voter_accounts.try_push(origin.clone()).unwrap()
+							}
+						}
+					});
+
 					Ok(())
 				},
 			)?;
 
-			Self::deposit_event(Event::SubmittedChoice);
+			Self::deposit_event(Event::VoteCasted);
 			Ok(().into())
 		}
 	}
@@ -362,13 +407,13 @@ impl<T: Config> Pallet<T> {
 	pub fn do_create_proposal(
 		proposer_account: T::AccountId,
 		community_id: T::CommunityId,
-		address: BoundedVec<u8, T::AddressLimit>,
-		proposal: Vec<u8>,
+		name: BoundedVec<u8, <T as pallet::Config>::NameLimit>,
+		description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit>,
 		choices: Vec<Vec<u8>>,
 		is_historical: bool,
 		proposal_duration: u32,
 	) -> DispatchResultWithPostInfo {
-		let bounded_proposal: BoundedVec<u8, <T as Config>::DescriptionLimit> = proposal
+		let bounded_proposal: BoundedVec<u8, <T as Config>::DescriptionLimit> = description
 			.clone()
 			.try_into()
 			.map_err(|_| Error::<T>::BadDescription)?;
@@ -380,7 +425,7 @@ impl<T: Config> Pallet<T> {
 
 		let new_proposal = Proposal {
 			proposer: proposer_account.clone(),
-			address,
+			name,
 			description: bounded_proposal,
 			historical: is_historical,
 			status: true,
@@ -434,7 +479,7 @@ impl<T: Config> Pallet<T> {
 		if !choices.is_empty() {
 			<Choices<T>>::insert(proposal_id, new_choices);
 		}
-		Self::deposit_event(Event::CreatedProposal(proposal));
+		Self::deposit_event(Event::CreatedProposal(proposal_id));
 
 		Ok(().into())
 	}
