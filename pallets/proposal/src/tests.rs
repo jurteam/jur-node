@@ -41,16 +41,18 @@ fn create_community() {
 }
 
 fn create_proposal() {
-	let proposal_address: Vec<u8> =
-		"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-	let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
-		proposal_address.try_into().unwrap();
+	let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+	let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
+
+	let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+	let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+
 	create_community();
 	Proposal::create_proposal(
 		RuntimeOrigin::signed(1),
 		0,
-		bounded_proposal_address,
-		"Which language should we speak within the Community?".into(),
+		bounded_proposal_name,
+		bounded_proposal_description,
 		vec![
 			"English".as_bytes().to_vec(),
 			"Ghukliak".as_bytes().to_vec(),
@@ -66,17 +68,18 @@ fn create_proposal() {
 #[test]
 fn create_proposal_works() {
 	new_test_ext().execute_with(|| {
-		let proposal_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
-			proposal_address.try_into().unwrap();
+		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
+
+		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
-			bounded_proposal_address,
-			"Which is your native country".into(),
+			bounded_proposal_name,
+			bounded_proposal_description,
 			vec![
 				"India".as_bytes().to_vec(),
 				"Germany".as_bytes().to_vec(),
@@ -93,17 +96,18 @@ fn create_proposal_works() {
 #[test]
 fn create_proposal_does_not_work_when_no_community_id() {
 	new_test_ext().execute_with(|| {
-		let proposal_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
-			proposal_address.try_into().unwrap();
+		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
+
+		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
 
 		assert_noop!(
 			Proposal::create_proposal(
 				RuntimeOrigin::signed(1),
 				0,
-				bounded_proposal_address,
-				"Which is your native country".into(),
+				bounded_proposal_name,
+				bounded_proposal_description,
 				vec![
 					"India".as_bytes().to_vec(),
 					"Germany".as_bytes().to_vec(),
@@ -118,10 +122,10 @@ fn create_proposal_does_not_work_when_no_community_id() {
 }
 
 #[test]
-fn submit_choice_works() {
+fn cast_vote_works() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
-		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1,));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1,));
 
 		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
 	});
@@ -132,48 +136,49 @@ fn submit_proposal_not_work_for_invalid_input() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 11, 2,),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 11, 2,),
 			Error::<Test>::ProposalDoesNotExist
 		);
 	});
 }
 
 #[test]
-fn submit_choices_not_work_for_invalid_input() {
+fn cast_votes_not_work_for_invalid_input() {
 	new_test_ext().execute_with(|| {
-		let proposal_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
-			proposal_address.try_into().unwrap();
+		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
+
+		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
-			bounded_proposal_address.clone(),
-			"Which is your native language".into(),
+			bounded_proposal_name.clone(),
+			bounded_proposal_description.clone(),
 			vec![],
 			false,
 			5
 		));
 
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1,),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1,),
 			Error::<Test>::NoChoiceAvailable
 		);
 
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
-			bounded_proposal_address,
-			"Which Language".into(),
+			bounded_proposal_name,
+			bounded_proposal_description,
 			vec!["English".as_bytes().to_vec()],
 			false,
 			5
 		));
 
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 1, 3,),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 1, 3,),
 			Error::<Test>::ChoiceDoesNotExist
 		);
 	});
@@ -182,17 +187,18 @@ fn submit_choices_not_work_for_invalid_input() {
 #[test]
 fn submit_proposal_not_work_for_after_proposal_deadline() {
 	new_test_ext().execute_with(|| {
-		let proposal_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
-			proposal_address.try_into().unwrap();
+		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
+
+		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
-			bounded_proposal_address.clone(),
-			"Which is your native language".into(),
+			bounded_proposal_name,
+			bounded_proposal_description,
 			vec![
 			"English".as_bytes().to_vec(),
 			"Ghukliak".as_bytes().to_vec(),
@@ -205,63 +211,64 @@ fn submit_proposal_not_work_for_after_proposal_deadline() {
 
 		run_to_block(15_000);
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 0),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 0),
 			Error::<Test>::ProposalNotActive
 		);
 	});
 }
 
 #[test]
-fn submit_choice_not_works_for_duplicate_vote() {
+fn cast_vote_not_works_for_duplicate_vote() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
-		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1));
 
 		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
 
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1),
 			Error::<Test>::DuplicateVote
 		);
 	});
 }
 
 #[test]
-fn submit_choice_not_works_for_unavailable_choice() {
+fn cast_vote_not_works_for_unavailable_choice() {
 	new_test_ext().execute_with(|| {
-		let proposal_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_proposal_address: BoundedVec<u8, ConstU32<60>> =
-			proposal_address.try_into().unwrap();
+		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
+
+		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
 			0,
-			bounded_proposal_address,
-			"Which is your native country".into(),
+			bounded_proposal_name,
+			bounded_proposal_description,
 			vec![],
 			false,
 			5
 		));
 
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1),
 			Error::<Test>::NoChoiceAvailable
 		);
 	});
 }
 
 #[test]
-fn submit_choice_not_works_for_account_limit_exceeds() {
+fn cast_vote_not_works_for_account_limit_exceeds() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
-		assert_ok!(Proposal::submit_choice(RuntimeOrigin::signed(1), 0, 0, 1));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1));
 
 		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
 
 		assert_noop!(
-			Proposal::submit_choice(RuntimeOrigin::signed(2), 0, 0, 1),
+			Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, 1),
 			Error::<Test>::AccountLimitReached
 		);
 	});
