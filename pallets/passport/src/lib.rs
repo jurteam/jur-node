@@ -98,7 +98,7 @@ pub mod pallet {
 	/// Stores the `PassportId` that is going to be used for the next passport.
 	/// This gets incremented whenever a new passport is created.
 	#[pallet::storage]
-	pub type NextPassportId<T: Config> = StorageValue<_, T::PassportId, OptionQuery>;
+	pub type NextPassportId<T: Config> = StorageMap<_, Twox64Concat, T::CommunityId, T::PassportId, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -156,7 +156,7 @@ pub mod pallet {
 			let maybe_passport = Passports::<T>::get(community_id, &origin);
 			ensure!(maybe_passport.is_some() == false, Error::<T>::PassportAlreadyMinted);
 
-			let passport_id = NextPassportId::<T>::get().unwrap_or(T::PassportId::initial_value());
+			let passport_id = NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
 
 			let passport_details =
 				PassportDetails { id: passport_id, address: None, stamps: None, avatar: None };
@@ -164,7 +164,7 @@ pub mod pallet {
 			<Passports<T>>::insert(community_id, &origin, passport_details);
 
 			let next_id = passport_id.increment();
-			NextPassportId::<T>::set(Some(next_id));
+			NextPassportId::<T>::insert(community_id, next_id);
 
 			Self::deposit_event(Event::MintedPassport(passport_id, origin));
 			Ok(())
