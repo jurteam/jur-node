@@ -245,7 +245,7 @@ pub mod pallet {
 							let vote_info = Votes::<T>::get(choice.id).ok_or(Error::<T>::VotesNotFound)?;
 
 							if vote_info.vote_count >= (1 * (*voters_count as u64)) / 2 {
-								ProposalResult::<T>::insert(proposal_id, (choice.label.clone(), all_votes));
+								ProposalResult::<T>::insert(proposal_id, (choice.label.clone(), vote_info));
 							}
 						}
 
