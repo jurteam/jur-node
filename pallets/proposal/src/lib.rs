@@ -28,7 +28,7 @@
 
 pub use pallet::*;
 mod types;
-use crate::types::{Choice, Proposal, Vote, ProposalResultStatus};
+use crate::types::{Choice, Proposal, ProposalResultStatus, Vote};
 use frame_support::{dispatch::DispatchResultWithPostInfo, BoundedVec};
 use primitives::{Incrementable, BLOCKS_PER_DAY};
 use sp_std::vec::Vec;
@@ -116,7 +116,12 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::ProposalId,
-		Proposal<<T as Config>::DescriptionLimit, <T as pallet::Config>::NameLimit, T::AccountId, T::AccountLimit>,
+		Proposal<
+			<T as Config>::DescriptionLimit,
+			<T as pallet::Config>::NameLimit,
+			T::AccountId,
+			T::AccountLimit,
+		>,
 		OptionQuery,
 	>;
 
@@ -127,7 +132,14 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::AccountId,
-		Vec<Proposal<<T as Config>::DescriptionLimit, <T as pallet::Config>::NameLimit, T::AccountId, T::AccountLimit>>,
+		Vec<
+			Proposal<
+				<T as Config>::DescriptionLimit,
+				<T as pallet::Config>::NameLimit,
+				T::AccountId,
+				T::AccountLimit,
+			>,
+		>,
 		ValueQuery,
 	>;
 
@@ -170,8 +182,7 @@ pub mod pallet {
 
 	/// Store the `Proposal Result`
 	#[pallet::storage]
-	pub(super) type ProposalResult<T: Config> =
-	StorageMap<
+	pub(super) type ProposalResult<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
 		T::ProposalId,
@@ -228,7 +239,6 @@ pub mod pallet {
 					community_id,
 					proposal_id,
 					|proposal_detail| -> DispatchResult {
-
 						let proposal_data = proposal_detail
 							.as_mut()
 							.ok_or(Error::<T>::ProposalDoesNotExist)?;
@@ -238,20 +248,29 @@ pub mod pallet {
 
 						// find all the choice id's for the current proposal.
 						// iterate for all the choice id's and get the total no of votes for it.
-						let choice_ids = Choices::<T>::get(proposal_id).ok_or(Error::<T>::ChoiceDoesNotExist)?;
+						let choice_ids =
+							Choices::<T>::get(proposal_id).ok_or(Error::<T>::ChoiceDoesNotExist)?;
 
 						// fetching the vote information for both choices.
-						let yes_vote_info = Votes::<T>::get(choice_ids[0].id).ok_or(Error::<T>::VotesNotFound)?;
-						let no_vote_info = Votes::<T>::get(choice_ids[1].id).ok_or(Error::<T>::VotesNotFound)?;
+						let yes_vote_info =
+							Votes::<T>::get(choice_ids[0].id).ok_or(Error::<T>::VotesNotFound)?;
+						let no_vote_info =
+							Votes::<T>::get(choice_ids[1].id).ok_or(Error::<T>::VotesNotFound)?;
 
 						// Inserting the proposal result according to the voting.
 						// If 51% or more then from all voters voted in favour of proposal
 						// then proposal is Accepted.
 						// Otherwise the proposal is rejected.
 						if yes_vote_info.vote_count > (1 * (*voters_count as u64)) / 2 {
-							ProposalResult::<T>::insert(proposal_id, (ProposalResultStatus::Accepted, yes_vote_info));
+							ProposalResult::<T>::insert(
+								proposal_id,
+								(ProposalResultStatus::Accepted, yes_vote_info),
+							);
 						} else {
-							ProposalResult::<T>::insert(proposal_id, (ProposalResultStatus::Rejected, no_vote_info));
+							ProposalResult::<T>::insert(
+								proposal_id,
+								(ProposalResultStatus::Rejected, no_vote_info),
+							);
 						}
 
 						proposal_data.status = false;
@@ -373,7 +392,11 @@ pub mod pallet {
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
 				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
-				let _voters = vote.who.try_push(origin.clone()).ok().ok_or(Error::<T>::AccountLimitReached)?;
+				let _voters = vote
+					.who
+					.try_push(origin.clone())
+					.ok()
+					.ok_or(Error::<T>::AccountLimitReached)?;
 				*optional_vote = Some(Vote {
 					who: vote.who.clone(),
 					vote_count: vote.vote_count + 1,
@@ -391,15 +414,21 @@ pub mod pallet {
 						.as_mut()
 						.ok_or(Error::<T>::ProposalDoesNotExist)?;
 
-					proposal_info.voter_accounts.try_push(origin.clone()).ok().ok_or(Error::<T>::AccountLimitReached)?;
+					proposal_info
+						.voter_accounts
+						.try_push(origin.clone())
+						.ok()
+						.ok_or(Error::<T>::AccountLimitReached)?;
 
 					// get proposer of the current proposal
-					let proposer  = proposal_info.proposer.clone();
+					let proposer = proposal_info.proposer.clone();
 
 					ProposalDetails::<T>::mutate(proposer, |proposals| {
 						for proposal in proposals {
-							match &proposal{
-								_proposal_info => proposal.voter_accounts.try_push(origin.clone()).unwrap()
+							match &proposal {
+								_proposal_info => {
+									proposal.voter_accounts.try_push(origin.clone()).unwrap()
+								},
 							}
 						}
 					});
@@ -424,7 +453,6 @@ impl<T: Config> Pallet<T> {
 		is_historical: bool,
 		proposal_duration: u32,
 	) -> DispatchResultWithPostInfo {
-
 		let bounded_account: BoundedVec<T::AccountId, <T as Config>::AccountLimit> = Vec::new()
 			.clone()
 			.try_into()
