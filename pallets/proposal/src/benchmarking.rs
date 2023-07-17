@@ -52,7 +52,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		),
 		members,
 		Some(get_community_metadata::<T>()),
-		false
+		false,
 	)
 	.unwrap();
 
@@ -63,16 +63,20 @@ fn add_proposal<T: Config>(caller: T::AccountId) -> (T::CommunityId, T::Proposal
 	let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
 
 	let community_id = create_community::<T>(caller.clone());
-	let proposal_address: Vec<u8> =
-		"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-	let bounded_proposal_address: BoundedVec<u8, <T as pallet::Config>::AddressLimit> =
-		proposal_address.try_into().unwrap();
+
+	let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+	let bounded_proposal_name: BoundedVec<u8, <T as pallet::Config>::NameLimit> =
+		proposal_name.try_into().unwrap();
+
+	let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+	let bounded_proposal_description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit> =
+		proposal_description.try_into().unwrap();
 
 	Proposal::<T>::create_proposal(
 		RawOrigin::Signed(caller).into(),
 		community_id,
-		bounded_proposal_address,
-		"Which is your native country".into(),
+		bounded_proposal_name,
+		bounded_proposal_description,
 		vec![
 			"India".as_bytes().to_vec(),
 			"Germany".as_bytes().to_vec(),
@@ -92,30 +96,41 @@ benchmarks! {
 	create_proposal {
 		let caller: T::AccountId = whitelisted_caller();
 		let community_id = create_community::<T>(caller.clone());
-		let proposal_address: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_proposal_address: BoundedVec<u8, <T as pallet::Config>::AddressLimit> = proposal_address.try_into().unwrap();
-		let proposal: Vec<u8> = "Which language should we speak within the Community?".into();
+
+		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
+		let bounded_proposal_name: BoundedVec<u8, <T as pallet::Config>::NameLimit> =
+		proposal_name.try_into().unwrap();
+
+		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
+		let bounded_proposal_description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit> =
+		proposal_description.try_into().unwrap();
+
 	}: _(
 		RawOrigin::Signed(caller),
 		community_id,
-		bounded_proposal_address,
-		proposal.clone(),
-		vec!["English".as_bytes().to_vec(), "Ghukliak".as_bytes().to_vec(), "官话".as_bytes().to_vec(), "Rust".as_bytes().to_vec()],
+		bounded_proposal_name,
+		bounded_proposal_description,
+		vec![
+			"English".as_bytes().to_vec(),
+			"Ghukliak".as_bytes().to_vec(),
+			"官话".as_bytes().to_vec(),
+			"Rust".as_bytes().to_vec()
+		],
 		false,
 		5
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::CreatedProposal(proposal).into());
+		assert_last_event::<T>(Event::<T>::CreatedProposal(<T as pallet::Config>::Helper::proposal(0)).into());
 	}
 
-	submit_choice {
+	cast_vote {
 		let caller: T::AccountId = whitelisted_caller();
 		let member = account("sub", 1, SEED);
 		let (community_id, proposal_id, choice_id) = add_proposal::<T>(caller.clone());
 
 	}: _(RawOrigin::Signed(member), community_id, proposal_id, choice_id)
 	verify {
-		assert_last_event::<T>(Event::<T>::SubmittedChoice.into());
+		assert_last_event::<T>(Event::<T>::VoteCasted(proposal_id).into());
 	}
 
 	impl_benchmark_test_suite!(Proposal, crate::mock::new_test_ext(), crate::mock::Test);

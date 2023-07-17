@@ -412,12 +412,12 @@ impl pallet_proposal::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ProposalId = ProposalId;
 	type ChoiceId = ChoiceId;
-	type DescriptionLimit = ConstU32<250>;
-	type LabelLimit = ConstU32<250>;
+	type NameLimit = ConstU32<512>;
+	type DescriptionLimit = ConstU32<8192>;
+	type LabelLimit = ConstU32<10>;
+	type AccountLimit = ConstU32<500>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
-	type AddressLimit = ConstU32<60>;
-	type AccountLimit = ConstU32<500>;
 	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
 }
 
