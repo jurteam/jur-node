@@ -81,7 +81,7 @@ impl pallet_proposal::Config for Test {
 	type NameLimit = ConstU32<60>;
 	type DescriptionLimit = ConstU32<250>;
 	type LabelLimit = ConstU32<250>;
-	type AccountLimit = ConstU32<1>;
+	type AccountLimit = ConstU32<3>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = ();
