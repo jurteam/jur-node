@@ -98,17 +98,24 @@ benchmarks! {
 		let community_id = create_community::<T>(caller.clone());
 
 		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
-		let bounded_proposal_name: BoundedVec<u8, <T as pallet::Config>::NameLimit> = proposal_name.try_into().unwrap();
+		let bounded_proposal_name: BoundedVec<u8, <T as pallet::Config>::NameLimit> =
+		proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit> =
+		proposal_description.try_into().unwrap();
 
 	}: _(
 		RawOrigin::Signed(caller),
 		community_id,
 		bounded_proposal_name,
 		bounded_proposal_description,
-		vec!["English".as_bytes().to_vec(), "Ghukliak".as_bytes().to_vec(), "官话".as_bytes().to_vec(), "Rust".as_bytes().to_vec()],
+		vec![
+			"English".as_bytes().to_vec(),
+			"Ghukliak".as_bytes().to_vec(),
+			"官话".as_bytes().to_vec(),
+			"Rust".as_bytes().to_vec()
+		],
 		false,
 		5
 	)
