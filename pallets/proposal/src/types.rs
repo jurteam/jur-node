@@ -27,3 +27,12 @@ pub struct Vote<BlockNumber, AccountId, AccountLimit: Get<u32>> {
 	pub vote_count: u64,
 	pub last_voted: BlockNumber,
 }
+
+/// Result of proposal.
+#[derive(Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, Encode, Decode)]
+pub enum ProposalResultStatus {
+	/// Proposal is passed.
+	Accepted,
+	/// Proposal is rejected.
+	Rejected,
+}
