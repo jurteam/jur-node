@@ -1,10 +1,10 @@
+use crate::pallet::ProposalResult;
+use crate::types::ProposalResultStatus;
 use crate::{mock::*, Choices, Error, Votes};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
 use pallet_community::types::{CommunityMetaData, CommunityType};
-use crate::pallet::ProposalResult;
-use crate::types::ProposalResultStatus;
 
 fn get_community_metadata() -> CommunityMetaData<u64> {
 	let community_metadata = CommunityMetaData {
@@ -33,11 +33,13 @@ fn create_community() {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into()),
+		Some(
+			"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+				.into(),
+		),
 		Some(vec![1, 2, 7, 8]),
 		Some(get_community_metadata()),
-		false
+		false,
 	)
 	.unwrap();
 }
@@ -47,7 +49,8 @@ fn create_proposal() {
 	let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 	let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-	let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+	let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+		proposal_description.try_into().unwrap();
 
 	create_community();
 	Proposal::create_proposal(
@@ -74,7 +77,8 @@ fn create_proposal_works() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
@@ -102,7 +106,8 @@ fn create_proposal_does_not_work_when_no_community_id() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		assert_noop!(
 			Proposal::create_proposal(
@@ -151,7 +156,8 @@ fn cast_votes_not_work_for_invalid_input() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
@@ -193,7 +199,8 @@ fn cast_vote_not_work_for_after_proposal_deadline() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
@@ -202,10 +209,10 @@ fn cast_vote_not_work_for_after_proposal_deadline() {
 			bounded_proposal_name,
 			bounded_proposal_description,
 			vec![
-			"English".as_bytes().to_vec(),
-			"Ghukliak".as_bytes().to_vec(),
-			"官话".as_bytes().to_vec(),
-			"Rust".as_bytes().to_vec(),
+				"English".as_bytes().to_vec(),
+				"Ghukliak".as_bytes().to_vec(),
+				"官话".as_bytes().to_vec(),
+				"Rust".as_bytes().to_vec(),
 			],
 			false,
 			1,
@@ -241,7 +248,8 @@ fn cast_vote_not_works_for_unavailable_choice() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
@@ -285,18 +293,22 @@ fn create_proposal_not_working_invalid_choice() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
-		assert_noop!(Proposal::create_proposal(
-			RuntimeOrigin::signed(1),
-			0,
-			bounded_proposal_name,
-			bounded_proposal_description,
-			vec![],
-			false,
-			5
-		), Error::<Test>::InvalidChoicesGiven);
+		assert_noop!(
+			Proposal::create_proposal(
+				RuntimeOrigin::signed(1),
+				0,
+				bounded_proposal_name,
+				bounded_proposal_description,
+				vec![],
+				false,
+				5
+			),
+			Error::<Test>::InvalidChoicesGiven
+		);
 	});
 }
 
@@ -307,7 +319,8 @@ fn cast_vote_works_with_proposal_result_accepted() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
@@ -316,10 +329,10 @@ fn cast_vote_works_with_proposal_result_accepted() {
 			bounded_proposal_name,
 			bounded_proposal_description,
 			vec![
-			"English".as_bytes().to_vec(),
-			"Ghukliak".as_bytes().to_vec(),
-			"官话".as_bytes().to_vec(),
-			"Rust".as_bytes().to_vec(),
+				"English".as_bytes().to_vec(),
+				"Ghukliak".as_bytes().to_vec(),
+				"官话".as_bytes().to_vec(),
+				"Rust".as_bytes().to_vec(),
 			],
 			false,
 			1,
@@ -343,7 +356,8 @@ fn cast_vote_works_with_proposal_result_rejected() {
 		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
 
 		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> = proposal_description.try_into().unwrap();
+		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
+			proposal_description.try_into().unwrap();
 
 		create_community();
 		assert_ok!(Proposal::create_proposal(
@@ -352,10 +366,10 @@ fn cast_vote_works_with_proposal_result_rejected() {
 			bounded_proposal_name,
 			bounded_proposal_description,
 			vec![
-			"English".as_bytes().to_vec(),
-			"Ghukliak".as_bytes().to_vec(),
-			"官话".as_bytes().to_vec(),
-			"Rust".as_bytes().to_vec(),
+				"English".as_bytes().to_vec(),
+				"Ghukliak".as_bytes().to_vec(),
+				"官话".as_bytes().to_vec(),
+				"Rust".as_bytes().to_vec(),
 			],
 			false,
 			1,

@@ -1,9 +1,9 @@
 use crate as pallet_proposal;
+use frame_support::pallet_prelude::Hooks;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
 };
-use frame_support::pallet_prelude::Hooks;
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -89,7 +89,10 @@ impl pallet_proposal::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut ext: sp_io::TestExternalities = system::GenesisConfig::default().build_storage::<Test>().unwrap().into();
+	let mut ext: sp_io::TestExternalities = system::GenesisConfig::default()
+		.build_storage::<Test>()
+		.unwrap()
+		.into();
 	ext.execute_with(|| System::set_block_number(1));
 	ext
 }
@@ -97,7 +100,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 fn init_block() {
 	System::on_initialize(System::block_number());
 	Proposal::on_initialize(System::block_number());
-
 }
 
 pub fn run_to_block(n: u64) {

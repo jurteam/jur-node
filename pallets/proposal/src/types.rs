@@ -4,7 +4,12 @@ use scale_info::TypeInfo;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 #[scale_info(skip_type_params(DescriptionLimit, NameLimit, AccountLimit))]
-pub struct Proposal<DescriptionLimit: Get<u32>, NameLimit: Get<u32>, AccountId, AccountLimit: Get<u32>> {
+pub struct Proposal<
+	DescriptionLimit: Get<u32>,
+	NameLimit: Get<u32>,
+	AccountId,
+	AccountLimit: Get<u32>,
+> {
 	pub proposer: AccountId,
 	pub name: BoundedVec<u8, NameLimit>,
 	pub description: BoundedVec<u8, DescriptionLimit>,
