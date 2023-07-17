@@ -125,24 +125,6 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-	/// Store all the proposals for the particular accounts
-	#[pallet::storage]
-	#[pallet::getter(fn proposal_details)]
-	pub type ProposalDetails<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat,
-		T::AccountId,
-		Vec<
-			Proposal<
-				<T as Config>::DescriptionLimit,
-				<T as pallet::Config>::NameLimit,
-				T::AccountId,
-				T::AccountLimit,
-			>,
-		>,
-		ValueQuery,
-	>;
-
 	#[pallet::storage]
 	#[pallet::getter(fn proposal_expire)]
 	pub type ProposalExpireTime<T: Config> =
@@ -274,15 +256,6 @@ pub mod pallet {
 						}
 
 						proposal_data.status = false;
-						let proposer_account = &proposal_data.proposer;
-
-						ProposalDetails::<T>::mutate(proposer_account, |proposals| {
-							for proposal in proposals {
-								match &proposal {
-									_proposal_info => proposal.status = false,
-								}
-							}
-						});
 
 						Self::deposit_event(Event::<T>::ProposalStateChanged(proposal_id));
 
@@ -420,19 +393,6 @@ pub mod pallet {
 						.ok()
 						.ok_or(Error::<T>::AccountLimitReached)?;
 
-					// get proposer of the current proposal
-					let proposer = proposal_info.proposer.clone();
-
-					ProposalDetails::<T>::mutate(proposer, |proposals| {
-						for proposal in proposals {
-							match &proposal {
-								_proposal_info => {
-									proposal.voter_accounts.try_push(origin.clone()).unwrap()
-								},
-							}
-						}
-					});
-
 					Ok(())
 				},
 			)?;
@@ -499,13 +459,6 @@ impl<T: Config> Pallet<T> {
 
 		let expire_block = frame_system::Pallet::<T>::block_number() + total_block.into();
 		ProposalExpireTime::<T>::insert(expire_block, (proposal_id, community_id));
-
-		// fetch all the proposal of current account.
-		let mut all_proposal = ProposalDetails::<T>::get(proposer_account.clone());
-		all_proposal.push(new_proposal);
-
-		// Store the proposal of one account
-		ProposalDetails::<T>::insert(proposer_account, all_proposal);
 
 		let next_proposal_id = proposal_id.increment();
 		NextProposalId::<T>::set(Some(next_proposal_id));
