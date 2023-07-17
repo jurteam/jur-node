@@ -28,7 +28,7 @@
 
 pub use pallet::*;
 mod types;
-use crate::types::{Choice, Proposal, Vote};
+use crate::types::{Choice, Proposal, Vote, ProposalResultStatus};
 use frame_support::{dispatch::DispatchResultWithPostInfo, BoundedVec};
 use primitives::{Incrementable, BLOCKS_PER_DAY};
 use sp_std::vec::Vec;
@@ -175,7 +175,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::ProposalId,
-		(BoundedVec<u8, <T as pallet::Config>::LabelLimit>, Vote<T::BlockNumber, T::AccountId, T::AccountLimit>),
+		(ProposalResultStatus, Vote<T::BlockNumber, T::AccountId, T::AccountLimit>),
 		OptionQuery,
 	>;
 
@@ -240,13 +240,18 @@ pub mod pallet {
 						// iterate for all the choice id's and get the total no of votes for it.
 						let choice_ids = Choices::<T>::get(proposal_id).ok_or(Error::<T>::ChoiceDoesNotExist)?;
 
-						// get all the votes for all the choice id's
-						for choice in choice_ids.iter() {
-							let vote_info = Votes::<T>::get(choice.id).ok_or(Error::<T>::VotesNotFound)?;
+						// fetching the vote information for both choices.
+						let yes_vote_info = Votes::<T>::get(choice_ids[0].id).ok_or(Error::<T>::VotesNotFound)?;
+						let no_vote_info = Votes::<T>::get(choice_ids[1].id).ok_or(Error::<T>::VotesNotFound)?;
 
-							if vote_info.vote_count >= (1 * (*voters_count as u64)) / 2 {
-								ProposalResult::<T>::insert(proposal_id, (choice.label.clone(), vote_info));
-							}
+						// Inserting the proposal result according to the voting.
+						// If 51% or more then from all voters voted in favour of proposal
+						// then proposal is Accepted.
+						// Otherwise the proposal is rejected.
+						if yes_vote_info.vote_count > (1 * (*voters_count as u64)) / 2 {
+							ProposalResult::<T>::insert(proposal_id, (ProposalResultStatus::Accepted, yes_vote_info));
+						} else {
+							ProposalResult::<T>::insert(proposal_id, (ProposalResultStatus::Rejected, no_vote_info));
 						}
 
 						proposal_data.status = false;
