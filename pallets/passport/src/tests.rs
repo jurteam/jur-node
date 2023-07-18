@@ -51,8 +51,14 @@ fn mint_passport_works_for_founder() {
 	new_test_ext().execute_with(|| {
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 0));
-
-		assert!(Passports::<Test>::get(0, 1).is_some());
+		assert_eq!(Passports::<Test>::get(0, 1).unwrap().id, 0);
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
+		assert_eq!(Passports::<Test>::get(0, 2).unwrap().id, 1);
+		create_community();
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 1));
+		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 0);
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 1));
+		assert_eq!(Passports::<Test>::get(1, 2).unwrap().id, 1);
 	});
 }
 
