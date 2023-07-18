@@ -17,7 +17,7 @@
 //! * `update_community`
 //! * `update_metadata`
 //! * `delete_community`
-//! * `add_members`
+//! * `accept_members`
 //! * `join_community`
 //!
 
@@ -56,7 +56,7 @@ pub mod pallet {
 	use super::*;
 
 	/// The current storage version.
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(2);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(3);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -163,6 +163,8 @@ pub mod pallet {
 		AlreadyMember,
 		/// Not member of given community.
 		NotMember,
+		/// Not Allowed For Public Community
+		NotAllowedForPublicCommunity,
 	}
 
 	#[pallet::hooks]
@@ -194,6 +196,7 @@ pub mod pallet {
 			description: Option<Vec<u8>>,
 			members: Option<Vec<T::AccountId>>,
 			metadata: Option<CommunityMetaDataFor<T>>,
+			is_private: bool,
 		) -> DispatchResult {
 			let community_id =
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
@@ -208,6 +211,7 @@ pub mod pallet {
 				description,
 				members,
 				metadata,
+				is_private
 			)
 		}
 
@@ -299,8 +303,8 @@ pub mod pallet {
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		#[pallet::call_index(3)]
-		#[pallet::weight(T::WeightInfo::add_members())]
-		pub fn add_members(
+		#[pallet::weight(T::WeightInfo::accept_members())]
+		pub fn accept_members(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
 			members: Vec<T::AccountId>,
@@ -312,6 +316,7 @@ pub mod pallet {
 					.as_mut()
 					.ok_or(Error::<T>::CommunityNotExist)?;
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
+				ensure!(community.is_private, Error::<T>::NotAllowedForPublicCommunity);
 
 				let mut community_members = community.members.clone();
 
@@ -461,6 +466,7 @@ impl<T: Config> Pallet<T> {
 		maybe_description: Option<Vec<u8>>,
 		maybe_members: Option<Vec<T::AccountId>>,
 		metadata: Option<CommunityMetaDataFor<T>>,
+		is_private: bool
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
@@ -486,6 +492,7 @@ impl<T: Config> Pallet<T> {
 			members,
 			metadata,
 			reference_id: random_value,
+			is_private
 		};
 
 		<Communities<T>>::insert(community_id, community);

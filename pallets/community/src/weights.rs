@@ -33,7 +33,7 @@ pub trait WeightInfo {
 	fn create_community() -> Weight;
 	fn update_community() -> Weight;
 	fn update_metadata() -> Weight;
-	fn add_members() -> Weight;
+	fn accept_members() -> Weight;
 	fn join_community() -> Weight;
 	fn leave_community() -> Weight;
 	fn remove_member() -> Weight;
@@ -83,7 +83,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	}
 	/// Storage: Community Communities (r:1 w:1)
 	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
-	fn add_members() -> Weight {
+	fn accept_members() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `693`
 		//  Estimated: `4158`
@@ -170,7 +170,7 @@ impl WeightInfo for () {
 	}
 	/// Storage: Community Communities (r:1 w:1)
 	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
-	fn add_members() -> Weight {
+	fn accept_members() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `693`
 		//  Estimated: `4158`
