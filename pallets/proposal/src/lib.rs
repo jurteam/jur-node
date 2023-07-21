@@ -335,7 +335,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
 			proposal_id: T::ProposalId,
-			choice_id: T::ChoiceId,
+			choice: BoundedVec<u8, T::LabelLimit>,
 		) -> DispatchResultWithPostInfo {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
@@ -348,6 +348,10 @@ pub mod pallet {
 
 			ensure!(Choices::<T>::contains_key(proposal_id), Error::<T>::NoChoiceAvailable);
 
+			ensure!(proposal.status, Error::<T>::ProposalNotActive);
+
+			ensure!(!(proposal.voter_accounts).contains(&origin), Error::<T>::DuplicateVote);
+
 			// Get all the choices id from the current proposal and
 			// check if current choice_id is already present or not?
 			let proposal_choices =
@@ -355,12 +359,17 @@ pub mod pallet {
 
 			proposal_choices
 				.into_iter()
-				.find(|choice| choice.id == choice_id)
+				.find(|choices| choices.label == choice)
 				.ok_or(Error::<T>::ChoiceDoesNotExist)?;
 
-			ensure!(proposal.status, Error::<T>::ProposalNotActive);
+			let proposal_choices =
+				Choices::<T>::get(proposal_id).ok_or(Error::<T>::NoChoiceAvailable)?;
 
-			ensure!(!(proposal.voter_accounts).contains(&origin), Error::<T>::DuplicateVote);
+			let mut choice_id = proposal_choices[0].id;
+
+			if proposal_choices[1].label == choice {
+				choice_id = proposal_choices[1].id;
+			}
 
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
