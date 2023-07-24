@@ -59,10 +59,8 @@ fn create_proposal() {
 		bounded_proposal_name,
 		bounded_proposal_description,
 		vec![
-			"English".as_bytes().to_vec(),
-			"Ghukliak".as_bytes().to_vec(),
-			"官话".as_bytes().to_vec(),
-			"Rust".as_bytes().to_vec(),
+			"Yes".as_bytes().to_vec(),
+			"No".as_bytes().to_vec(),
 		],
 		false,
 		5,
@@ -132,9 +130,11 @@ fn create_proposal_does_not_work_when_no_community_id() {
 fn cast_vote_works() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1,));
+		let choice: Vec<u8> = "Yes".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice));
 
-		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
+		assert_eq!(Votes::<Test>::get(0).unwrap().vote_count, 1);
 	});
 }
 
@@ -142,8 +142,10 @@ fn cast_vote_works() {
 fn cast_vote_not_work_for_invalid_input() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
+		let choice: Vec<u8> = "No".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 11, 2,),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 11, bounded_choice),
 			Error::<Test>::ProposalDoesNotExist
 		);
 	});
@@ -170,8 +172,11 @@ fn cast_votes_not_work_for_invalid_input() {
 			5
 		));
 
+		let choice: Vec<u8> = "no".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 2),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice),
 			Error::<Test>::ChoiceDoesNotExist
 		);
 
@@ -185,8 +190,11 @@ fn cast_votes_not_work_for_invalid_input() {
 			5
 		));
 
+		let choice: Vec<u8> = "No".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 1, 5),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 1, bounded_choice),
 			Error::<Test>::ChoiceDoesNotExist
 		);
 	});
@@ -219,8 +227,11 @@ fn cast_vote_not_work_for_after_proposal_deadline() {
 		));
 
 		run_to_block(15_000);
+		let choice: Vec<u8> = "English".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 0),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice),
 			Error::<Test>::ProposalNotActive
 		);
 	});
@@ -230,41 +241,16 @@ fn cast_vote_not_work_for_after_proposal_deadline() {
 fn cast_vote_not_works_for_duplicate_vote() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1));
+		let choice: Vec<u8> = "Yes".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
 
-		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 1);
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice.clone()));
+
+		assert_eq!(Votes::<Test>::get(0).unwrap().vote_count, 1);
 
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1),
+			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice),
 			Error::<Test>::DuplicateVote
-		);
-	});
-}
-
-#[test]
-fn cast_vote_not_works_for_unavailable_choice() {
-	new_test_ext().execute_with(|| {
-		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
-		let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
-
-		let proposal_description: Vec<u8> = "Description of Jur community Language proposal".into();
-		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
-			proposal_description.try_into().unwrap();
-
-		create_community();
-		assert_ok!(Proposal::create_proposal(
-			RuntimeOrigin::signed(1),
-			0,
-			bounded_proposal_name,
-			bounded_proposal_description,
-			vec!["Yes".into(), "No".into()],
-			false,
-			5
-		));
-
-		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 2),
-			Error::<Test>::ChoiceDoesNotExist
 		);
 	});
 }
@@ -273,14 +259,16 @@ fn cast_vote_not_works_for_unavailable_choice() {
 fn cast_vote_not_works_for_account_limit_exceeds() {
 	new_test_ext().execute_with(|| {
 		create_proposal();
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 1));
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, 1));
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(7), 0, 0, 1));
+		let choice: Vec<u8> = "Yes".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice.clone()));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, bounded_choice.clone()));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(7), 0, 0, bounded_choice.clone()));
 
-		assert_eq!(Votes::<Test>::get(1).unwrap().vote_count, 3);
+		assert_eq!(Votes::<Test>::get(0).unwrap().vote_count, 3);
 
 		assert_noop!(
-			Proposal::cast_vote(RuntimeOrigin::signed(8), 0, 0, 1),
+			Proposal::cast_vote(RuntimeOrigin::signed(8), 0, 0, bounded_choice),
 			Error::<Test>::AccountLimitReached
 		);
 	});
@@ -329,18 +317,18 @@ fn cast_vote_works_with_proposal_result_accepted() {
 			bounded_proposal_name,
 			bounded_proposal_description,
 			vec![
-				"English".as_bytes().to_vec(),
-				"Ghukliak".as_bytes().to_vec(),
-				"官话".as_bytes().to_vec(),
-				"Rust".as_bytes().to_vec(),
+				"Yes".as_bytes().to_vec(),
+				"No".as_bytes().to_vec(),
 			],
 			false,
 			1,
 		));
 
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 0));
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, 0));
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(7), 0, 0, 1));
+		let choice: Vec<u8> = "Yes".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice.clone()));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, bounded_choice.clone()));
 
 		run_to_block(15_000);
 
@@ -366,18 +354,22 @@ fn cast_vote_works_with_proposal_result_rejected() {
 			bounded_proposal_name,
 			bounded_proposal_description,
 			vec![
-				"English".as_bytes().to_vec(),
-				"Ghukliak".as_bytes().to_vec(),
-				"官话".as_bytes().to_vec(),
-				"Rust".as_bytes().to_vec(),
+				"Yes".as_bytes().to_vec(),
+				"No".as_bytes().to_vec(),
 			],
 			false,
 			1,
 		));
 
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, 0));
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, 1));
-		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(7), 0, 0, 1));
+		let choice: Vec<u8> = "Yes".into();
+		let bounded_choice: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+
+		let choice: Vec<u8> = "No".into();
+		let bounded_choice2: BoundedVec<u8, ConstU32<10>> = choice.try_into().unwrap();
+
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(1), 0, 0, bounded_choice));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(2), 0, 0, bounded_choice2.clone()));
+		assert_ok!(Proposal::cast_vote(RuntimeOrigin::signed(7), 0, 0, bounded_choice2));
 
 		run_to_block(15_000);
 

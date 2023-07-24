@@ -128,7 +128,11 @@ benchmarks! {
 		let member = account("sub", 1, SEED);
 		let (community_id, proposal_id, choice_id) = add_proposal::<T>(caller.clone());
 
-	}: _(RawOrigin::Signed(member), community_id, proposal_id, choice_id)
+		let choice: Vec<u8> = "India".into();
+		let bounded_choice: BoundedVec<u8, <T as pallet::Config>::LabelLimit> =
+		choice.try_into().unwrap();
+
+	}: _(RawOrigin::Signed(member), community_id, proposal_id, bounded_choice)
 	verify {
 		assert_last_event::<T>(Event::<T>::VoteCasted(proposal_id).into());
 	}
