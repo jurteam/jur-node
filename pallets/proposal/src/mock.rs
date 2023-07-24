@@ -80,7 +80,7 @@ impl pallet_proposal::Config for Test {
 	type ChoiceId = u32;
 	type NameLimit = ConstU32<60>;
 	type DescriptionLimit = ConstU32<250>;
-	type LabelLimit = ConstU32<250>;
+	type LabelLimit = ConstU32<10>;
 	type AccountLimit = ConstU32<3>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
