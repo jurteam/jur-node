@@ -4,7 +4,7 @@ use crate::{mock::*, Choices, Error, Votes};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
-use pallet_community::types::{CommunityMetaData, CommunityType};
+use pallet_community::types::{CommunityMetaData, CommunityType, Category};
 
 fn get_community_metadata() -> CommunityMetaData<u64> {
 	let community_metadata = CommunityMetaData {
@@ -39,7 +39,7 @@ fn create_community() {
 		),
 		Some(vec![1, 2, 7, 8]),
 		Some(get_community_metadata()),
-		false,
+		Category::Public,
 	)
 	.unwrap();
 }

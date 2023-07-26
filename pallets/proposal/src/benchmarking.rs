@@ -6,7 +6,7 @@ use super::*;
 use crate::Pallet as Proposal;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
-use pallet_community::types::{CommunityMetaData, CommunityType};
+use pallet_community::types::{CommunityMetaData, CommunityType, Category};
 use sp_std::vec;
 
 const SEED: u32 = 0;
@@ -52,7 +52,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		),
 		members,
 		Some(get_community_metadata::<T>()),
-		false,
+		Category::Public
 	)
 	.unwrap();
 

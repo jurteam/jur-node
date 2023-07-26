@@ -46,7 +46,7 @@ benchmarks! {
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(members),
 		Some(get_metadata::<T>()),
-		false
+		Category::Public
 	)
 	verify {
 		assert!(Communities::<T>::get(T::Helper::community(0)).is_some());
@@ -64,7 +64,7 @@ benchmarks! {
 			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 			Some(members),
 			Some(get_metadata::<T>()),
-			false
+			Category::Public
 		).unwrap();
 
 		let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
@@ -89,7 +89,7 @@ benchmarks! {
 			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 			Some(members),
 			Some(get_metadata::<T>()),
-			false
+			Category::Public
 		).unwrap();
 
 		let community_metadata = CommunityMetaData {
@@ -129,7 +129,7 @@ benchmarks! {
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(members),
 		Some(get_metadata::<T>()),
-		true
+		Category::Public
 	).unwrap();
 
 	let members = vec![account("sub", 2, SEED), account("sub", 3, SEED)];
@@ -153,7 +153,7 @@ benchmarks! {
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(members),
 		Some(get_metadata::<T>()),
-		false
+		Category::Public
 	).unwrap();
 
 		let member: T::AccountId = whitelisted_caller();
@@ -177,7 +177,7 @@ benchmarks! {
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(vec![member.clone()]),
 		Some(get_metadata::<T>()),
-		false
+		Category::Public
 	).unwrap();
 
 	}: _(
@@ -199,7 +199,7 @@ benchmarks! {
 		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
 		Some(vec![member.clone()]),
 		Some(get_metadata::<T>()),
-		false
+		Category::Public
 	).unwrap();
 
 	}: _(
