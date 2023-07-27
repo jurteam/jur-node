@@ -436,7 +436,6 @@ impl pallet_user::Config for Runtime {
 	type AddressLimit = ConstU32<60>;
 }
 
-
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
