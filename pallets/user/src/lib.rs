@@ -1,6 +1,16 @@
 //! # Jur User Pallet
 //!
 //! A pallet allows any $JUR token holder to add username and profile image on the Jur.
+//!
+//!  ## Overview
+//!	User pallet will be the core pallet to store the basic details of JUR users.
+//! Currently this pallet will store the username and profile image of the JUR user.
+//! A user can add/update there username and profile image by using this pallet.
+//!
+//! ## Interface
+//!
+//! * `update_user`
+//!
 
 #![cfg_attr(not(feature = "std"), no_std)]
 pub use pallet::*;
