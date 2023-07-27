@@ -430,6 +430,13 @@ impl pallet_passport::Config for Runtime {
 	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_user::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type NameLimit = ConstU32<24>;
+	type AddressLimit = ConstU32<60>;
+}
+
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -544,6 +551,7 @@ construct_runtime!(
 		Community: pallet_community,
 		Proposal: pallet_proposal,
 		Passport: pallet_passport,
+		User: pallet_user,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 
