@@ -17,7 +17,7 @@ pub struct Community<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get
 	pub members: Vec<AccountId>,
 	pub metadata: Option<CommunityMetaData<AccountId>>,
 	pub reference_id: Hash,
-	pub is_private: bool
+	pub category: Category,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
@@ -49,8 +49,22 @@ pub enum CommunityType<AccountId> {
 	State(State<AccountId>),
 }
 
+#[derive(Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, Encode, Decode)]
+pub enum Category {
+	/// public.
+	Public,
+	/// A NFT Gated community.
+	NFTGated
+}
+
 impl<AccountId> Default for CommunityType<AccountId> {
 	fn default() -> Self {
 		Self::Community
+	}
+}
+
+impl Default for Category {
+	fn default() -> Self {
+		Self::Public
 	}
 }
