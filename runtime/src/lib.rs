@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 105,
+	spec_version: 106,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -430,6 +430,12 @@ impl pallet_passport::Config for Runtime {
 	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_user::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type NameLimit = ConstU32<24>;
+	type AddressLimit = ConstU32<60>;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -541,6 +547,10 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Local Pallet
 		TokenSwap: pallet_token_swap,
+		Community: pallet_community,
+		Proposal: pallet_proposal,
+		Passport: pallet_passport,
+		User: pallet_user,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 
@@ -581,7 +591,7 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v3::MigrateToV3<Runtime>;
+pub type Migrations = pallet_community::migration::v4::MigrateToV4<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]

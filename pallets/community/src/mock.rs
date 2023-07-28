@@ -1,5 +1,5 @@
 use crate as pallet_community;
-use crate::{CommunityMetaData, CommunityType};
+use crate::{CommunityMetaData, CommunityType, Category};
 use frame_support::pallet_prelude::Hooks;
 use frame_support::{
 	parameter_types,
@@ -131,7 +131,7 @@ pub fn create_community() {
 		),
 		Some(vec![1, 2]),
 		Some(get_metadata()),
-		false
+		Category::Public
 	)
 	.unwrap();
 }

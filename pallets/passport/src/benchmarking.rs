@@ -7,7 +7,7 @@ use crate::Pallet as Passport;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::BoundedVec;
 use frame_system::RawOrigin;
-use pallet_community::types::{CommunityMetaData, CommunityType};
+use pallet_community::types::{CommunityMetaData, CommunityType, Category};
 use sp_std::vec;
 use sp_std::vec::Vec;
 
@@ -54,7 +54,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		),
 		Some(members),
 		Some(get_community_metadata::<T>()),
-		false
+		Category::Public
 	)
 	.unwrap();
 
