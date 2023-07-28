@@ -54,6 +54,7 @@ hex-literal = "0.3.4"
 pallet-token-swap = { version = "0.1.0", default-features = false, path = "../pallets/token-swap" }
 pallet-community = { version = "0.1.0", default-features = false, path = "../pallets/community" }
 pallet-proposal = { version = "0.1.0", default-features = false, path = "../pallets/proposal" }
+pallet-user = { version = "0.1.0", default-features = false, path = "../pallets/user" }
 pallet-passport = { version = "0.1.0", default-features = false, path = "../pallets/passport" }
 
 primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
