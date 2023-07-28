@@ -74,7 +74,7 @@ pub mod pallet {
 		/// Add/Update the user details by any JUR user.
 		///
 		/// Parameters:
-		/// - `username`: Username of the Account.
+		/// - `name`: Username of the Account.
 		/// - `avatar`: This is an image file address(also a GIF is valid) that is uploaded on IPFS.
 		///
 		/// Emits `UserDetailsUpdated` event when successful.
@@ -83,17 +83,17 @@ pub mod pallet {
 		#[pallet::weight(10000)]
 		pub fn update_user(
 			origin: OriginFor<T>,
-			username: Option<BoundedVec<u8, T::NameLimit>>,
+			name: Option<BoundedVec<u8, T::NameLimit>>,
 			avatar: Option<BoundedVec<u8, T::AddressLimit>>,
 		) -> DispatchResult {
 			let user = ensure_signed(origin.clone())?;
 
 			for (_, userdata) in Users::<T>::iter() {
-				ensure!(userdata.username != username, Error::<T>::UsernameNotAvailable);
+				ensure!(userdata.name != name, Error::<T>::UsernameNotAvailable);
 			}
 
 			// creating the user data structure as per given inputs
-			let new_user = User { username, avatar };
+			let new_user = User { name, avatar };
 
 			// Inserting the data into the storage.
 			Users::<T>::insert(user.clone(), new_user);
