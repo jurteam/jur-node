@@ -2,7 +2,7 @@ use super::*;
 use frame_support::{log, traits::OnRuntimeUpgrade};
 use sp_runtime::Saturating;
 
-pub mod v3 {
+pub mod v4 {
     use frame_support::{pallet_prelude::*, weights::Weight};
 
     use super::*;
@@ -15,11 +15,12 @@ pub mod v3 {
         pub description: BoundedVec<u8, DescriptionLimit>,
         pub members: Vec<AccountId>,
         pub metadata: Option<CommunityMetaData<AccountId>>,
-        pub reference_id: Hash
+        pub reference_id: Hash,
+        pub is_private: bool
     }
 
     impl<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> OldCommunity<AccountId, Hash, NameLimit, DescriptionLimit> {
-        fn migrate_to_v3(self) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
+        fn migrate_to_v4(self) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
 
             Community {
                 founder: self.founder,
@@ -29,19 +30,19 @@ pub mod v3 {
                 members: self.members,
                 metadata: self.metadata,
                 reference_id: self.reference_id,
-                is_private: false
+                category: Category::Public
             }
         }
     }
 
-    pub struct MigrateToV3<T>(sp_std::marker::PhantomData<T>);
-    impl<T: Config> OnRuntimeUpgrade for MigrateToV3<T> {
+    pub struct MigrateToV4<T>(sp_std::marker::PhantomData<T>);
+    impl<T: Config> OnRuntimeUpgrade for MigrateToV4<T> {
 
         fn on_runtime_upgrade() -> Weight {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            if onchain_version == 2 && current_version == 3 {
+            if onchain_version == 3 && current_version == 4 {
                 let mut translated = 0u64;
                 Communities::<T>::translate::<
                     OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
@@ -49,7 +50,7 @@ pub mod v3 {
                 >(|_key, old_value| {
                     translated.saturating_inc();
 
-                    Some(old_value.migrate_to_v3())
+                    Some(old_value.migrate_to_v4())
                 });
                 current_version.put::<Pallet<T>>();
                 log::info!(

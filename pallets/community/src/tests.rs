@@ -4,6 +4,7 @@ use crate::{
 	Communities, Error,
 };
 use frame_support::{assert_noop, assert_ok};
+use crate::types::Category;
 
 #[test]
 fn create_community_works() {
@@ -32,7 +33,7 @@ fn create_community_works_only_with_name() {
 			None,
 			None,
 			None,
-			false
+			Category::Public
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(0));
@@ -113,7 +114,7 @@ fn accept_members_works() {
 			),
 			Some(vec![1, 2]),
 			Some(get_metadata()),
-			true
+			Category::Public
 		)
 			.unwrap();
 
@@ -122,18 +123,6 @@ fn accept_members_works() {
 
 		assert_ok!(Community::accept_members(RuntimeOrigin::signed(1), 0, new_members));
 		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2, 3, 4]);
-	});
-}
-
-#[test]
-fn accept_members_should_not_work_public_community() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		let new_members = vec![3, 4];
-		assert_noop!(
-			Community::accept_members(RuntimeOrigin::signed(1), 0, new_members),
-			Error::<Test>::NotAllowedForPublicCommunity
-		);
 	});
 }
 
