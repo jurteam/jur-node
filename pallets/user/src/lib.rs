@@ -62,8 +62,8 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// User not available.
-		UserNotAvailable,
+		/// Username not available.
+		UsernameNotAvailable,
 	}
 
 	#[pallet::hooks]
@@ -87,6 +87,10 @@ pub mod pallet {
 			avatar: Option<BoundedVec<u8, T::AddressLimit>>,
 		) -> DispatchResult {
 			let user = ensure_signed(origin.clone())?;
+
+			for (_, userdata) in Users::<T>::iter() {
+				ensure!(userdata.username != username, Error::<T>::UsernameNotAvailable);
+			}
 
 			// creating the user data structure as per given inputs
 			let new_user = User { username, avatar };
