@@ -33,7 +33,10 @@ fn create_community_works_only_with_name() {
 			None,
 			None,
 			None,
-			Category::Public
+			Category::Public,
+			Some("tag".into()),
+			Some("primary color".into()),
+			Some("Secondary color".into())
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(0));
@@ -114,7 +117,10 @@ fn accept_members_works() {
 			),
 			Some(vec![1, 2]),
 			Some(get_metadata()),
-			Category::Public
+			Category::Public,
+            Some("tag".into()),
+            Some("primary color".into()),
+            Some("Secondary color".into())
 		)
 			.unwrap();
 

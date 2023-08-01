@@ -54,7 +54,10 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		),
 		Some(members),
 		Some(get_community_metadata::<T>()),
-		Category::Public
+		Category::Public,
+		Some("tag".into()),
+		Some("primary color".into()),
+		Some("Secondary color".into())
 	)
 	.unwrap();
 

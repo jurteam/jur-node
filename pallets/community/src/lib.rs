@@ -103,6 +103,14 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 
 		type MyRandomness: Randomness<Self::Hash, Self::BlockNumber>;
+
+		/// The maximum length of tag.
+		#[pallet::constant]
+		type TagLimit: Get<u32>;
+
+		/// The maximum length of color.
+		#[pallet::constant]
+		type ColorLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -121,7 +129,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::CommunityId,
-		Community<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
+		Community<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
 	>;
 
 	/// Stores the `CommunityId` that is going to be used for the next
@@ -165,6 +173,10 @@ pub mod pallet {
 		NotMember,
 		/// Not Allowed For Public Community
 		NotAllowedForPublicCommunity,
+		/// Invalid tag given.
+		BadTag,
+		/// Invalid description given.
+		BadColor,
 	}
 
 	#[pallet::hooks]
@@ -196,7 +208,10 @@ pub mod pallet {
 			description: Option<Vec<u8>>,
 			members: Option<Vec<T::AccountId>>,
 			metadata: Option<CommunityMetaDataFor<T>>,
-			category: Category
+			category: Category,
+			tag: Option<Vec<u8>>,
+			primary_color: Option<Vec<u8>>,
+			secondary_color: Option<Vec<u8>>,
 		) -> DispatchResult {
 			let community_id =
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
@@ -211,7 +226,10 @@ pub mod pallet {
 				description,
 				members,
 				metadata,
-				category
+				category,
+				tag,
+				primary_color,
+				secondary_color
 			)
 		}
 
@@ -465,7 +483,10 @@ impl<T: Config> Pallet<T> {
 		maybe_description: Option<Vec<u8>>,
 		maybe_members: Option<Vec<T::AccountId>>,
 		metadata: Option<CommunityMetaDataFor<T>>,
-		category: Category
+		category: Category,
+		maybe_tag: Option<Vec<u8>>,
+		maybe_primary_color: Option<Vec<u8>>,
+		maybe_secondary_color: Option<Vec<u8>>,
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
@@ -473,6 +494,27 @@ impl<T: Config> Pallet<T> {
 		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
 			if let Some(desc) = maybe_description {
 				desc.try_into().map_err(|_| Error::<T>::BadDescription)?
+			} else {
+				Default::default()
+			};
+
+		let bounded_tag: BoundedVec<u8, T::TagLimit> =
+			if let Some(tag) = maybe_tag {
+				tag.try_into().map_err(|_| Error::<T>::BadTag)?
+			} else {
+				Default::default()
+			};
+
+		let bounded_primary_color: BoundedVec<u8, T::ColorLimit> =
+			if let Some(color) = maybe_primary_color {
+				color.try_into().map_err(|_| Error::<T>::BadColor)?
+			} else {
+				Default::default()
+			};
+
+		let bounded_secondary_color: BoundedVec<u8, T::ColorLimit> =
+			if let Some(color) = maybe_secondary_color {
+				color.try_into().map_err(|_| Error::<T>::BadColor)?
 			} else {
 				Default::default()
 			};
@@ -491,7 +533,10 @@ impl<T: Config> Pallet<T> {
 			members,
 			metadata,
 			reference_id: random_value,
-			category
+			category,
+			tag: bounded_tag,
+			primary_color: bounded_primary_color,
+			secondary_color: bounded_secondary_color
 		};
 
 		<Communities<T>>::insert(community_id, community);

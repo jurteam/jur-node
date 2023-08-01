@@ -2,25 +2,25 @@ use super::*;
 use frame_support::{log, traits::OnRuntimeUpgrade};
 use sp_runtime::Saturating;
 
-pub mod v4 {
+pub mod v5 {
     use frame_support::{pallet_prelude::*, weights::Weight};
 
     use super::*;
 
     #[derive(Decode)]
-    pub struct OldCommunity<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> {
-        pub founder: AccountId,
+    pub struct OldCommunity<T: Config> {
+        pub founder: T::AccountId,
         pub logo: Option<Vec<u8>>,
-        pub name: BoundedVec<u8, NameLimit>,
-        pub description: BoundedVec<u8, DescriptionLimit>,
-        pub members: Vec<AccountId>,
-        pub metadata: Option<CommunityMetaData<AccountId>>,
-        pub reference_id: Hash,
-        pub is_private: bool
+        pub name: BoundedVec<u8, T::NameLimit>,
+        pub description: BoundedVec<u8, T::DescriptionLimit>,
+        pub members: Vec<T::AccountId>,
+        pub metadata: Option<CommunityMetaData<T::AccountId>>,
+        pub reference_id: T::Hash,
+        pub category: Category
     }
 
-    impl<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> OldCommunity<AccountId, Hash, NameLimit, DescriptionLimit> {
-        fn migrate_to_v4(self) -> Community<AccountId, Hash, NameLimit, DescriptionLimit> {
+    impl<T: Config> OldCommunity<T> {
+        fn migrate_to_v5(self) -> Community<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit> {
 
             Community {
                 founder: self.founder,
@@ -30,27 +30,30 @@ pub mod v4 {
                 members: self.members,
                 metadata: self.metadata,
                 reference_id: self.reference_id,
-                category: Category::Public
+                category: Category::Public,
+                tag: Default::default(),
+                primary_color: Default::default(),
+                secondary_color: Default::default()
             }
         }
     }
 
-    pub struct MigrateToV4<T>(sp_std::marker::PhantomData<T>);
-    impl<T: Config> OnRuntimeUpgrade for MigrateToV4<T> {
+    pub struct MigrateToV5<T>(sp_std::marker::PhantomData<T>);
+    impl<T: Config> OnRuntimeUpgrade for MigrateToV5<T> {
 
         fn on_runtime_upgrade() -> Weight {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            if onchain_version == 3 && current_version == 4 {
+            if onchain_version == 4 && current_version == 5 {
                 let mut translated = 0u64;
                 Communities::<T>::translate::<
-                    OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
+                    OldCommunity<T>,
                     _,
                 >(|_key, old_value| {
                     translated.saturating_inc();
 
-                    Some(old_value.migrate_to_v4())
+                    Some(old_value.migrate_to_v5())
                 });
                 current_version.put::<Pallet<T>>();
                 log::info!(
