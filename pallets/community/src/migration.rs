@@ -8,34 +8,15 @@ pub mod v5 {
     use super::*;
 
     #[derive(Decode)]
-    pub struct OldCommunity<T: Config> {
-        pub founder: T::AccountId,
+    pub struct OldCommunity<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> {
+        pub founder: AccountId,
         pub logo: Option<Vec<u8>>,
-        pub name: BoundedVec<u8, T::NameLimit>,
-        pub description: BoundedVec<u8, T::DescriptionLimit>,
-        pub members: Vec<T::AccountId>,
-        pub metadata: Option<CommunityMetaData<T::AccountId>>,
-        pub reference_id: T::Hash,
-        pub category: Category
-    }
-
-    impl<T: Config> OldCommunity<T> {
-        fn migrate_to_v5(self) -> Community<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit> {
-
-            Community {
-                founder: self.founder,
-                logo: self.logo,
-                name: self.name,
-                description: self.description,
-                members: self.members,
-                metadata: self.metadata,
-                reference_id: self.reference_id,
-                category: Category::Public,
-                tag: Default::default(),
-                primary_color: Default::default(),
-                secondary_color: Default::default()
-            }
-        }
+        pub name: BoundedVec<u8, NameLimit>,
+        pub description: BoundedVec<u8, DescriptionLimit>,
+        pub members: Vec<AccountId>,
+        pub metadata: Option<CommunityMetaData<AccountId>>,
+        pub reference_id: Hash,
+        pub is_private: bool
     }
 
     pub struct MigrateToV5<T>(sp_std::marker::PhantomData<T>);
@@ -48,12 +29,25 @@ pub mod v5 {
             if onchain_version == 4 && current_version == 5 {
                 let mut translated = 0u64;
                 Communities::<T>::translate::<
-                    OldCommunity<T>,
+                    OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
                     _,
                 >(|_key, old_value| {
                     translated.saturating_inc();
 
-                    Some(old_value.migrate_to_v5())
+                    Some( Community {
+                                    founder: old_value.founder,
+                                    logo: old_value.logo,
+                                    name: old_value.name,
+                                    description: old_value.description,
+                                    members: old_value.members,
+                                    metadata: old_value.metadata,
+                                    reference_id: old_value.reference_id,
+                                    category: Category::Public,
+                                    tag: Default::default(),
+                                    primary_color: Default::default(),
+                                    secondary_color: Default::default()
+                                }
+                    )
                 });
                 current_version.put::<Pallet<T>>();
                 log::info!(
