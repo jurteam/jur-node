@@ -17,8 +17,6 @@
 //!
 //! * `mint`
 //! * `update_passport`
-//! * `add_stamps`
-//! * `update_avatar`
 //!
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -103,14 +101,10 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Minted Passport [passport, account]
-		MintedPassport(T::PassportId, T::AccountId),
+		/// Minted Passport [passport]
+		MintedPassport(T::PassportId),
 		/// Updated Passport [passport]
 		UpdatedPassport(T::PassportId),
-		/// Added Stamp to passport [passport]
-		AddedStamp(T::PassportId),
-		/// Updated Avatar to passport [passport]
-		UpdatedAvatar(T::PassportId),
 	}
 
 	#[pallet::error]
@@ -159,25 +153,24 @@ pub mod pallet {
 			let passport_id = NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
 
 			let passport_details =
-				PassportDetails { id: passport_id, address: None, stamps: None, avatar: None };
+				PassportDetails { id: passport_id, address: None };
 
 			<Passports<T>>::insert(community_id, &origin, passport_details);
 
 			let next_id = passport_id.increment();
 			NextPassportId::<T>::insert(community_id, next_id);
 
-			Self::deposit_event(Event::MintedPassport(passport_id, origin));
+			Self::deposit_event(Event::MintedPassport(passport_id));
 			Ok(())
 		}
 
 		/// Update the passport.
 		///
-		/// The origin must be Signed and the founder of the community.
+		/// The origin must be Signed and the user of the community.
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
-		/// - `member`: Member of the community.
-		/// - `passport_address`: Address of the passport
+		/// - `passport_address`: IPFS Address of the passport
 		///
 		/// Emits `UpdatedPassport` event when successful.
 		///
@@ -186,18 +179,17 @@ pub mod pallet {
 		pub fn update_passport(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
-			member: T::AccountId,
 			passport_address: BoundedVec<u8, T::AddressLimit>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
-			ensure!(origin == community.founder, Error::<T>::NotAllowed);
+			ensure!(origin == community.founder || community.members.contains(&origin), Error::<T>::MemberDoesNotExist);
 
-			<Passports<T>>::get(community_id, &member).ok_or(Error::<T>::PassportNotAvailable)?;
+			<Passports<T>>::get(community_id, &origin).ok_or(Error::<T>::PassportNotAvailable)?;
 
-			Passports::<T>::try_mutate(community_id, member, |passport_details| {
+			Passports::<T>::try_mutate(community_id, origin, |passport_details| {
 				let passport = passport_details
 					.as_mut()
 					.ok_or(Error::<T>::PassportNotAvailable)?;
@@ -205,90 +197,6 @@ pub mod pallet {
 				passport.address = Some(passport_address);
 
 				Self::deposit_event(Event::UpdatedPassport(passport.id));
-				Ok(())
-			})
-		}
-
-		/// Add the stamp to the passport.
-		///
-		/// The origin must be Signed and the founder of the community.
-		///
-		/// Parameters:
-		/// - `community_id`: Id of the community.
-		/// - `member`: Member of the community.
-		/// - `stamp`: stamp of the passport
-		///
-		/// Emits `AddedStamp` event when successful.
-		///
-		#[pallet::call_index(2)]
-		#[pallet::weight(<T as Config>::WeightInfo::add_stamps())]
-		pub fn add_stamps(
-			origin: OriginFor<T>,
-			community_id: T::CommunityId,
-			member: T::AccountId,
-			stamp: BoundedVec<u8, T::AddressLimit>,
-		) -> DispatchResult {
-			let origin = ensure_signed(origin)?;
-			let community = pallet_community::Communities::<T>::get(community_id)
-				.ok_or(Error::<T>::CommunityDoesNotExist)?;
-
-			ensure!(origin == community.founder, Error::<T>::NotAllowed);
-
-			<Passports<T>>::get(community_id, &member).ok_or(Error::<T>::PassportNotAvailable)?;
-
-			Passports::<T>::try_mutate(community_id, member, |passport_details| {
-				let passport = passport_details
-					.as_mut()
-					.ok_or(Error::<T>::PassportNotAvailable)?;
-
-				let mut stamps = vec![];
-
-				if passport.stamps.is_some() {
-					stamps = passport.stamps.clone().unwrap();
-				}
-
-				stamps.push(stamp);
-
-				passport.stamps = Some(stamps);
-
-				Self::deposit_event(Event::AddedStamp(passport.id));
-				Ok(())
-			})
-		}
-
-		/// Add/update the avatar to the passport.
-		///
-		/// The origin must be Signed and the founder of the community.
-		///
-		/// Parameters:
-		/// - `community_id`: Id of the community.
-		/// - `avatar`: avatar of the passport
-		///
-		/// Emits `UpdatedAvatar` event when successful.
-		///
-		#[pallet::call_index(3)]
-		#[pallet::weight(<T as Config>::WeightInfo::update_avatar())]
-		pub fn update_avatar(
-			origin: OriginFor<T>,
-			community_id: T::CommunityId,
-			avatar: BoundedVec<u8, T::AddressLimit>,
-		) -> DispatchResult {
-			let origin = ensure_signed(origin)?;
-			let community = pallet_community::Communities::<T>::get(community_id)
-				.ok_or(Error::<T>::CommunityDoesNotExist)?;
-
-			ensure!(community.members.contains(&origin), Error::<T>::NotAllowed);
-
-			<Passports<T>>::get(community_id, &origin).ok_or(Error::<T>::PassportNotAvailable)?;
-
-			Passports::<T>::try_mutate(community_id, &origin, |passport_details| {
-				let passport = passport_details
-					.as_mut()
-					.ok_or(Error::<T>::PassportNotAvailable)?;
-
-				passport.avatar = Some(avatar);
-
-				Self::deposit_event(Event::UpdatedAvatar(passport.id));
 				Ok(())
 			})
 		}

@@ -9,6 +9,4 @@ use sp_std::vec::Vec;
 pub struct PassportDetails<PassportId, AddressLimit: Get<u32>> {
 	pub id: PassportId,
 	pub address: Option<BoundedVec<u8, AddressLimit>>,
-	pub stamps: Option<Vec<BoundedVec<u8, AddressLimit>>>,
-	pub avatar: Option<BoundedVec<u8, AddressLimit>>,
 }
