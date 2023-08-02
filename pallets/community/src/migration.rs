@@ -16,7 +16,7 @@ pub mod v5 {
         pub members: Vec<AccountId>,
         pub metadata: Option<CommunityMetaData<AccountId>>,
         pub reference_id: Hash,
-        pub is_private: bool
+        pub category: Category
     }
 
     pub struct MigrateToV5<T>(sp_std::marker::PhantomData<T>);
