@@ -135,7 +135,7 @@ pub fn create_community() {
 		Some(get_metadata()),
 		Category::Public,
 		Some("tag".into()),
-		Some("primary color".into()),
+		Some("Primary color".into()),
 		Some("Secondary color".into())
 	)
 	.unwrap();

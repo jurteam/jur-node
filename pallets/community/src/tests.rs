@@ -35,7 +35,7 @@ fn create_community_works_only_with_name() {
 			None,
 			Category::Public,
 			Some("tag".into()),
-			Some("primary color".into()),
+			Some("Primary color".into()),
 			Some("Secondary color".into())
 		)
 		.unwrap();
@@ -119,7 +119,7 @@ fn accept_members_works() {
 			Some(get_metadata()),
 			Category::Public,
             Some("tag".into()),
-            Some("primary color".into()),
+            Some("Primary color".into()),
             Some("Secondary color".into())
 		)
 			.unwrap();

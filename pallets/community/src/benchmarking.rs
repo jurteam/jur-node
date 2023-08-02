@@ -48,7 +48,7 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("primary color".into()),
+		Some("Primary color".into()),
 		Some("Secondary color".into())
 	)
 	verify {
@@ -69,7 +69,7 @@ benchmarks! {
 			Some(get_metadata::<T>()),
 			Category::Public,
 			Some("tag".into()),
-			Some("primary color".into()),
+			Some("Primary color".into()),
 			Some("Secondary color".into())
 		).unwrap();
 
@@ -97,7 +97,7 @@ benchmarks! {
 			Some(get_metadata::<T>()),
 			Category::Public,
 			Some("tag".into()),
-			Some("primary color".into()),
+			Some("Primary color".into()),
 			Some("Secondary color".into())
 		).unwrap();
 
@@ -140,7 +140,7 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("primary color".into()),
+		Some("Primary color".into()),
 		Some("Secondary color".into())
 	).unwrap();
 
@@ -167,7 +167,7 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("primary color".into()),
+		Some("Primary color".into()),
 		Some("Secondary color".into())
 	).unwrap();
 
@@ -194,7 +194,7 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("primary color".into()),
+		Some("Primary color".into()),
 		Some("Secondary color".into())
 	).unwrap();
 
@@ -219,7 +219,7 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("primary color".into()),
+		Some("Primary color".into()),
 		Some("Secondary color".into())
 
 	).unwrap();
