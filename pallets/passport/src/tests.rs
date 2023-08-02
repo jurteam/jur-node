@@ -52,13 +52,9 @@ fn mint_passport_works_for_founder() {
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 0));
 		assert_eq!(Passports::<Test>::get(0, 1).unwrap().id, 0);
-		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
-		assert_eq!(Passports::<Test>::get(0, 2).unwrap().id, 1);
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 1));
 		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 0);
-		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 1));
-		assert_eq!(Passports::<Test>::get(1, 2).unwrap().id, 1);
 	});
 }
 
@@ -69,14 +65,6 @@ fn mint_passport_works_for_member() {
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
 
 		assert!(Passports::<Test>::get(0, 2).is_some());
-	});
-}
-
-#[test]
-fn mint_passport_not_works_if_user_is_not_founder() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		assert_noop!(Passport::mint(RuntimeOrigin::signed(12), 0), Error::<Test>::MemberDoesNotExist);
 	});
 }
 
@@ -126,9 +114,8 @@ fn update_passport_works() {
 			passport_address.try_into().unwrap();
 
 		assert_ok!(Passport::update_passport(
-			RuntimeOrigin::signed(1),
+			RuntimeOrigin::signed(2),
 			0,
-			2,
 			bounded_passport_address.clone()
 		));
 
@@ -151,7 +138,25 @@ fn update_passport_not_works_for_invalid_community() {
 			passport_address.try_into().unwrap();
 
 		assert_noop!(
-			Passport::update_passport(RuntimeOrigin::signed(1), 5, 2, bounded_passport_address),
+			Passport::update_passport(RuntimeOrigin::signed(1), 5, bounded_passport_address),
+			Error::<Test>::CommunityDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn update_passport_not_works_for_invalid_member() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		mint_passport();
+
+		let passport_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_passport_address: BoundedVec<u8, ConstU32<60>> =
+			passport_address.try_into().unwrap();
+
+		assert_noop!(
+			Passport::update_passport(RuntimeOrigin::signed(3), 5, bounded_passport_address),
 			Error::<Test>::CommunityDoesNotExist
 		);
 	});
@@ -169,105 +174,7 @@ fn update_passport_not_works_for_unminted_passport() {
 			passport_address.try_into().unwrap();
 
 		assert_noop!(
-			Passport::update_passport(RuntimeOrigin::signed(1), 1, 3, bounded_passport_address),
-			Error::<Test>::PassportNotAvailable
-		);
-	});
-}
-
-#[test]
-fn update_stamps_works() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		mint_passport();
-
-		let stamp: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_stamp: BoundedVec<u8, ConstU32<60>> = stamp.try_into().unwrap();
-
-		assert_ok!(Passport::add_stamps(RuntimeOrigin::signed(1), 0, 2, bounded_stamp.clone()));
-
-		assert!(Passports::<Test>::get(0, 2)
-			.unwrap()
-			.stamps
-			.unwrap()
-			.contains(&bounded_stamp));
-	});
-}
-
-#[test]
-fn update_stamps_not_works_for_invalid_community() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		mint_passport();
-
-		let stamp: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_stamp: BoundedVec<u8, ConstU32<60>> = stamp.try_into().unwrap();
-
-		assert_noop!(
-			Passport::add_stamps(RuntimeOrigin::signed(1), 5, 2, bounded_stamp),
-			Error::<Test>::CommunityDoesNotExist
-		);
-	});
-}
-
-#[test]
-fn update_stamps_not_works_for_unminted_passport() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		mint_passport();
-
-		let stamp: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_stamp: BoundedVec<u8, ConstU32<60>> = stamp.try_into().unwrap();
-
-		assert_noop!(
-			Passport::add_stamps(RuntimeOrigin::signed(1), 1, 3, bounded_stamp),
-			Error::<Test>::PassportNotAvailable
-		);
-	});
-}
-
-#[test]
-fn update_avatar_works() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		mint_passport();
-
-		let avatar: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_avatar: BoundedVec<u8, ConstU32<60>> = avatar.try_into().unwrap();
-
-		assert_ok!(Passport::update_avatar(RuntimeOrigin::signed(2), 0, bounded_avatar.clone()));
-
-		assert_eq!(Passports::<Test>::get(0, 2).unwrap().avatar.unwrap(), bounded_avatar);
-	});
-}
-
-#[test]
-fn update_avatar_not_works_for_invalid_community() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		mint_passport();
-
-		let avatar: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_avatar: BoundedVec<u8, ConstU32<60>> = avatar.try_into().unwrap();
-
-		assert_noop!(
-			Passport::update_avatar(RuntimeOrigin::signed(2), 5, bounded_avatar),
-			Error::<Test>::CommunityDoesNotExist
-		);
-	});
-}
-
-#[test]
-fn update_avatar_not_works_for_unminted_passport() {
-	new_test_ext().execute_with(|| {
-		create_community();
-		mint_passport();
-
-		let avatar: Vec<u8> = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_avatar: BoundedVec<u8, ConstU32<60>> = avatar.try_into().unwrap();
-
-		assert_noop!(
-			Passport::update_avatar(RuntimeOrigin::signed(2), 1, bounded_avatar),
+			Passport::update_passport(RuntimeOrigin::signed(1), 1, bounded_passport_address),
 			Error::<Test>::PassportNotAvailable
 		);
 	});

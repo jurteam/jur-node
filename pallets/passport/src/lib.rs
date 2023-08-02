@@ -166,7 +166,7 @@ pub mod pallet {
 
 		/// Update the passport.
 		///
-		/// The origin must be Signed and the user of the community.
+		/// The origin must be Signed and the community member of the community.
 		///
 		/// Parameters:
 		/// - `community_id`: Id of the community.
