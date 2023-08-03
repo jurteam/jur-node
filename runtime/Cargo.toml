@@ -117,7 +117,8 @@ runtime-benchmarks = [
 	"pallet-token-swap/runtime-benchmarks",
 	"pallet-community/runtime-benchmarks",
 	"pallet-proposal/runtime-benchmarks",
-	"pallet-passport/runtime-benchmarks"
+	"pallet-passport/runtime-benchmarks",
+	"pallet-user/runtime-benchmarks",
 ]
 try-runtime = [
 	"frame-try-runtime/try-runtime",
@@ -139,4 +140,5 @@ try-runtime = [
 	"pallet-proposal/try-runtime",
 	"pallet-passport/try-runtime",
 	"pallet-insecure-randomness-collective-flip/try-runtime",
+	"pallet-user/try-runtime",
 ]
