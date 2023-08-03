@@ -40,6 +40,9 @@ fn create_community() {
 		Some(vec![1, 2, 7, 8]),
 		Some(get_community_metadata()),
 		Category::Public,
+		Some("tag".into()),
+		Some("#222307".into()),
+		Some("#E76080".into())
 	)
 	.unwrap();
 }

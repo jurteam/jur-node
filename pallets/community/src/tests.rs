@@ -33,11 +33,53 @@ fn create_community_works_only_with_name() {
 			None,
 			None,
 			None,
-			Category::Public
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into())
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(0));
 		assert_eq!(Communities::<Test>::get(0).unwrap().name.to_vec(), "Jur".as_bytes().to_vec());
+	});
+}
+
+#[test]
+fn create_community_not_works_with_invalid_color() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			None,
+			"Jur".into(),
+			None,
+			None,
+			None,
+			Category::Public,
+			Some("tag".into()),
+			Some("#invalid color".into()),
+			Some("#E76080".into())
+		),
+			Error::<Test>::BadColor
+		);
+
+		assert_noop!(
+			Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			None,
+			"Jur".into(),
+			None,
+			None,
+			None,
+			Category::Public,
+			Some("tag".into()),
+			Some("#E76080".into()),
+			Some("#invalid color".into())
+		),
+			Error::<Test>::BadColor
+		);
 	});
 }
 
@@ -114,7 +156,10 @@ fn accept_members_works() {
 			),
 			Some(vec![1, 2]),
 			Some(get_metadata()),
-			Category::Public
+			Category::Public,
+            Some("tag".into()),
+            Some("#222307".into()),
+            Some("#E76080".into())
 		)
 			.unwrap();
 

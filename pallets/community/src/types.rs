@@ -8,8 +8,8 @@ pub type CommunityMetaDataFor<T> =
 	CommunityMetaData<<T as frame_system::Config>::AccountId>;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-#[scale_info(skip_type_params(NameLimit, DescriptionLimit))]
-pub struct Community<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> {
+#[scale_info(skip_type_params(NameLimit, DescriptionLimit, TagLimit, ColorLimit))]
+pub struct Community<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>, TagLimit: Get<u32>, ColorLimit: Get<u32>> {
 	pub founder: AccountId,
 	pub logo: Option<Vec<u8>>,
 	pub name: BoundedVec<u8, NameLimit>,
@@ -18,6 +18,9 @@ pub struct Community<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get
 	pub metadata: Option<CommunityMetaData<AccountId>>,
 	pub reference_id: Hash,
 	pub category: Category,
+	pub tag: BoundedVec<u8, TagLimit>,
+	pub primary_color: BoundedVec<u8, ColorLimit>,
+	pub secondary_color: BoundedVec<u8, ColorLimit>,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]

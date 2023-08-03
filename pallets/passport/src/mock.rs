@@ -70,6 +70,8 @@ impl pallet_community::Config for Test {
 	type Helper = ();
 	type WeightInfo = ();
 	type MyRandomness = RandomnessCollectiveFlip;
+	type TagLimit = ConstU32<50>;
+	type ColorLimit = ConstU32<7>;
 }
 
 impl pallet_passport::Config for Test {
