@@ -71,8 +71,8 @@ impl pallet_community::Config for Test {
 	type Helper = ();
 	type WeightInfo = ();
 	type MyRandomness = CollectiveFlip;
-	type TagLimit = ConstU32<250>;
-	type ColorLimit = ConstU32<30>;
+	type TagLimit = ConstU32<50>;
+	type ColorLimit = ConstU32<7>;
 }
 
 // Build genesis storage according to the mock runtime.
@@ -135,8 +135,8 @@ pub fn create_community() {
 		Some(get_metadata()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 	)
 	.unwrap();
 }

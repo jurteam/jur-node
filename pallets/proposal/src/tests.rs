@@ -41,8 +41,8 @@ fn create_community() {
 		Some(get_community_metadata()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 	)
 	.unwrap();
 }

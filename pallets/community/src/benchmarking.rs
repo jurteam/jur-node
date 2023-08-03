@@ -48,8 +48,8 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 	)
 	verify {
 		assert!(Communities::<T>::get(T::Helper::community(0)).is_some());
@@ -69,8 +69,8 @@ benchmarks! {
 			Some(get_metadata::<T>()),
 			Category::Public,
 			Some("tag".into()),
-			Some("Primary color".into()),
-			Some("Secondary color".into())
+			Some("#222307".into()),
+			Some("#E76080".into())
 		).unwrap();
 
 		let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
@@ -97,8 +97,8 @@ benchmarks! {
 			Some(get_metadata::<T>()),
 			Category::Public,
 			Some("tag".into()),
-			Some("Primary color".into()),
-			Some("Secondary color".into())
+			Some("#222307".into()),
+			Some("#E76080".into())
 		).unwrap();
 
 		let community_metadata = CommunityMetaData {
@@ -140,8 +140,8 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 	).unwrap();
 
 	let members = vec![account("sub", 2, SEED), account("sub", 3, SEED)];
@@ -167,8 +167,8 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 	).unwrap();
 
 		let member: T::AccountId = whitelisted_caller();
@@ -194,8 +194,8 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 	).unwrap();
 
 	}: _(
@@ -219,8 +219,8 @@ benchmarks! {
 		Some(get_metadata::<T>()),
 		Category::Public,
 		Some("tag".into()),
-		Some("Primary color".into()),
-		Some("Secondary color".into())
+		Some("#222307".into()),
+		Some("#E76080".into())
 
 	).unwrap();
 
