@@ -2,7 +2,6 @@
 
 use super::*;
 
-#[allow(unused)]
 use crate::Pallet as Passport;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::BoundedVec;
@@ -74,8 +73,7 @@ benchmarks! {
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::MintedPassport(
-			<T as pallet::Config>::Helper::passport(0),
-			caller
+			<T as pallet::Config>::Helper::passport(0)
 		).into());
 	}
 
@@ -94,53 +92,9 @@ benchmarks! {
 		let bounded_passport_address: BoundedVec<u8, <T as pallet::Config>::AddressLimit> =
 		passport_address.try_into().unwrap();
 
-	}: _(RawOrigin::Signed(caller), community_id, member, bounded_passport_address)
+	}: _(RawOrigin::Signed(member), community_id, bounded_passport_address)
 	verify {
 		assert_last_event::<T>(Event::<T>::UpdatedPassport(
-			<T as pallet::Config>::Helper::passport(0)
-		).into());
-	}
-
-	add_stamps {
-		let caller: T::AccountId = whitelisted_caller();
-		let member: T::AccountId = account("sub", 1, SEED);
-		let community_id = create_community::<T>(caller.clone());
-
-		Passport::<T>::mint(
-		RawOrigin::Signed(member.clone()).into(),
-		community_id.clone()
-		).unwrap();
-
-		let stamp_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_stamp_address: BoundedVec<u8, <T as pallet::Config>::AddressLimit> =
-		stamp_address.try_into().unwrap();
-
-	}: _(RawOrigin::Signed(caller), community_id, member, bounded_stamp_address)
-	verify {
-		assert_last_event::<T>(Event::<T>::AddedStamp(
-			<T as pallet::Config>::Helper::passport(0)
-		).into());
-	}
-
-	update_avatar {
-		let caller: T::AccountId = whitelisted_caller();
-		let member: T::AccountId = account("sub", 1, SEED);
-		let community_id = create_community::<T>(caller.clone());
-
-		Passport::<T>::mint(
-		RawOrigin::Signed(member.clone()).into(),
-		community_id.clone()
-		).unwrap();
-
-		let avatar_address: Vec<u8> =
-			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-		let bounded_avatar_address: BoundedVec<u8, <T as pallet::Config>::AddressLimit> =
-		avatar_address.try_into().unwrap();
-
-	}: _(RawOrigin::Signed(member), community_id, bounded_avatar_address)
-	verify {
-		assert_last_event::<T>(Event::<T>::UpdatedAvatar(
 			<T as pallet::Config>::Helper::passport(0)
 		).into());
 	}
