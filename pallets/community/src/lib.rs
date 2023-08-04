@@ -211,7 +211,7 @@ pub mod pallet {
 			members: Option<Vec<T::AccountId>>,
 			metadata: Option<CommunityMetaDataFor<T>>,
 			category: Category,
-			tag: Option<Vec<u8>>,
+			tagline: Option<Vec<u8>>,
 			primary_color: Option<Vec<u8>>,
 			secondary_color: Option<Vec<u8>>,
 		) -> DispatchResult {
@@ -229,7 +229,7 @@ pub mod pallet {
 				members,
 				metadata,
 				category,
-				tag,
+				tagline,
 				primary_color,
 				secondary_color
 			)
@@ -486,18 +486,18 @@ pub mod pallet {
 		/// Emits `UpdatedTagAndColors` event when successful.
 		///
 		#[pallet::call_index(7)]
-		#[pallet::weight(T::WeightInfo::update_tag_and_colors())]
-		pub fn update_tag_and_colors(
+		#[pallet::weight(T::WeightInfo::update_passport_metadata())]
+		pub fn update_passport_metadata(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
-			tag: Option<Vec<u8>>,
+			tagline: Option<Vec<u8>>,
 			primary_color: Option<Vec<u8>>,
 			secondary_color: Option<Vec<u8>>,
 		) -> DispatchResult {
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
 			let bounded_tag: BoundedVec<u8, T::TagLimit> =
-				if let Some(t) = tag {
+				if let Some(t) = tagline {
 					t.try_into().map_err(|_| Error::<T>::BadTag)?
 				} else {
 					Default::default()

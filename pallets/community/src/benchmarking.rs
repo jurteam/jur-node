@@ -231,7 +231,7 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::RemovedMember(member).into());
 	}
 
-	update_tag_and_colors {
+	update_passport_metadata {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
 

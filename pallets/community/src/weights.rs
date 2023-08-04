@@ -37,7 +37,7 @@ pub trait WeightInfo {
 	fn join_community() -> Weight;
 	fn leave_community() -> Weight;
 	fn remove_member() -> Weight;
-	fn update_tag_and_colors() -> Weight;
+	fn update_passport_metadata() -> Weight;
 }
 
 /// Weights for pallet_community using the Substrate node and recommended hardware.
@@ -128,7 +128,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	}
 	/// Storage: Community Communities (r:1 w:1)
 	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
-	fn update_tag_and_colors() -> Weight {
+	fn update_passport_metadata() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `748`
 		//  Estimated: `4213`
@@ -226,7 +226,7 @@ impl WeightInfo for () {
 	}
 	/// Storage: Community Communities (r:1 w:1)
 	/// Proof Skipped: Community Communities (max_values: None, max_size: None, mode: Measured)
-	fn update_tag_and_colors() -> Weight {
+	fn update_passport_metadata() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `748`
 		//  Estimated: `4213`

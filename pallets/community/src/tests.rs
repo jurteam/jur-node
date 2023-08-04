@@ -453,7 +453,7 @@ fn update_community_tag_and_colors_works() {
 		let p_color = "#E76081";
 		let s_color = "#222308";
 
-		assert_ok!(Community::update_tag_and_colors(
+		assert_ok!(Community::update_passport_metadata(
 			RuntimeOrigin::signed(1),
 			0,
 			Some(tag.into()),
