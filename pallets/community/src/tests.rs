@@ -421,3 +421,48 @@ fn remove_member_not_work_for_invalid_community() {
 		);
 	});
 }
+
+#[test]
+fn update_community_tag_and_colors_works() {
+	new_test_ext().execute_with(|| {
+		create_community();
+		assert!(Communities::<Test>::contains_key(0));
+
+		assert_eq!(
+			Communities::<Test>::get(0).unwrap().tag,
+			"tag"
+				.as_bytes()
+				.to_vec()
+		);
+
+		assert_eq!(
+			Communities::<Test>::get(0).unwrap().primary_color,
+			"#222307"
+				.as_bytes()
+				.to_vec()
+		);
+
+		assert_eq!(
+			Communities::<Test>::get(0).unwrap().secondary_color,
+			"#E76080"
+				.as_bytes()
+				.to_vec()
+		);
+
+		let tag = "Alpha";
+		let p_color = "#E76081";
+		let s_color = "#222308";
+
+		assert_ok!(Community::update_passport_metadata(
+			RuntimeOrigin::signed(1),
+			0,
+			Some(tag.into()),
+			Some(p_color.into()),
+			Some(s_color.into())
+		));
+
+		assert_eq!(Communities::<Test>::get(0).unwrap().tag, tag.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(0).unwrap().primary_color, p_color.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(0).unwrap().secondary_color, s_color.as_bytes().to_vec());
+	});
+}

@@ -231,5 +231,34 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::RemovedMember(member).into());
 	}
 
+	update_passport_metadata {
+		let caller: T::AccountId = whitelisted_caller();
+		let members = vec![account("sub", 1, SEED)];
+
+		Community::<T>::create_community(
+			RawOrigin::Signed(caller.clone()).into(),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur".into(),
+			Some("Jur is the core community of the Jur ecosystem, which includes all the contributors.".into()),
+			Some(members),
+			Some(get_metadata::<T>()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into())
+		).unwrap();
+
+		let tag = "Alpha";
+		let p_color = "#E76081";
+		let s_color = "#222308";
+
+	}: _(
+		RawOrigin::Signed(caller), T::Helper::community(0), Some(tag.into()), Some(p_color.into()), Some(s_color.into())
+	)
+	verify {
+		assert_last_event::<T>(Event::<T>::UpdatedTagAndColors(T::Helper::community(0)).into());
+	}
+
 	impl_benchmark_test_suite!(Community, crate::mock::new_test_ext(), crate::mock::Test);
 }

@@ -57,7 +57,7 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
 use primitives::{
-	Balance, CurrencyId, EthereumAddress, JUR,
+	Balance, CurrencyId, EthereumAddress, JUR, CommunityId, ProposalId, ChoiceId, PassportId
 };
 
 /// An index to a block.
@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 107,
+	spec_version: 108,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
