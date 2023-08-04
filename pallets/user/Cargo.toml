@@ -1,11 +1,11 @@
 [package]
-name = "pallet-community"
+name = "pallet-user"
 version = "0.1.0"
-description = "Jur Community Pallet"
+description = "Jur User Pallet"
 authors = ["Jur Team <https://github.com/jurteam>"]
 homepage = "https://jur.io/"
 edition = "2021"
-license = "Unlicense"
+license = "Apache-2.0"
 publish = false
 repository = "https://github.com/jurteam/jur-node/"
 

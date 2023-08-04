@@ -1,9 +1,9 @@
 use crate as pallet_proposal;
+use frame_support::pallet_prelude::Hooks;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
 };
-use frame_support::pallet_prelude::Hooks;
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -22,6 +22,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip::{Pallet, Storage},
 		Community: pallet_community::{Pallet, Call, Storage, Event<T>},
 		Proposal: pallet_proposal::{Pallet, Call, Storage, Event<T>},
 	}
@@ -59,6 +60,8 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+impl pallet_insecure_randomness_collective_flip::Config for Test {}
+
 impl pallet_community::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type CommunityId = u32;
@@ -68,33 +71,37 @@ impl pallet_community::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = ();
+	type MyRandomness = RandomnessCollectiveFlip;
+	type TagLimit = ConstU32<50>;
+	type ColorLimit = ConstU32<7>;
 }
 
 impl pallet_proposal::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type ProposalId = u32;
 	type ChoiceId = u32;
+	type NameLimit = ConstU32<60>;
 	type DescriptionLimit = ConstU32<250>;
-	type LabelLimit = ConstU32<250>;
+	type LabelLimit = ConstU32<10>;
+	type AccountLimit = ConstU32<3>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
-	type AddressLimit = ConstU32<60>;
-	type AccountLimit = ConstU32<1>;
 	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default()
+	let mut ext: sp_io::TestExternalities = system::GenesisConfig::default()
 		.build_storage::<Test>()
 		.unwrap()
-		.into()
+		.into();
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }
 
 fn init_block() {
 	System::on_initialize(System::block_number());
 	Proposal::on_initialize(System::block_number());
-
 }
 
 pub fn run_to_block(n: u64) {

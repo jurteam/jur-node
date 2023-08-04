@@ -1,6 +1,6 @@
 [package]
 name = "jur-node-runtime"
-version = "4.0.0-dev"
+version = "1.0.1"
 edition = "2021"
 license = "Unlicense"
 publish = false
@@ -23,6 +23,7 @@ pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "htt
 pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 pallet-treasury = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 pallet-authorship = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
+pallet-insecure-randomness-collective-flip = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 
 frame-executive = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
 sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.41" }
@@ -51,6 +52,11 @@ hex-literal = "0.3.4"
 
 # Local Dependencies
 pallet-token-swap = { version = "0.1.0", default-features = false, path = "../pallets/token-swap" }
+pallet-community = { version = "0.1.0", default-features = false, path = "../pallets/community" }
+pallet-proposal = { version = "0.1.0", default-features = false, path = "../pallets/proposal" }
+pallet-user = { version = "0.1.0", default-features = false, path = "../pallets/user" }
+pallet-passport = { version = "0.1.0", default-features = false, path = "../pallets/passport" }
+
 
 primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
 
@@ -96,6 +102,7 @@ std = [
 	"sp-consensus-grandpa/std",
 	"pallet-treasury/std",
 	"pallet-authorship/std",
+	"pallet-insecure-randomness-collective-flip/std"
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -108,14 +115,23 @@ runtime-benchmarks = [
 	"pallet-token-swap/runtime-benchmarks"
 ]
 try-runtime = [
+	"frame-try-runtime/try-runtime",
 	"frame-executive/try-runtime",
-	"frame-try-runtime",
 	"frame-system/try-runtime",
+	"frame-support/try-runtime",
+	"pallet-aura/try-runtime",
+	"pallet-assets/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+	"pallet-treasury/try-runtime",
+	"pallet-authorship/try-runtime",
 	"pallet-multisig/try-runtime",
-	"pallet-token-swap/try-runtime"
+	"pallet-token-swap/try-runtime",
+	"pallet-community/try-runtime",
+	"pallet-proposal/try-runtime",
+	"pallet-passport/try-runtime",
+	"pallet-insecure-randomness-collective-flip/try-runtime",
 ]
