@@ -436,6 +436,7 @@ impl pallet_user::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type NameLimit = ConstU32<24>;
 	type AddressLimit = ConstU32<60>;
+	type WeightInfo = pallet_user::weights::SubstrateWeight<Runtime>;
 }
 
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
@@ -607,6 +608,10 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_token_swap, TokenSwap]
+		[pallet_community, Community]
+		[pallet_proposal, Proposal]
+		[pallet_passport, Passport]
+		[pallet_user, User]
 	);
 }
 

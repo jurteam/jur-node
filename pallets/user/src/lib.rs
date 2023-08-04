@@ -15,8 +15,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 pub use pallet::*;
 use sp_runtime::RuntimeDebug;
+pub use weights::WeightInfo;
 
 pub mod types;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+pub mod weights;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -40,6 +50,9 @@ pub mod pallet {
 		/// The maximum length of address(IPFS).
 		#[pallet::constant]
 		type AddressLimit: Get<u32>;
+
+		/// Weight information
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
@@ -80,7 +93,7 @@ pub mod pallet {
 		/// Emits `UserDetailsUpdated` event when successful.
 		///
 		#[pallet::call_index(0)]
-		#[pallet::weight(10000)]
+		#[pallet::weight(T::WeightInfo::update_user())]
 		pub fn update_user(
 			origin: OriginFor<T>,
 			name: Option<BoundedVec<u8, T::NameLimit>>,
