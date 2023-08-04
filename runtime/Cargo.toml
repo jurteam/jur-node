@@ -57,6 +57,7 @@ pallet-proposal = { version = "0.1.0", default-features = false, path = "../pall
 pallet-user = { version = "0.1.0", default-features = false, path = "../pallets/user" }
 pallet-passport = { version = "0.1.0", default-features = false, path = "../pallets/passport" }
 
+
 primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
 
 [build-dependencies]
@@ -99,9 +100,6 @@ std = [
 	"pallet-multisig/std",
 	"primitives/std",
 	"sp-consensus-grandpa/std",
-	"pallet-community/std",
-	"pallet-proposal/std",
-	"pallet-passport/std",
 	"pallet-treasury/std",
 	"pallet-authorship/std",
 	"pallet-insecure-randomness-collective-flip/std"
