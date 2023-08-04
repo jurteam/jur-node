@@ -57,7 +57,7 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
 use primitives::{
-	Balance, CurrencyId, EthereumAddress, JUR,
+	Balance, CurrencyId, EthereumAddress, JUR, CommunityId, ProposalId, ChoiceId, PassportId
 };
 
 /// An index to a block.
