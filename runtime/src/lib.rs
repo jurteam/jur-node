@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 103,
+	spec_version: 107,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -155,7 +155,8 @@ pub fn native_version() -> NativeVersion {
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 2 seconds of compute with a 6 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
+const MAXIMUM_BLOCK_WEIGHT: Weight =
+	Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
 
 pub const NATIVE_CURRENCY_ID: CurrencyId = JUR;
 
@@ -395,6 +396,49 @@ parameter_types! {
 	pub const MaxVotesPerVoter: u32 = 16;
 }
 
+impl pallet_community::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type CommunityId = CommunityId;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type NameLimit = ConstU32<50>;
+	type DescriptionLimit = ConstU32<250>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_community::weights::SubstrateWeight<Runtime>;
+	type MyRandomness = RandomnessCollectiveFlip;
+	type TagLimit = ConstU32<50>;
+	type ColorLimit = ConstU32<7>;
+}
+
+impl pallet_proposal::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ProposalId = ProposalId;
+	type ChoiceId = ChoiceId;
+	type NameLimit = ConstU32<512>;
+	type DescriptionLimit = ConstU32<8192>;
+	type LabelLimit = ConstU32<10>;
+	type AccountLimit = ConstU32<500>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_passport::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PassportId = PassportId;
+	type AddressLimit = ConstU32<60>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_passport::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_user::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type NameLimit = ConstU32<24>;
+	type AddressLimit = ConstU32<60>;
+	type WeightInfo = pallet_user::weights::SubstrateWeight<Runtime>;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -448,11 +492,11 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 pub struct AuraAccountAdapter;
 impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
 	fn find_author<'a, I>(digests: I) -> Option<AccountId>
-		where I: 'a + IntoIterator<Item=(frame_support::ConsensusEngineId, &'a [u8])>
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
-		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests).and_then(|k| {
-			AccountId::try_from(k.as_ref()).ok()
-		})
+		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests)
+			.and_then(|k| AccountId::try_from(k.as_ref()).ok())
 	}
 }
 
@@ -485,6 +529,9 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ConstU32<100>;
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
 }
+
+impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime
@@ -503,10 +550,15 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Local Pallet
 		TokenSwap: pallet_token_swap,
+		Community: pallet_community,
+		Proposal: pallet_proposal,
+		Passport: pallet_passport,
+		User: pallet_user,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 	}
 );
 
@@ -528,7 +580,8 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
@@ -538,7 +591,10 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations,
 >;
+
+pub type Migrations = pallet_community::migration::v5::MigrateToV5<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
@@ -552,6 +608,10 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_token_swap, TokenSwap]
+		[pallet_community, Community]
+		[pallet_proposal, Proposal]
+		[pallet_passport, Passport]
+		[pallet_user, User]
 	);
 }
 
@@ -768,7 +828,7 @@ impl_runtime_apis! {
 
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
-		fn on_runtime_upgrade(checks: bool) -> (Weight, Weight) {
+		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {
 			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
 			// have a backtrace here. If any of the pre/post migration checks fail, we shall stop
 			// right here and right now.
@@ -776,8 +836,15 @@ impl_runtime_apis! {
 			(weight, RuntimeBlockWeights::get().max_block)
 		}
 
-		fn execute_block_no_check(block: Block) -> Weight {
-			Executive::execute_block_no_check(block)
+		fn execute_block(
+			block: Block,
+			state_root_check: bool,
+			signature_check: bool,
+			select: frame_try_runtime::TryStateSelect
+		) -> Weight {
+			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
+			// have a backtrace here.
+			Executive::try_execute_block(block, state_root_check, signature_check, select).expect("try_execute_block failed")
 		}
 	}
 }
