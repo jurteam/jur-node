@@ -154,6 +154,8 @@ pub mod pallet {
 		LeavedCommunity(T::CommunityId),
 		/// Removed member from community [member]
 		RemovedMember(T::AccountId),
+		/// Updated Tag And Colors [community]
+		UpdatedTagAndColors(T::CommunityId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -467,6 +469,66 @@ pub mod pallet {
 				community.members = community_members;
 
 				Self::deposit_event(Event::RemovedMember(member));
+
+				Ok(())
+			})
+		}
+
+		/// Update tag and colors of a particular community from a privileged origin.
+		///
+		/// The origin must conform to `CreateOrigin`.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community to be updated.
+		/// - `tag`: This is tagline.
+		/// - `primary_color`: Primary color, which will be used by the passport generator.
+		/// - `secondary_color`: Secondary color, which will be used by the passport generator..
+		/// Emits `UpdatedTagAndColors` event when successful.
+		///
+		#[pallet::call_index(7)]
+		#[pallet::weight(T::WeightInfo::update_tag_and_colors())]
+		pub fn update_tag_and_colors(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+			tag: Option<Vec<u8>>,
+			primary_color: Option<Vec<u8>>,
+			secondary_color: Option<Vec<u8>>,
+		) -> DispatchResult {
+			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			let bounded_tag: BoundedVec<u8, T::TagLimit> =
+				if let Some(t) = tag {
+					t.try_into().map_err(|_| Error::<T>::BadTag)?
+				} else {
+					Default::default()
+				};
+
+			let bounded_primary_color: BoundedVec<u8, T::ColorLimit> =
+				if let Some(color) = primary_color {
+					color.try_into().map_err(|_| Error::<T>::BadColor)?
+				} else {
+					Default::default()
+				};
+
+			let bounded_secondary_color: BoundedVec<u8, T::ColorLimit> =
+				if let Some(color) = secondary_color {
+					color.try_into().map_err(|_| Error::<T>::BadColor)?
+				} else {
+					Default::default()
+				};
+
+			Communities::<T>::try_mutate(community_id, |maybe_community| {
+				let community = maybe_community
+					.as_mut()
+					.ok_or(Error::<T>::CommunityNotExist)?;
+
+				ensure!(founder == community.founder, Error::<T>::NoPermission);
+
+				community.tag = bounded_tag;
+				community.primary_color = bounded_primary_color;
+				community.secondary_color = bounded_secondary_color;
+
+				Self::deposit_event(Event::UpdatedTagAndColors(community_id));
 
 				Ok(())
 			})
