@@ -48,7 +48,7 @@ pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-fe
 # Used for runtime benchmarking
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43", optional = true }
 frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.43", optional = true }
-hex-literal = "0.3.4"
+hex-literal = "0.4.1"
 
 # Local Dependencies
 pallet-token-swap = { version = "0.1.0", default-features = false, path = "../pallets/token-swap" }
