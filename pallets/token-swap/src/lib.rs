@@ -58,10 +58,8 @@ use frame_support::{
 	dispatch::DispatchResult,
 	pallet_prelude::*,
 	traits::{
-		tokens::{
-			fungible::{Inspect, Mutate, Transfer},
-			fungibles::{Inspect as Inspects, Mutate as Mutates, Transfer as Transfers},
-		},
+		fungible::{Inspect, Mutate},
+		fungibles::{Inspect as Inspects, Mutate as Mutates},
 		Get,
 	},
 };
@@ -144,14 +142,12 @@ pub mod pallet {
 		type Prefix: Get<&'static [u8]>;
 
 		/// Assets for deposit/withdraw  assets to/from token-swap module
-		type Assets: Transfers<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
-			+ Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
+		type Assets: Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
 			+ Mutates<Self::AccountId, AssetId = CurrencyId, Balance = Balance>;
 
 		/// Balances for deposit/withdraw  balance to/from account
 		type Balances: Inspect<Self::AccountId, Balance = Balance>
 			+ Mutate<Self::AccountId, Balance = Balance>
-			+ Transfer<Self::AccountId, Balance = Balance>
 			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
 
 		/// The asset id for native currency.
