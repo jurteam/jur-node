@@ -12,7 +12,6 @@
 // benchmark
 // pallet
 // --chain=dev
-// --execution=wasm
 // --wasm-execution=compiled
 // --pallet=pallet-community
 // --extrinsic=*
