@@ -128,7 +128,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn proposal_expire)]
 	pub type ProposalExpireTime<T: Config> =
-		StorageMap<_, Identity, T::BlockNumber, (T::ProposalId, T::CommunityId), OptionQuery>;
+		StorageMap<_, Identity, BlockNumberFor<T>, (T::ProposalId, T::CommunityId), OptionQuery>;
 
 	/// Store Choices for a particular proposal
 	#[pallet::storage]
@@ -148,7 +148,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::ChoiceId,
-		Vote<T::BlockNumber, T::AccountId, T::AccountLimit>,
+		Vote<BlockNumberFor<T>, T::AccountId, T::AccountLimit>,
 		OptionQuery,
 	>;
 
@@ -168,7 +168,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::ProposalId,
-		(ProposalResultStatus, Vote<T::BlockNumber, T::AccountId, T::AccountLimit>),
+		(ProposalResultStatus, Vote<BlockNumberFor<T>, T::AccountId, T::AccountLimit>),
 		OptionQuery,
 	>;
 
