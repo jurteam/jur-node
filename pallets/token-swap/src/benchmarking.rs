@@ -5,6 +5,7 @@ use crate::Pallet as TokenSwap;
 use hex_literal::hex;
 use frame_benchmarking::benchmarks;
 use frame_system::RawOrigin;
+use frame_system::pallet_prelude::BlockNumberFor;
 
 const VECHAIN_ROOT_HASH: VechainHash =
     hex!("e1a1226e0df5be016d753d53ff38d22e93d935c3cdeac637d69eed653c5c482e");
@@ -25,7 +26,7 @@ benchmarks! {
 	    ];
 
         let storage_root: Vec<u8> = vec![7, 47, 187, 5, 112, 12, 248, 24, 215, 211, 246, 222, 139, 180, 208, 209, 140, 223, 237, 23, 49, 6, 178, 181, 175, 135, 238, 6, 254, 128, 29, 57];
-	}: _(RawOrigin::Root, VECHAIN_ROOT_HASH, T::BlockNumber::from(10u32), "".as_bytes().to_vec(), account_proof)
+	}: _(RawOrigin::Root, VECHAIN_ROOT_HASH, BlockNumberFor::<T>::from(10u32), "".as_bytes().to_vec(), account_proof)
 	verify {
 		assert_last_event::<T>(Event::<T>::UpdatedStorageRoot(storage_root).into());
 	}
@@ -40,7 +41,7 @@ benchmarks! {
 		    hex!("f87d9e3f539a7fc1a6603092ab102bef7cc8c495ef7174c4668ac9b6c884cdc701b85cf85a80808094a18b81879e99394df4b99b78cf71037836706db2a06439ad2859e615114f02251c6d09c2a36e62d6de6cd55d0ad771964009ab6cc4a0072fbb05700cf818d7d3f6de8bb4d0d18cdfed173106b2b5af87ee06fe801d39").to_vec(),
 	    ];
 
-		TokenSwap::<T>::update_state_root(RawOrigin::Root.into(), VECHAIN_ROOT_HASH, T::BlockNumber::from(10u32), "".as_bytes().to_vec(), account_proof)?;
+		TokenSwap::<T>::update_state_root(RawOrigin::Root.into(), VECHAIN_ROOT_HASH, BlockNumberFor::<T>::from(10u32), "".as_bytes().to_vec(), account_proof)?;
 		let signature = hex!("58acd0227ff9dc881e386cda6dfb316b5f8a0f1bd14069c1b39d6f6fe6e6c026145e9441d503f2b9e29a1757cb2a19f5807abd27f8c3017c808ac0468930ae7401");
 		let signed_json = r#"{"domain":"localhost:3000","payload":{"content":"My JUR address is 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","type":"text"},"purpose":"agreement","signer":"0xa18b81879e99394df4b99b78cf71037836706db2","timestamp":1654848070}"#.as_bytes().to_vec();
 

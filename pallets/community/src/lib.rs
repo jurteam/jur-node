@@ -102,7 +102,7 @@ pub mod pallet {
 		/// Weight information
 		type WeightInfo: WeightInfo;
 
-		type MyRandomness: Randomness<Self::Hash, Self::BlockNumber>;
+		type MyRandomness: Randomness<Self::Hash, BlockNumberFor<Self>>;
 
 		/// The maximum length of tag.
 		#[pallet::constant]

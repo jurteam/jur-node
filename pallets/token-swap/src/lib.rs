@@ -148,7 +148,7 @@ pub mod pallet {
 		/// Balances for deposit/withdraw  balance to/from account
 		type Balances: Inspect<Self::AccountId, Balance = Balance>
 			+ Mutate<Self::AccountId, Balance = Balance>
-			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
+			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = BlockNumberFor<Self>>;
 
 		/// The asset id for native currency.
 		#[pallet::constant]
@@ -173,7 +173,7 @@ pub mod pallet {
 	/// Store VeChain state root
 	#[pallet::storage]
 	#[pallet::getter(fn root_information)]
-	pub type RootInformation<T: Config> = StorageValue<_, RootInfo<T::BlockNumber>, ValueQuery>;
+	pub type RootInformation<T: Config> = StorageValue<_, RootInfo<BlockNumberFor<T>>, ValueQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -260,7 +260,7 @@ pub mod pallet {
 		pub fn update_state_root(
 			origin: OriginFor<T>,
 			vechain_root_hash: VechainHash,
-			meta_block_number: T::BlockNumber,
+			meta_block_number: BlockNumberFor<T>,
 			ipfs_path: Vec<u8>,
 			account_proof: Vec<Vec<u8>>,
 		) -> DispatchResult {
