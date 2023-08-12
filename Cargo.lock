@@ -3388,6 +3388,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-user",
+ "pallet-whitelist",
  "parity-scale-codec",
  "scale-info",
  "sp-api",
@@ -5042,6 +5043,24 @@ dependencies = [
 
 [[package]]
 name = "pallet-user"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "jur-primitives",
+ "pallet-insecure-randomness-collective-flip",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-whitelist"
 version = "0.1.0"
 dependencies = [
  "frame-benchmarking",

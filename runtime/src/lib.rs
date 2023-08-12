@@ -443,6 +443,10 @@ impl pallet_user::Config for Runtime {
 	type WeightInfo = pallet_user::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_whitelist::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -553,6 +557,7 @@ construct_runtime!(
 		Proposal: pallet_proposal,
 		Passport: pallet_passport,
 		User: pallet_user,
+		Whitelist: pallet_whitelist,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 
@@ -611,6 +616,7 @@ mod benches {
 		[pallet_proposal, Proposal]
 		[pallet_passport, Passport]
 		[pallet_user, User]
+		[pallet_whitelist, Whitelist]
 	);
 }
 
