@@ -25,6 +25,11 @@ benchmarks! {
 
 	revoke_founder {
 		let caller: T::AccountId = whitelisted_caller();
+		Whitelist::<T>::add_founder(
+			RawOrigin::Root.into(),
+			caller.clone()
+		).unwrap();
+
 	}: _(
 		RawOrigin::Root,
 		caller.clone()
@@ -45,6 +50,11 @@ benchmarks! {
 
 	revoke_admin {
 		let caller: T::AccountId = whitelisted_caller();
+		Whitelist::<T>::add_admin(
+			RawOrigin::Root.into(),
+			caller.clone()
+		).unwrap();
+
 	}: _(
 		RawOrigin::Root,
 		caller.clone()
