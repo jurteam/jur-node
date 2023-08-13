@@ -83,6 +83,8 @@ std = [
 	"pallet-grandpa/std",
 	"pallet-sudo/std",
 	"pallet-token-swap/std",
+	"pallet-user/std",
+	"pallet-whitelist/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -118,6 +120,7 @@ runtime-benchmarks = [
 	"pallet-proposal/runtime-benchmarks",
 	"pallet-passport/runtime-benchmarks",
 	"pallet-user/runtime-benchmarks",
+	"pallet-whitelist/runtime-benchmarks"
 ]
 try-runtime = [
 	"frame-try-runtime/try-runtime",
@@ -140,4 +143,5 @@ try-runtime = [
 	"pallet-passport/try-runtime",
 	"pallet-insecure-randomness-collective-flip/try-runtime",
 	"pallet-user/try-runtime",
+	"pallet-whitelist/try-runtime",
 ]

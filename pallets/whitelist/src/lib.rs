@@ -11,8 +11,8 @@
 //!
 //! ## Interface
 //!
-//! * `add_user`
-//! * `revoke_user`
+//! * `add_founder`
+//! * `revoke_founder`
 //! * `add_admin`
 //! * `revoke_admin`
 //!
