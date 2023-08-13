@@ -20,7 +20,7 @@ benchmarks! {
 		caller.clone()
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::AddedUser(caller).into());
+		assert_last_event::<T>(Event::<T>::AddedFounder(caller).into());
 	}
 
 	revoke_founder {
@@ -30,7 +30,7 @@ benchmarks! {
 		caller.clone()
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::RevokedUser(caller).into());
+		assert_last_event::<T>(Event::<T>::RevokedFounder(caller).into());
 	}
 
 	add_admin {
