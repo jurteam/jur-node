@@ -18,10 +18,10 @@ frame_support::construct_runtime!(
 );
 
 impl system::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
-	type DbWeight = ();
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeCall = RuntimeCall;
 	type Nonce = u64;
@@ -30,8 +30,8 @@ impl system::Config for Test {
 	type AccountId = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Block = Block;
-	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
+	type DbWeight = ();
 	type Version = ();
 	type PalletInfo = PalletInfo;
 	type AccountData = ();
@@ -45,7 +45,7 @@ impl system::Config for Test {
 
 impl pallet_whitelist::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = ();
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.

@@ -46,6 +46,8 @@ pub mod pallet {
 		/// definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
+		/// Weight information
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]

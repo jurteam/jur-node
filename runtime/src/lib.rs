@@ -445,6 +445,7 @@ impl pallet_user::Config for Runtime {
 
 impl pallet_whitelist::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Runtime>;
 }
 
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
