@@ -4812,7 +4812,6 @@ dependencies = [
  "frame-system",
  "jur-primitives",
  "pallet-insecure-randomness-collective-flip",
- "pallet-whitelist",
  "parity-scale-codec",
  "scale-info",
  "serde",
