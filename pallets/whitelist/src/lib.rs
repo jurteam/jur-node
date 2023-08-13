@@ -21,14 +21,14 @@
 pub use pallet::*;
 // pub use weights::WeightInfo;
 
-// #[cfg(test)]
-// mod mock;
-//
-// #[cfg(test)]
-// mod tests;
-//
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 // pub mod weights;
 
 #[frame_support::pallet]
