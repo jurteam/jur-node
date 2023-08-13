@@ -19,7 +19,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 pub use pallet::*;
-// pub use weights::WeightInfo;
+pub use weights::WeightInfo;
 
 #[cfg(test)]
 mod mock;
@@ -29,7 +29,7 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-// pub mod weights;
+pub mod weights;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -103,7 +103,7 @@ pub mod pallet {
 		/// Emits `AddedFounder` event when successful.
 		///
 		#[pallet::call_index(0)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::add_founder())]
 		pub fn add_founder(
 			origin: OriginFor<T>,
 			account: T::AccountId,
@@ -130,7 +130,7 @@ pub mod pallet {
 		/// Emits `RevokedFounder` event when successful.
 		///
 		#[pallet::call_index(1)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::revoke_founder())]
 		pub fn revoke_founder(
 			origin: OriginFor<T>,
 			account: T::AccountId,
@@ -157,7 +157,7 @@ pub mod pallet {
 		/// Emits `AddedAdmin` event when successful.
 		///
 		#[pallet::call_index(2)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::add_admin())]
 		pub fn add_admin(
 			origin: OriginFor<T>,
 			account: T::AccountId,
@@ -184,7 +184,7 @@ pub mod pallet {
 		/// Emits `RevokedAdmin` event when successful.
 		///
 		#[pallet::call_index(3)]
-		#[pallet::weight(10_000_000)]
+		#[pallet::weight(T::WeightInfo::revoke_admin())]
 		pub fn revoke_admin(
 			origin: OriginFor<T>,
 			account: T::AccountId,
