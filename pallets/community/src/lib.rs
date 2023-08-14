@@ -179,6 +179,8 @@ pub mod pallet {
 		BadTag,
 		/// Invalid description given.
 		BadColor,
+		/// Founder not whitelisted.
+		FounderNotExist,
 	}
 
 	#[pallet::hooks]
@@ -219,6 +221,8 @@ pub mod pallet {
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
 
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			pallet_whitelist::Founders::<T>::get().binary_search(&founder).ok().ok_or(Error::<T>::FounderNotExist)?;
 
 			Self::do_create_community(
 				community_id,
