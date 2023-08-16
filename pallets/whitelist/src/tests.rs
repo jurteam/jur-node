@@ -1,6 +1,7 @@
 use crate::mock::Whitelist;
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
+use frame_support::error::BadOrigin;
 
 #[test]
 fn add_founder_works() {
@@ -78,7 +79,7 @@ fn add_admin_works_failed_with_non_sudo_user() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
 			Whitelist::add_admin(RuntimeOrigin::signed(1), 1),
-			Error::<Test>::NoPermission
+			BadOrigin
 		);
 	});
 }
@@ -106,7 +107,7 @@ fn revoke_admin_works_failed_with_non_sudo_user() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
 			Whitelist::revoke_admin(RuntimeOrigin::signed(1), 1),
-			Error::<Test>::NoPermission
+			BadOrigin
 		);
 	});
 }

@@ -173,7 +173,7 @@ pub mod pallet {
 		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::add_admin())]
 		pub fn add_admin(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure!(ensure_root(origin.clone()).is_ok(), Error::<T>::NoPermission);
+			ensure_root(origin.clone())?;
 
 			let mut admins = Admins::<T>::get();
 			let location = admins
@@ -200,7 +200,7 @@ pub mod pallet {
 		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::revoke_admin())]
 		pub fn revoke_admin(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure!(ensure_root(origin.clone()).is_ok(), Error::<T>::NoPermission);
+			ensure_root(origin.clone())?;
 
 			let mut admins = Admins::<T>::get();
 			let location = admins
