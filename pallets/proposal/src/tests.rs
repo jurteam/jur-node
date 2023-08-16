@@ -47,6 +47,13 @@ fn create_community() {
 	.unwrap();
 }
 
+pub fn add_founder() {
+	Whitelist::add_founder(
+		RuntimeOrigin::root(),
+		1
+	).unwrap();
+}
+
 fn create_proposal() {
 	let proposal_name: Vec<u8> = "Jur community Language proposal".into();
 	let bounded_proposal_name: BoundedVec<u8, ConstU32<60>> = proposal_name.try_into().unwrap();
@@ -55,6 +62,7 @@ fn create_proposal() {
 	let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 		proposal_description.try_into().unwrap();
 
+	add_founder();
 	create_community();
 	Proposal::create_proposal(
 		RuntimeOrigin::signed(1),
@@ -81,6 +89,7 @@ fn create_proposal_works() {
 		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 			proposal_description.try_into().unwrap();
 
+		add_founder();
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
@@ -164,6 +173,7 @@ fn cast_votes_not_work_for_invalid_input() {
 		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 			proposal_description.try_into().unwrap();
 
+		add_founder();
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
@@ -213,6 +223,7 @@ fn cast_vote_not_work_for_after_proposal_deadline() {
 		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 			proposal_description.try_into().unwrap();
 
+		add_founder();
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
@@ -287,6 +298,7 @@ fn create_proposal_not_working_invalid_choice() {
 		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 			proposal_description.try_into().unwrap();
 
+		add_founder();
 		create_community();
 		assert_noop!(
 			Proposal::create_proposal(
@@ -313,6 +325,7 @@ fn cast_vote_works_with_proposal_result_accepted() {
 		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 			proposal_description.try_into().unwrap();
 
+		add_founder();
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),
@@ -350,6 +363,7 @@ fn cast_vote_works_with_proposal_result_rejected() {
 		let bounded_proposal_description: BoundedVec<u8, ConstU32<250>> =
 			proposal_description.try_into().unwrap();
 
+		add_founder();
 		create_community();
 		assert_ok!(Proposal::create_proposal(
 			RuntimeOrigin::signed(1),

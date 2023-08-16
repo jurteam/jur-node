@@ -63,9 +63,17 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 	community_id
 }
 
+pub fn add_founder<T: Config>(caller: T::AccountId) {
+	pallet_whitelist::Pallet::<T>::add_founder(
+		RawOrigin::Root.into(),
+		caller
+	).unwrap();
+}
+
 benchmarks! {
 	mint {
 		let caller: T::AccountId = whitelisted_caller();
+		add_founder::<T>(caller.clone());
 		let community_id = create_community::<T>(caller.clone());
 	}: _(
 		RawOrigin::Signed(caller.clone()),
@@ -80,6 +88,7 @@ benchmarks! {
 	update_passport {
 		let caller: T::AccountId = whitelisted_caller();
 		let member: T::AccountId = account("sub", 1, SEED);
+		add_founder::<T>(caller.clone());
 		let community_id = create_community::<T>(caller.clone());
 
 		Passport::<T>::mint(

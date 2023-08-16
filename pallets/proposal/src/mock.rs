@@ -21,6 +21,7 @@ frame_support::construct_runtime!(
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 		Community: pallet_community,
 		Proposal: pallet_proposal,
+		Whitelist: pallet_whitelist,
 	}
 );
 
@@ -69,6 +70,12 @@ impl pallet_community::Config for Test {
 	type MyRandomness = RandomnessCollectiveFlip;
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
+}
+
+impl pallet_whitelist::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	#[cfg(feature = "runtime-benchmarks")]
+	type WeightInfo = ();
 }
 
 impl pallet_proposal::Config for Test {

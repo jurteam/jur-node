@@ -26,6 +26,13 @@ fn get_community_metadata() -> CommunityMetaData<u64> {
 	community_metadata
 }
 
+pub fn add_founder() {
+	Whitelist::add_founder(
+		RuntimeOrigin::root(),
+		1
+	).unwrap();
+}
+
 fn create_community() {
 	Community::create_community(
 		RuntimeOrigin::signed(1),
@@ -45,6 +52,7 @@ fn create_community() {
 }
 
 fn mint_passport() {
+	add_founder();
 	create_community();
 	Passport::mint(RuntimeOrigin::signed(2), 0).unwrap();
 }
@@ -52,6 +60,7 @@ fn mint_passport() {
 #[test]
 fn mint_passport_works_for_founder() {
 	new_test_ext().execute_with(|| {
+		add_founder();
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 0));
 		assert_eq!(Passports::<Test>::get(0, 1).unwrap().id, 0);
@@ -64,6 +73,7 @@ fn mint_passport_works_for_founder() {
 #[test]
 fn mint_passport_works_for_member() {
 	new_test_ext().execute_with(|| {
+		add_founder();
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
 
@@ -74,6 +84,7 @@ fn mint_passport_works_for_member() {
 #[test]
 fn mint_passport_not_works_for_invalid_community() {
 	new_test_ext().execute_with(|| {
+		add_founder();
 		create_community();
 		assert_noop!(
 			Passport::mint(RuntimeOrigin::signed(2), 1),
@@ -85,6 +96,7 @@ fn mint_passport_not_works_for_invalid_community() {
 #[test]
 fn mint_passport_not_works_when_member_not_part_of_community() {
 	new_test_ext().execute_with(|| {
+		add_founder();
 		create_community();
 		assert_noop!(
 			Passport::mint(RuntimeOrigin::signed(12), 0),
@@ -96,7 +108,6 @@ fn mint_passport_not_works_when_member_not_part_of_community() {
 #[test]
 fn mint_passport_not_works_when_passport_already_minted() {
 	new_test_ext().execute_with(|| {
-		create_community();
 		mint_passport();
 		assert_noop!(
 			Passport::mint(RuntimeOrigin::signed(2), 0),
@@ -108,7 +119,6 @@ fn mint_passport_not_works_when_passport_already_minted() {
 #[test]
 fn update_passport_works() {
 	new_test_ext().execute_with(|| {
-		create_community();
 		mint_passport();
 
 		let passport_address: Vec<u8> =
@@ -132,7 +142,6 @@ fn update_passport_works() {
 #[test]
 fn update_passport_not_works_for_invalid_community() {
 	new_test_ext().execute_with(|| {
-		create_community();
 		mint_passport();
 
 		let passport_address: Vec<u8> =
@@ -150,7 +159,6 @@ fn update_passport_not_works_for_invalid_community() {
 #[test]
 fn update_passport_not_works_for_invalid_member() {
 	new_test_ext().execute_with(|| {
-		create_community();
 		mint_passport();
 
 		let passport_address: Vec<u8> =
@@ -168,7 +176,6 @@ fn update_passport_not_works_for_invalid_member() {
 #[test]
 fn update_passport_not_works_for_unminted_passport() {
 	new_test_ext().execute_with(|| {
-		create_community();
 		mint_passport();
 
 		let passport_address: Vec<u8> =
@@ -177,7 +184,7 @@ fn update_passport_not_works_for_unminted_passport() {
 			passport_address.try_into().unwrap();
 
 		assert_noop!(
-			Passport::update_passport(RuntimeOrigin::signed(1), 1, bounded_passport_address),
+			Passport::update_passport(RuntimeOrigin::signed(1), 0, bounded_passport_address),
 			Error::<Test>::PassportNotAvailable
 		);
 	});
