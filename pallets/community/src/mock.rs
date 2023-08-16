@@ -21,6 +21,7 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		CollectiveFlip: pallet_insecure_randomness_collective_flip,
 		Community: pallet_community,
+		Whitelist: pallet_whitelist,
 	}
 );
 
@@ -70,6 +71,11 @@ impl pallet_community::Config for Test {
 	type ColorLimit = ConstU32<7>;
 }
 
+impl pallet_whitelist::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
+}
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut ext: sp_io::TestExternalities = system::GenesisConfig::<Test>::default()
@@ -116,6 +122,9 @@ pub fn get_metadata() -> CommunityMetaData<u64> {
 	community_metadata
 }
 
+pub fn add_founder() {
+	Whitelist::add_founder(RuntimeOrigin::root(), 1).unwrap();
+}
 pub fn create_community() {
 	Community::create_community(
 		RuntimeOrigin::signed(1),

@@ -26,6 +26,8 @@ frame-system = { git = "https://github.com/paritytech/substrate", default-featur
 sp-runtime = {git = "https://github.com/paritytech/substrate", default-features = false,  branch = "polkadot-v1.0.0" }
 sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 
+pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', default-features = false }
+
 [dev-dependencies]
 serde = { version = "1.0.132" }
 
@@ -47,5 +49,6 @@ std = [
 	"primitives/std",
 	"sp-std/std",
 	"sp-runtime/std",
+	"pallet-whitelist/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]

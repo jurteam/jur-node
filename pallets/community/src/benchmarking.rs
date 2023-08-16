@@ -37,6 +37,7 @@ benchmarks! {
 	create_community {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED), account("sub", 2, SEED)];
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 	}: _(
 		RawOrigin::Signed(caller.clone()),
@@ -58,6 +59,8 @@ benchmarks! {
 	update_community {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
+
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 		Community::<T>::create_community(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -86,6 +89,8 @@ benchmarks! {
 	update_metadata {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
+
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 		Community::<T>::create_community(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -130,6 +135,8 @@ benchmarks! {
 	let caller: T::AccountId = whitelisted_caller();
 	let members = vec![account("sub", 1, SEED)];
 
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
+
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
 		// hash of IPFS path of dummy logo
@@ -156,6 +163,8 @@ benchmarks! {
 	join_community {
 	let caller: T::AccountId = whitelisted_caller();
 	let members = vec![account("sub", 1, SEED)];
+
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
@@ -184,6 +193,8 @@ benchmarks! {
 	let caller: T::AccountId = whitelisted_caller();
 	let member: T::AccountId = whitelisted_caller();
 
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
+
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
 		// hash of IPFS path of dummy logo
@@ -208,6 +219,8 @@ benchmarks! {
 	remove_member {
 	let caller: T::AccountId = whitelisted_caller();
 	let member: T::AccountId = whitelisted_caller();
+
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
@@ -234,6 +247,8 @@ benchmarks! {
 	update_passport_metadata {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
+
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 		Community::<T>::create_community(
 			RawOrigin::Signed(caller.clone()).into(),

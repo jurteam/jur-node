@@ -72,7 +72,7 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + pallet_whitelist::Config {
 		/// Because this pallet emits events, it depends on the runtime's
 		/// definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -179,6 +179,8 @@ pub mod pallet {
 		BadTag,
 		/// Invalid description given.
 		BadColor,
+		/// Founder not whitelisted.
+		FounderNotExist,
 	}
 
 	#[pallet::hooks]
@@ -202,7 +204,7 @@ pub mod pallet {
 		/// Emits `CreatedCommunity` event when successful.
 		///
 		#[pallet::call_index(0)]
-		#[pallet::weight(T::WeightInfo::create_community())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::create_community())]
 		pub fn create_community(
 			origin: OriginFor<T>,
 			logo: Option<Vec<u8>>,
@@ -219,6 +221,8 @@ pub mod pallet {
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
 
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			pallet_whitelist::Founders::<T>::get().binary_search(&founder).ok().ok_or(Error::<T>::FounderNotExist)?;
 
 			Self::do_create_community(
 				community_id,
@@ -247,7 +251,7 @@ pub mod pallet {
 		/// Emits `UpdatedCommunity` event when successful.
 		///
 		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::update_community())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::update_community())]
 		pub fn update_community(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -290,7 +294,7 @@ pub mod pallet {
 		/// Emits `UpdatedMetadata` event when successful.
 		///
 		#[pallet::call_index(2)]
-		#[pallet::weight(T::WeightInfo::update_metadata())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::update_metadata())]
 		pub fn update_metadata(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -323,7 +327,7 @@ pub mod pallet {
 		///
 		/// Emits `UpdatedCommunity` event when successful.
 		#[pallet::call_index(3)]
-		#[pallet::weight(T::WeightInfo::accept_members())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_members())]
 		pub fn accept_members(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -362,7 +366,7 @@ pub mod pallet {
 		///
 		/// Emits `JoinedCommunity` event when successful.
 		#[pallet::call_index(4)]
-		#[pallet::weight(T::WeightInfo::join_community())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::join_community())]
 		pub fn join_community(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -396,7 +400,7 @@ pub mod pallet {
 		///
 		/// Emits `LeavedCommunity` event when successful.
 		#[pallet::call_index(5)]
-		#[pallet::weight(T::WeightInfo::leave_community())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::leave_community())]
 		pub fn leave_community(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -437,7 +441,7 @@ pub mod pallet {
 		///
 		/// Emits `RemovedMember` event when successful.
 		#[pallet::call_index(6)]
-		#[pallet::weight(T::WeightInfo::remove_member())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_member())]
 		pub fn remove_member(
 			origin: OriginFor<T>,
 			member: T::AccountId,
@@ -486,7 +490,7 @@ pub mod pallet {
 		/// Emits `UpdatedTagAndColors` event when successful.
 		///
 		#[pallet::call_index(7)]
-		#[pallet::weight(T::WeightInfo::update_passport_metadata())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::update_passport_metadata())]
 		pub fn update_passport_metadata(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
