@@ -33,8 +33,8 @@ pub mod weights;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::*;
 	use frame_support::dispatch::Vec;
+	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
 	use super::*;
@@ -106,14 +106,20 @@ pub mod pallet {
 		///
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::add_founder())]
-		pub fn add_founder(
-			origin: OriginFor<T>,
-			account: T::AccountId,
-		) -> DispatchResult {
-			ensure!(ensure_root(origin.clone()).is_ok() || Admins::<T>::get().binary_search(&ensure_signed(origin.clone())?).is_ok(), Error::<T>::NoPermission);
+		pub fn add_founder(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
+			ensure!(
+				ensure_root(origin.clone()).is_ok()
+					|| Admins::<T>::get()
+						.binary_search(&ensure_signed(origin.clone())?)
+						.is_ok(),
+				Error::<T>::NoPermission
+			);
 
 			let mut founders = Founders::<T>::get();
-			let location = founders.binary_search(&account).err().ok_or(Error::<T>::AlreadyFounder)?;
+			let location = founders
+				.binary_search(&account)
+				.err()
+				.ok_or(Error::<T>::AlreadyFounder)?;
 
 			// Inserting the data into the storage.
 			founders.insert(location, account.clone());
@@ -133,14 +139,20 @@ pub mod pallet {
 		///
 		#[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::revoke_founder())]
-		pub fn revoke_founder(
-			origin: OriginFor<T>,
-			account: T::AccountId,
-		) -> DispatchResult {
-			ensure!(ensure_root(origin.clone()).is_ok() || Admins::<T>::get().binary_search(&ensure_signed(origin.clone())?).is_ok(), Error::<T>::NoPermission);
+		pub fn revoke_founder(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
+			ensure!(
+				ensure_root(origin.clone()).is_ok()
+					|| Admins::<T>::get()
+						.binary_search(&ensure_signed(origin.clone())?)
+						.is_ok(),
+				Error::<T>::NoPermission
+			);
 
 			let mut founders = Founders::<T>::get();
-			let location = founders.binary_search(&account).ok().ok_or(Error::<T>::FounderNotExist)?;
+			let location = founders
+				.binary_search(&account)
+				.ok()
+				.ok_or(Error::<T>::FounderNotExist)?;
 
 			// Removing the data into the storage.
 			founders.remove(location);
@@ -160,14 +172,14 @@ pub mod pallet {
 		///
 		#[pallet::call_index(2)]
 		#[pallet::weight(T::WeightInfo::add_admin())]
-		pub fn add_admin(
-			origin: OriginFor<T>,
-			account: T::AccountId,
-		) -> DispatchResult {
+		pub fn add_admin(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			ensure!(ensure_root(origin.clone()).is_ok(), Error::<T>::NoPermission);
 
 			let mut admins = Admins::<T>::get();
-			let location = admins.binary_search(&account).err().ok_or(Error::<T>::AlreadyAdmin)?;
+			let location = admins
+				.binary_search(&account)
+				.err()
+				.ok_or(Error::<T>::AlreadyAdmin)?;
 
 			// Inserting the data into the storage.
 			admins.insert(location, account.clone());
@@ -187,14 +199,14 @@ pub mod pallet {
 		///
 		#[pallet::call_index(3)]
 		#[pallet::weight(T::WeightInfo::revoke_admin())]
-		pub fn revoke_admin(
-			origin: OriginFor<T>,
-			account: T::AccountId,
-		) -> DispatchResult {
+		pub fn revoke_admin(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			ensure!(ensure_root(origin.clone()).is_ok(), Error::<T>::NoPermission);
 
 			let mut admins = Admins::<T>::get();
-			let location = admins.binary_search(&account).ok().ok_or(Error::<T>::AdminNotExist)?;
+			let location = admins
+				.binary_search(&account)
+				.ok()
+				.ok_or(Error::<T>::AdminNotExist)?;
 
 			// Removing the data into the storage.
 			admins.remove(location);
