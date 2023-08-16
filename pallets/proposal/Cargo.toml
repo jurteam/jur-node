@@ -26,6 +26,7 @@ sp-std = { git = "https://github.com/paritytech/substrate", default-features = f
 
 # Jur custom pallets
 pallet-community = { package = 'pallet-community', path = '../community', default-features = false }
+pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', default-features = false }
 
 [dev-dependencies]
 serde = { version = "1.0.132" }
