@@ -54,7 +54,7 @@ fn create_community() {
 fn mint_passport() {
 	add_founder();
 	create_community();
-	Passport::mint(RuntimeOrigin::signed(2), 0).unwrap();
+	Passport::mint(RuntimeOrigin::signed(2), 1).unwrap();
 }
 
 #[test]
@@ -62,11 +62,11 @@ fn mint_passport_works_for_founder() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 0));
-		assert_eq!(Passports::<Test>::get(0, 1).unwrap().id, 0);
-		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 1));
-		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 0);
+		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 1);
+		create_community();
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 2));
+		assert_eq!(Passports::<Test>::get(2, 1).unwrap().id, 1);
 	});
 }
 
@@ -75,9 +75,9 @@ fn mint_passport_works_for_member() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 0));
+		assert_ok!(Passport::mint(RuntimeOrigin::signed(2), 1));
 
-		assert!(Passports::<Test>::get(0, 2).is_some());
+		assert!(Passports::<Test>::get(1, 2).is_some());
 	});
 }
 
@@ -87,7 +87,7 @@ fn mint_passport_not_works_for_invalid_community() {
 		add_founder();
 		create_community();
 		assert_noop!(
-			Passport::mint(RuntimeOrigin::signed(2), 1),
+			Passport::mint(RuntimeOrigin::signed(2), 2),
 			Error::<Test>::CommunityDoesNotExist
 		);
 	});
@@ -99,7 +99,7 @@ fn mint_passport_not_works_when_member_not_part_of_community() {
 		add_founder();
 		create_community();
 		assert_noop!(
-			Passport::mint(RuntimeOrigin::signed(12), 0),
+			Passport::mint(RuntimeOrigin::signed(12), 1),
 			Error::<Test>::MemberDoesNotExist
 		);
 	});
@@ -110,7 +110,7 @@ fn mint_passport_not_works_when_passport_already_minted() {
 	new_test_ext().execute_with(|| {
 		mint_passport();
 		assert_noop!(
-			Passport::mint(RuntimeOrigin::signed(2), 0),
+			Passport::mint(RuntimeOrigin::signed(2), 1),
 			Error::<Test>::PassportAlreadyMinted
 		);
 	});
@@ -128,12 +128,12 @@ fn update_passport_works() {
 
 		assert_ok!(Passport::update_passport(
 			RuntimeOrigin::signed(2),
-			0,
+			1,
 			bounded_passport_address.clone()
 		));
 
 		assert_eq!(
-			Passports::<Test>::get(0, 2).unwrap().address.unwrap(),
+			Passports::<Test>::get(1, 2).unwrap().address.unwrap(),
 			bounded_passport_address
 		);
 	});
@@ -184,7 +184,7 @@ fn update_passport_not_works_for_unminted_passport() {
 			passport_address.try_into().unwrap();
 
 		assert_noop!(
-			Passport::update_passport(RuntimeOrigin::signed(1), 0, bounded_passport_address),
+			Passport::update_passport(RuntimeOrigin::signed(1), 1, bounded_passport_address),
 			Error::<Test>::PassportNotAvailable
 		);
 	});

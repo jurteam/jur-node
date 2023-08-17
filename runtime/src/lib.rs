@@ -410,7 +410,7 @@ impl pallet_community::Config for Runtime {
 	type Helper = ();
 	type WeightInfo = pallet_community::weights::SubstrateWeight<Runtime>;
 	type MyRandomness = RandomnessCollectiveFlip;
-	type TagLimit = ConstU32<50>;
+	type TagLimit = ConstU32<40>;
 	type ColorLimit = ConstU32<7>;
 }
 
