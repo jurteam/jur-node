@@ -17,9 +17,9 @@ pub use pallet::*;
 use sp_runtime::RuntimeDebug;
 pub use weights::WeightInfo;
 
-pub mod types;
 #[cfg(test)]
 mod mock;
+pub mod types;
 
 #[cfg(test)]
 mod tests;
@@ -33,6 +33,7 @@ pub mod pallet {
 	use crate::types::User;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use scale_info::prelude::string::String;
 
 	use super::*;
 
@@ -77,6 +78,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Username not available.
 		UsernameNotAvailable,
+		/// Username is not valid.
+		UsernameInvalid,
 	}
 
 	#[pallet::hooks]
@@ -101,8 +104,24 @@ pub mod pallet {
 		) -> DispatchResult {
 			let user = ensure_signed(origin.clone())?;
 
+			// Validating the username/avatar. They should not have the blank spaces
+			if name.is_some() {
+				let username: String =
+					String::from_utf8(name.clone().unwrap().to_vec()).expect("Invalid username");
+				ensure!(!username.contains(" "), Error::<T>::UsernameInvalid);
+			}
+			if avatar.is_some() {
+				let profile: String =
+					String::from_utf8(avatar.clone().unwrap().to_vec()).expect("Invalid username");
+				ensure!(!profile.contains(" "), Error::<T>::UsernameInvalid);
+			}
+
+			// Validating the duplicate username
 			for (_, userdata) in Users::<T>::iter() {
-				ensure!(userdata.name != name, Error::<T>::UsernameNotAvailable);
+				ensure!(
+					userdata.name != name || userdata.name == None,
+					Error::<T>::UsernameNotAvailable
+				);
 			}
 
 			// creating the user data structure as per given inputs
