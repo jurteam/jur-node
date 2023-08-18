@@ -2,13 +2,13 @@ use super::*;
 use frame_support::{log, traits::OnRuntimeUpgrade};
 use sp_runtime::Saturating;
 
-pub mod v5 {
+pub mod v6 {
     use frame_support::{pallet_prelude::*, weights::Weight};
 
     use super::*;
 
-    pub struct MigrateToV5<T>(sp_std::marker::PhantomData<T>);
-    impl<T: Config> OnRuntimeUpgrade for MigrateToV5<T> {
+    pub struct MigrateToV6<T>(sp_std::marker::PhantomData<T>);
+    impl<T: Config> OnRuntimeUpgrade for MigrateToV6<T> {
 
         fn on_runtime_upgrade() -> Weight {
             let current_version = Pallet::<T>::current_storage_version();
