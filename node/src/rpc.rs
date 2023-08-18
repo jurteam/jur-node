@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 use jsonrpsee::RpcModule;
-use jur_node_runtime::{opaque::Block, AccountId, Index};
+use jur_node_runtime::{opaque::Block, AccountId, Nonce};
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
@@ -34,7 +34,7 @@ pub fn create_full<C, P>(
 		C: ProvideRuntimeApi<Block>,
 		C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
 		C: Send + Sync + 'static,
-		C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
+		C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 		C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 		C::Api: BlockBuilder<Block>,
 		P: TransactionPool + 'static,
@@ -45,7 +45,7 @@ pub fn create_full<C, P>(
 	let mut module = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe } = deps;
 
-	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	module.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client).into_rpc())?;
 
 	// Extend this RPC with a custom API by using the following syntax.

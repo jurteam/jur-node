@@ -1,13 +1,14 @@
 [package]
-name = "pallet-proposal"
+name = "pallet-user"
 version = "0.1.0"
-description = "Jur Proposal Pallet"
+description = "Jur User Pallet"
 authors = ["Jur Team <https://github.com/jurteam>"]
 homepage = "https://jur.io/"
 edition = "2021"
-license = "Unlicense"
+license = "Apache-2.0"
 publish = false
-repository = "https://github.com/jurteam/jur-chain/"
+repository = "https://github.com/jurteam/jur-node/"
+
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
@@ -22,11 +23,8 @@ frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-
 frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 
+sp-runtime = {git = "https://github.com/paritytech/substrate", default-features = false,  branch = "polkadot-v1.0.0" }
 sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
-
-# Jur custom pallets
-pallet-community = { package = 'pallet-community', path = '../community', default-features = false }
-pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', default-features = false }
 
 [dev-dependencies]
 serde = { version = "1.0.132" }
@@ -36,7 +34,6 @@ sp-core = { git = "https://github.com/paritytech/substrate", default-features = 
 sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 pallet-insecure-randomness-collective-flip = {  default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-
 
 [features]
 default = ["std"]
@@ -49,6 +46,6 @@ std = [
 	"frame-system/std",
 	"primitives/std",
 	"sp-std/std",
-	"pallet-community/std",
+	"sp-runtime/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]

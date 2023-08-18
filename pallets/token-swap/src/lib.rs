@@ -58,10 +58,8 @@ use frame_support::{
 	dispatch::DispatchResult,
 	pallet_prelude::*,
 	traits::{
-		tokens::{
-			fungible::{Inspect, Mutate, Transfer},
-			fungibles::{Inspect as Inspects, Mutate as Mutates, Transfer as Transfers},
-		},
+		fungible::{Inspect, Mutate},
+		fungibles::{Inspect as Inspects, Mutate as Mutates},
 		Get,
 	},
 };
@@ -144,15 +142,13 @@ pub mod pallet {
 		type Prefix: Get<&'static [u8]>;
 
 		/// Assets for deposit/withdraw  assets to/from token-swap module
-		type Assets: Transfers<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
-			+ Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
+		type Assets: Inspects<Self::AccountId, AssetId = CurrencyId, Balance = Balance>
 			+ Mutates<Self::AccountId, AssetId = CurrencyId, Balance = Balance>;
 
 		/// Balances for deposit/withdraw  balance to/from account
 		type Balances: Inspect<Self::AccountId, Balance = Balance>
 			+ Mutate<Self::AccountId, Balance = Balance>
-			+ Transfer<Self::AccountId, Balance = Balance>
-			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = Self::BlockNumber>;
+			+ LockableCurrency<Self::AccountId, Balance = Balance, Moment = BlockNumberFor<Self>>;
 
 		/// The asset id for native currency.
 		#[pallet::constant]
@@ -177,7 +173,7 @@ pub mod pallet {
 	/// Store VeChain state root
 	#[pallet::storage]
 	#[pallet::getter(fn root_information)]
-	pub type RootInformation<T: Config> = StorageValue<_, RootInfo<T::BlockNumber>, ValueQuery>;
+	pub type RootInformation<T: Config> = StorageValue<_, RootInfo<BlockNumberFor<T>>, ValueQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -264,7 +260,7 @@ pub mod pallet {
 		pub fn update_state_root(
 			origin: OriginFor<T>,
 			vechain_root_hash: VechainHash,
-			meta_block_number: T::BlockNumber,
+			meta_block_number: BlockNumberFor<T>,
 			ipfs_path: Vec<u8>,
 			account_proof: Vec<Vec<u8>>,
 		) -> DispatchResult {
