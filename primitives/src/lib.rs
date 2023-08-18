@@ -32,6 +32,8 @@ pub const JUR: CurrencyId = 0;
 
 /// Number Constants
 
+pub const PROPOSAL_DURATION_LIMIT: u32 = 30;
+
 pub const INITIAL_INDEX: usize = 0;
 
 pub const INITIAL_NODE_INDEX: u8 = 0;
