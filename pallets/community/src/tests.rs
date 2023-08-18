@@ -9,15 +9,15 @@ use crate::types::Category;
 #[test]
 fn create_community_works() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 		setup_blocks(5);
 		create_community();
 		assert_ne!(
-			Some(Communities::<Test>::get(1).unwrap().reference_id),
-			Some(Communities::<Test>::get(0).unwrap().reference_id)
+			Some(Communities::<Test>::get(2).unwrap().reference_id),
+			Some(Communities::<Test>::get(1).unwrap().reference_id)
 		);
 	});
 }
@@ -70,8 +70,8 @@ fn create_community_works_only_with_name() {
 			Some("#E76080".into())
 		)
 		.unwrap();
-		assert!(Communities::<Test>::contains_key(0));
-		assert_eq!(Communities::<Test>::get(0).unwrap().name.to_vec(), "Jur".as_bytes().to_vec());
+		assert!(Communities::<Test>::contains_key(1));
+		assert_eq!(Communities::<Test>::get(1).unwrap().name.to_vec(), "Jur".as_bytes().to_vec());
 	});
 }
 
@@ -132,12 +132,12 @@ fn update_community_not_works_for_invalid_input() {
 		);
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 
 		assert_noop!(
 			Community::update_community(
 				RuntimeOrigin::signed(2),
-				0,
+				1,
 				Some(logo.into()),
 				Some(description.into())
 			),
@@ -151,10 +151,10 @@ fn update_community_works() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(0).unwrap().logo.unwrap(),
+			Communities::<Test>::get(1).unwrap().logo.unwrap(),
 			"bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq"
 				.as_bytes()
 				.to_vec()
@@ -165,12 +165,12 @@ fn update_community_works() {
 
 		assert_ok!(Community::update_community(
 			RuntimeOrigin::signed(1),
-			0,
+			1,
 			Some(logo.into()),
 			Some(description.into())
 		));
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(1).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
 	});
 }
 
@@ -182,10 +182,10 @@ fn accept_members_works() {
 		create_community();
 
 		let new_members = vec![3, 4];
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
-		assert_ok!(Community::accept_members(RuntimeOrigin::signed(1), 0, new_members));
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2, 3, 4]);
+		assert_ok!(Community::accept_members(RuntimeOrigin::signed(1), 1, new_members));
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2, 3, 4]);
 	});
 }
 
@@ -203,10 +203,10 @@ fn accept_members_not_works_for_invalid_input() {
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::accept_members(RuntimeOrigin::signed(2), 0, new_members),
+			Community::accept_members(RuntimeOrigin::signed(2), 1, new_members),
 			Error::<Test>::NoPermission
 		);
 	});
@@ -217,10 +217,10 @@ fn update_metadata_works() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(0)
+			Communities::<Test>::get(1)
 				.unwrap()
 				.metadata
 				.unwrap()
@@ -246,10 +246,10 @@ fn update_metadata_works() {
 			values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
 		};
 
-		assert_ok!(Community::update_metadata(RuntimeOrigin::signed(1), 0, community_metadata));
+		assert_ok!(Community::update_metadata(RuntimeOrigin::signed(1), 1, community_metadata));
 
 		assert_eq!(
-			Communities::<Test>::get(0)
+			Communities::<Test>::get(1)
 				.unwrap()
 				.metadata
 				.unwrap()
@@ -258,7 +258,7 @@ fn update_metadata_works() {
 		);
 
 		assert_eq!(
-			Communities::<Test>::get(0)
+			Communities::<Test>::get(1)
 				.unwrap()
 				.metadata
 				.unwrap()
@@ -266,7 +266,7 @@ fn update_metadata_works() {
 			None
 		);
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().metadata.unwrap().norms, None);
+		assert_eq!(Communities::<Test>::get(1).unwrap().metadata.unwrap().norms, None);
 	});
 }
 
@@ -275,10 +275,10 @@ fn update_metadata_not_works_for_invalid_community_id() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(0)
+			Communities::<Test>::get(1)
 				.unwrap()
 				.metadata
 				.unwrap()
@@ -287,7 +287,7 @@ fn update_metadata_not_works_for_invalid_community_id() {
 		);
 
 		assert_noop!(
-			Community::update_metadata(RuntimeOrigin::signed(1), 1, get_metadata()),
+			Community::update_metadata(RuntimeOrigin::signed(1), 2, get_metadata()),
 			Error::<Test>::CommunityNotExist
 		);
 	});
@@ -298,10 +298,10 @@ fn update_metadata_not_works_for_invalid_caller() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(0)
+			Communities::<Test>::get(1)
 				.unwrap()
 				.metadata
 				.unwrap()
@@ -310,7 +310,7 @@ fn update_metadata_not_works_for_invalid_caller() {
 		);
 
 		assert_noop!(
-			Community::update_metadata(RuntimeOrigin::signed(2), 0, get_metadata()),
+			Community::update_metadata(RuntimeOrigin::signed(2), 1, get_metadata()),
 			Error::<Test>::NoPermission
 		);
 	});
@@ -323,23 +323,23 @@ fn join_community_works() {
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
-		assert_ok!(Community::join_community(RuntimeOrigin::signed(3), 0));
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2, 3]);
+		assert_ok!(Community::join_community(RuntimeOrigin::signed(3), 1));
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2, 3]);
 	});
 }
 
 #[test]
 fn join_community_not_works_for_already_joined() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 		assert_noop!(
-			Community::join_community(RuntimeOrigin::signed(2), 0),
+			Community::join_community(RuntimeOrigin::signed(2), 1),
 			Error::<Test>::AlreadyMember
 		);
 	});
@@ -348,13 +348,13 @@ fn join_community_not_works_for_already_joined() {
 #[test]
 fn join_community_not_works_for_invalid_community() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 		assert_noop!(
-			Community::join_community(RuntimeOrigin::signed(2), 1),
+			Community::join_community(RuntimeOrigin::signed(2), 2),
 			Error::<Test>::CommunityNotExist
 		);
 	});
@@ -363,28 +363,28 @@ fn join_community_not_works_for_invalid_community() {
 #[test]
 fn leave_community_works() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
-		assert_ok!(Community::leave_community(RuntimeOrigin::signed(2), 0));
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1]);
+		assert_ok!(Community::leave_community(RuntimeOrigin::signed(2), 1));
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1]);
 	});
 }
 
 #[test]
 fn leave_community_not_work_for_member_not_part_of_community() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::leave_community(RuntimeOrigin::signed(3), 0),
+			Community::leave_community(RuntimeOrigin::signed(3), 1),
 			Error::<Test>::NotMember
 		);
 	});
@@ -393,14 +393,14 @@ fn leave_community_not_work_for_member_not_part_of_community() {
 #[test]
 fn leave_community_not_work_for_invalid_community() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::leave_community(RuntimeOrigin::signed(2), 1),
+			Community::leave_community(RuntimeOrigin::signed(2), 2),
 			Error::<Test>::CommunityNotExist
 		);
 	});
@@ -409,28 +409,28 @@ fn leave_community_not_work_for_invalid_community() {
 #[test]
 fn remove_member_works() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
-		assert_ok!(Community::remove_member(RuntimeOrigin::signed(1), 2, 0));
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1]);
+		assert_ok!(Community::remove_member(RuntimeOrigin::signed(1), 2, 1));
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1]);
 	});
 }
 
 #[test]
 fn remove_member_not_work_for_member_not_part_of_community() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::remove_member(RuntimeOrigin::signed(1), 3, 0),
+			Community::remove_member(RuntimeOrigin::signed(1), 3, 1),
 			Error::<Test>::NotMember
 		);
 	});
@@ -439,14 +439,14 @@ fn remove_member_not_work_for_member_not_part_of_community() {
 #[test]
 fn remove_member_not_work_for_invalid_community() {
 	new_test_ext().execute_with(|| {
-		assert!(!Communities::<Test>::contains_key(0));
+		assert!(!Communities::<Test>::contains_key(1));
 		add_founder();
 		create_community();
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().members, vec![1, 2]);
+		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
 
 		assert_noop!(
-			Community::remove_member(RuntimeOrigin::signed(1), 2, 1),
+			Community::remove_member(RuntimeOrigin::signed(1), 2, 2),
 			Error::<Test>::CommunityNotExist
 		);
 	});
@@ -457,24 +457,24 @@ fn update_community_tag_and_colors_works() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		assert!(Communities::<Test>::contains_key(0));
+		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(0).unwrap().tag,
+			Communities::<Test>::get(1).unwrap().tag,
 			"tag"
 				.as_bytes()
 				.to_vec()
 		);
 
 		assert_eq!(
-			Communities::<Test>::get(0).unwrap().primary_color,
+			Communities::<Test>::get(1).unwrap().primary_color,
 			"#222307"
 				.as_bytes()
 				.to_vec()
 		);
 
 		assert_eq!(
-			Communities::<Test>::get(0).unwrap().secondary_color,
+			Communities::<Test>::get(1).unwrap().secondary_color,
 			"#E76080"
 				.as_bytes()
 				.to_vec()
@@ -486,14 +486,14 @@ fn update_community_tag_and_colors_works() {
 
 		assert_ok!(Community::update_passport_metadata(
 			RuntimeOrigin::signed(1),
-			0,
+			1,
 			Some(tag.into()),
 			Some(p_color.into()),
 			Some(s_color.into())
 		));
 
-		assert_eq!(Communities::<Test>::get(0).unwrap().tag, tag.as_bytes().to_vec());
-		assert_eq!(Communities::<Test>::get(0).unwrap().primary_color, p_color.as_bytes().to_vec());
-		assert_eq!(Communities::<Test>::get(0).unwrap().secondary_color, s_color.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(1).unwrap().tag, tag.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(1).unwrap().primary_color, p_color.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(1).unwrap().secondary_color, s_color.as_bytes().to_vec());
 	});
 }

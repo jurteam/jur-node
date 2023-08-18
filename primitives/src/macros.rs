@@ -10,7 +10,7 @@ macro_rules! impl_incrementable {
 				}
 
 				fn initial_value() -> Self {
-					0
+					1
 				}
 			}
 		)+

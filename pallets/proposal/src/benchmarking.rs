@@ -132,7 +132,7 @@ benchmarks! {
 		5
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::CreatedProposal(<T as pallet::Config>::Helper::proposal(0)).into());
+		assert_last_event::<T>(Event::<T>::CreatedProposal(<T as pallet::Config>::Helper::proposal(1)).into());
 	}
 
 	cast_vote {
