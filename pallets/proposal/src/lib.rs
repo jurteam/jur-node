@@ -30,7 +30,7 @@ pub use pallet::*;
 mod types;
 use crate::types::{Choice, Proposal, ProposalResultStatus, Vote};
 use frame_support::{dispatch::DispatchResultWithPostInfo, BoundedVec};
-use primitives::{Incrementable, BLOCKS_PER_DAY};
+use primitives::{Incrementable, BLOCKS_PER_DAY, PROPOSAL_DURATION_LIMIT};
 use sp_std::vec::Vec;
 
 #[cfg(test)]
@@ -305,7 +305,7 @@ pub mod pallet {
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
 			ensure!(choices.len() >= 2, Error::<T>::InvalidChoicesGiven);
-			ensure!(proposal_duration >= 1, Error::<T>::InvalidProposalDuration);
+			ensure!(proposal_duration >= 1 && proposal_duration <= PROPOSAL_DURATION_LIMIT, Error::<T>::InvalidProposalDuration);
 
 			Self::do_create_proposal(
 				origin,
