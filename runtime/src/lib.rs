@@ -412,6 +412,7 @@ impl pallet_community::Config for Runtime {
 	type MyRandomness = RandomnessCollectiveFlip;
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
+	type CommunityLimit = ConstU32<3>;
 }
 
 impl pallet_proposal::Config for Runtime {

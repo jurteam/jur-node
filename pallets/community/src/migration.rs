@@ -7,18 +7,6 @@ pub mod v5 {
 
     use super::*;
 
-    #[derive(Decode)]
-    pub struct OldCommunity<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>> {
-        pub founder: AccountId,
-        pub logo: Option<Vec<u8>>,
-        pub name: BoundedVec<u8, NameLimit>,
-        pub description: BoundedVec<u8, DescriptionLimit>,
-        pub members: Vec<AccountId>,
-        pub metadata: Option<CommunityMetaData<AccountId>>,
-        pub reference_id: Hash,
-        pub category: Category
-    }
-
     pub struct MigrateToV5<T>(sp_std::marker::PhantomData<T>);
     impl<T: Config> OnRuntimeUpgrade for MigrateToV5<T> {
 
@@ -26,29 +14,17 @@ pub mod v5 {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            if onchain_version == 4 && current_version == 5 {
+            if onchain_version == 5 && current_version == 6 {
                 let mut translated = 0u64;
-                Communities::<T>::translate::<
-                    OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit>,
-                    _,
-                >(|_key, old_value| {
+                for (id, community) in Communities::<T>::iter() {
                     translated.saturating_inc();
-
-                    Some( Community {
-                                    founder: old_value.founder,
-                                    logo: old_value.logo,
-                                    name: old_value.name,
-                                    description: old_value.description,
-                                    members: old_value.members,
-                                    metadata: old_value.metadata,
-                                    reference_id: old_value.reference_id,
-                                    category: Category::Public,
-                                    tag: Default::default(),
-                                    primary_color: Default::default(),
-                                    secondary_color: Default::default()
-                                }
-                    )
-                });
+                    <CommunityAccount<T>>::try_mutate(community.founder, |communities| -> DispatchResult {
+                        communities
+                            .try_push(id)
+                            .map_err(|_| Error::<T>::TooManyCommunities)?;
+                        Ok(())
+                    }).unwrap();
+                }
                 current_version.put::<Pallet<T>>();
                 log::info!(
 					target: LOG_TARGET,
