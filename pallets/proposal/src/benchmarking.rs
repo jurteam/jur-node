@@ -35,6 +35,13 @@ fn get_community_metadata<T: Config>() -> CommunityMetaData<T::AccountId> {
 	}
 }
 
+pub fn add_founder<T: Config>(caller: T::AccountId) {
+	pallet_whitelist::Pallet::<T>::add_founder(
+		RawOrigin::Root.into(),
+		caller
+	).unwrap();
+}
+
 fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 	let community_id =
 		pallet_community::NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
@@ -65,6 +72,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 fn add_proposal<T: Config>(caller: T::AccountId) -> (T::CommunityId, T::ProposalId, T::ChoiceId) {
 	let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
 
+	add_founder::<T>(caller.clone());
 	let community_id = create_community::<T>(caller.clone());
 
 	let proposal_name: Vec<u8> = "Jur community Language proposal".into();
@@ -98,6 +106,7 @@ fn add_proposal<T: Config>(caller: T::AccountId) -> (T::CommunityId, T::Proposal
 benchmarks! {
 	create_proposal {
 		let caller: T::AccountId = whitelisted_caller();
+		add_founder::<T>(caller.clone());
 		let community_id = create_community::<T>(caller.clone());
 
 		let proposal_name: Vec<u8> = "Jur community Language proposal".into();
@@ -123,7 +132,7 @@ benchmarks! {
 		5
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::CreatedProposal(<T as pallet::Config>::Helper::proposal(0)).into());
+		assert_last_event::<T>(Event::<T>::CreatedProposal(<T as pallet::Config>::Helper::proposal(1)).into());
 	}
 
 	cast_vote {

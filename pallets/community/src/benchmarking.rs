@@ -37,6 +37,7 @@ benchmarks! {
 	create_community {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED), account("sub", 2, SEED)];
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 	}: _(
 		RawOrigin::Signed(caller.clone()),
@@ -52,12 +53,14 @@ benchmarks! {
 		Some("#E76080".into())
 	)
 	verify {
-		assert!(Communities::<T>::get(T::Helper::community(0)).is_some());
+		assert!(Communities::<T>::get(T::Helper::community(1)).is_some());
 	}
 
 	update_community {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
+
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 		Community::<T>::create_community(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -77,15 +80,17 @@ benchmarks! {
 		let description = "Jur is the core community of the Jur ecosystem";
 
 	}: _(
-		RawOrigin::Signed(caller), T::Helper::community(0), Some(logo.into()), Some(description.into())
+		RawOrigin::Signed(caller), T::Helper::community(1), Some(logo.into()), Some(description.into())
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::UpdatedCommunity(T::Helper::community(0)).into());
+		assert_last_event::<T>(Event::<T>::UpdatedCommunity(T::Helper::community(1)).into());
 	}
 
 	update_metadata {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
+
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 		Community::<T>::create_community(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -120,15 +125,17 @@ benchmarks! {
 		};
 
 	}: _(
-		RawOrigin::Signed(caller), T::Helper::community(0), community_metadata
+		RawOrigin::Signed(caller), T::Helper::community(1), community_metadata
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::UpdatedMetadata(T::Helper::community(0)).into());
+		assert_last_event::<T>(Event::<T>::UpdatedMetadata(T::Helper::community(1)).into());
 	}
 
 	accept_members {
 	let caller: T::AccountId = whitelisted_caller();
 	let members = vec![account("sub", 1, SEED)];
+
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
@@ -147,15 +154,17 @@ benchmarks! {
 	let members = vec![account("sub", 2, SEED), account("sub", 3, SEED)];
 
 	}: _(
-		RawOrigin::Signed(caller), T::Helper::community(0), members
+		RawOrigin::Signed(caller), T::Helper::community(1), members
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::AddedMembers(T::Helper::community(0)).into());
+		assert_last_event::<T>(Event::<T>::AddedMembers(T::Helper::community(1)).into());
 	}
 
 	join_community {
 	let caller: T::AccountId = whitelisted_caller();
 	let members = vec![account("sub", 1, SEED)];
+
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
@@ -174,16 +183,18 @@ benchmarks! {
 		let member: T::AccountId = whitelisted_caller();
 
 	}: _(
-		RawOrigin::Signed(member), T::Helper::community(0)
+		RawOrigin::Signed(member), T::Helper::community(1)
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::JoinedCommunity(T::Helper::community(0)).into());
+		assert_last_event::<T>(Event::<T>::JoinedCommunity(T::Helper::community(1)).into());
 	}
 
 	leave_community {
 	let caller: T::AccountId = whitelisted_caller();
 	let member: T::AccountId = whitelisted_caller();
 
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
+
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
 		// hash of IPFS path of dummy logo
@@ -199,16 +210,18 @@ benchmarks! {
 	).unwrap();
 
 	}: _(
-		RawOrigin::Signed(member), T::Helper::community(0)
+		RawOrigin::Signed(member), T::Helper::community(1)
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::LeavedCommunity(T::Helper::community(0)).into());
+		assert_last_event::<T>(Event::<T>::LeavedCommunity(T::Helper::community(1)).into());
 	}
 
 	remove_member {
 	let caller: T::AccountId = whitelisted_caller();
 	let member: T::AccountId = whitelisted_caller();
 
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
+
 	Community::<T>::create_community(
 		RawOrigin::Signed(caller.clone()).into(),
 		// hash of IPFS path of dummy logo
@@ -225,7 +238,7 @@ benchmarks! {
 	).unwrap();
 
 	}: _(
-		RawOrigin::Signed(caller), member.clone(), T::Helper::community(0)
+		RawOrigin::Signed(caller), member.clone(), T::Helper::community(1)
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::RemovedMember(member).into());
@@ -234,6 +247,8 @@ benchmarks! {
 	update_passport_metadata {
 		let caller: T::AccountId = whitelisted_caller();
 		let members = vec![account("sub", 1, SEED)];
+
+		pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller.clone()).unwrap();
 
 		Community::<T>::create_community(
 			RawOrigin::Signed(caller.clone()).into(),
@@ -254,10 +269,10 @@ benchmarks! {
 		let s_color = "#222308";
 
 	}: _(
-		RawOrigin::Signed(caller), T::Helper::community(0), Some(tag.into()), Some(p_color.into()), Some(s_color.into())
+		RawOrigin::Signed(caller), T::Helper::community(1), Some(tag.into()), Some(p_color.into()), Some(s_color.into())
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::UpdatedTagAndColors(T::Helper::community(0)).into());
+		assert_last_event::<T>(Event::<T>::UpdatedTagAndColors(T::Helper::community(1)).into());
 	}
 
 	impl_benchmark_test_suite!(Community, crate::mock::new_test_ext(), crate::mock::Test);
