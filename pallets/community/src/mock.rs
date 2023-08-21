@@ -69,6 +69,7 @@ impl pallet_community::Config for Test {
 	type MyRandomness = CollectiveFlip;
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
+	type CommunityLimit = ConstU32<3>;
 }
 
 impl pallet_whitelist::Config for Test {
