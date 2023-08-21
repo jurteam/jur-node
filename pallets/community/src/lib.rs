@@ -56,7 +56,7 @@ pub mod pallet {
 	use super::*;
 
 	/// The current storage version.
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(5);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(6);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -111,6 +111,10 @@ pub mod pallet {
 		/// The maximum length of color.
 		#[pallet::constant]
 		type ColorLimit: Get<u32>;
+
+		/// The number of community, allowed to create by a founder.
+		#[pallet::constant]
+		type CommunityLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -130,6 +134,17 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::CommunityId,
 		Community<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
+	>;
+
+	/// The communities owned by a given account
+	#[pallet::storage]
+	#[pallet::getter(fn community_account)]
+	pub type CommunityAccount<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		BoundedVec<T::CommunityId, T::CommunityLimit>,
+		ValueQuery
 	>;
 
 	/// Stores the `CommunityId` that is going to be used for the next
@@ -181,6 +196,8 @@ pub mod pallet {
 		BadColor,
 		/// Founder not whitelisted.
 		FounderNotExist,
+		/// Too Many Communities
+		TooManyCommunities
 	}
 
 	#[pallet::hooks]
@@ -604,6 +621,13 @@ impl<T: Config> Pallet<T> {
 			primary_color: bounded_primary_color,
 			secondary_color: bounded_secondary_color
 		};
+
+		<CommunityAccount<T>>::try_mutate(founder.clone(), |communities| -> DispatchResult {
+			communities
+				.try_push(community_id)
+				.map_err(|_| Error::<T>::TooManyCommunities)?;
+			Ok(())
+		})?;
 
 		<Communities<T>>::insert(community_id, community);
 
