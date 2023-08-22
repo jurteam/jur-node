@@ -628,7 +628,6 @@ impl<T: Config> Pallet<T> {
 				.map_err(|_| Error::<T>::TooManyCommunities)?;
 			Ok(())
 		})?;
-
 		<Communities<T>>::insert(community_id, community);
 
 		let next_id = community_id.increment();
