@@ -62,7 +62,7 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Identifier for the Passport.
-		type PassportId: Member + Parameter + MaxEncodedLen + Copy + Incrementable;
+		type PassportId: Member + Parameter + MaxEncodedLen + Copy + Incrementable + PartialOrd;
 
 		/// The maximum length of address.
 		#[pallet::constant]
@@ -150,7 +150,12 @@ pub mod pallet {
 			let maybe_passport = Passports::<T>::get(community_id, &origin);
 			ensure!(maybe_passport.is_some() == false, Error::<T>::PassportAlreadyMinted);
 
-			let passport_id = NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
+			let mut passport_id = NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
+
+			// Adding this check to reserve the slots for community
+			if community_id == T::CommunityId::initial_value() && passport_id < T::PassportId::jur_community_reserve_slots() {
+				passport_id = T::PassportId::jur_community_reserve_slots();
+			}
 
 			let passport_details =
 				PassportDetails { id: passport_id, address: None };

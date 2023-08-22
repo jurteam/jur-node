@@ -63,7 +63,7 @@ fn mint_passport_works_for_founder() {
 		add_founder();
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 1));
-		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 1);
+		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 3200);
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 2));
 		assert_eq!(Passports::<Test>::get(2, 1).unwrap().id, 1);
