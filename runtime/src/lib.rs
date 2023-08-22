@@ -412,6 +412,7 @@ impl pallet_community::Config for Runtime {
 	type MyRandomness = RandomnessCollectiveFlip;
 	type TagLimit = ConstU32<40>;
 	type ColorLimit = ConstU32<7>;
+	type CommunityLimit = ConstU32<3>;
 }
 
 impl pallet_proposal::Config for Runtime {
@@ -599,7 +600,7 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v5::MigrateToV5<Runtime>;
+pub type Migrations = pallet_community::migration::v6::MigrateToV6<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]

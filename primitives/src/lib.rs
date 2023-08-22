@@ -169,6 +169,7 @@ impl From<ValidityError> for u8 {
 pub trait Incrementable {
 	fn increment(&self) -> Self;
 	fn initial_value() -> Self;
+	fn jur_community_reserve_slots() -> Self;
 }
 
-impl_incrementable!(u8, u16, u32, u64, u128, i8, i16, i32, i64, i128);
+impl_incrementable!(u16, u32, u64, u128, i16, i32, i64, i128);
