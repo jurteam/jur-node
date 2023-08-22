@@ -12,6 +12,10 @@ macro_rules! impl_incrementable {
 				fn initial_value() -> Self {
 					1
 				}
+
+				fn jur_community_reserve_slots() -> Self {
+					3200
+				}
 			}
 		)+
 	};
