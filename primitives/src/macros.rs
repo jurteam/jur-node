@@ -14,7 +14,7 @@ macro_rules! impl_incrementable {
 				}
 
 				fn jur_community_reserve_slots() -> Self {
-					3200
+					4851
 				}
 			}
 		)+
