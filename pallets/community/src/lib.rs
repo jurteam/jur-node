@@ -397,7 +397,10 @@ pub mod pallet {
 
 				let mut community_members = community.members.clone();
 
+				ensure!(community.founder != member, Error::<T>::AlreadyMember);
+
 				ensure!(!community_members.contains(&member), Error::<T>::AlreadyMember);
+
 				community_members.push(member.clone());
 
 				community.members = community_members;
