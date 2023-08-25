@@ -180,7 +180,7 @@ benchmarks! {
 		Some("#E76080".into())
 	).unwrap();
 
-		let member: T::AccountId = whitelisted_caller();
+		let member: T::AccountId = account("sub", 2, SEED);
 
 	}: _(
 		RawOrigin::Signed(member), T::Helper::community(1)
