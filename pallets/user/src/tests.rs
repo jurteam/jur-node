@@ -30,7 +30,7 @@ fn update_user_not_works_with_existing_name() {
 		);
 		assert_noop!(
 			User::update_user(
-				RuntimeOrigin::signed(1),
+				RuntimeOrigin::signed(2),
 				Some("Alice".as_bytes().to_vec().try_into().unwrap()),
 				Some("avatar".as_bytes().to_vec().try_into().unwrap())
 			),
