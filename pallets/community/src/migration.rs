@@ -2,29 +2,61 @@ use super::*;
 use frame_support::{log, traits::OnRuntimeUpgrade};
 use sp_runtime::Saturating;
 
-pub mod v6 {
+pub mod v7 {
     use frame_support::{pallet_prelude::*, weights::Weight};
 
     use super::*;
+    #[derive(Decode)]
+    pub struct OldCommunity<AccountId, Hash, NameLimit: Get<u32>, DescriptionLimit: Get<u32>, TagLimit: Get<u32>, ColorLimit: Get<u32>> {
+        pub founder: AccountId,
+        pub logo: Option<Vec<u8>>,
+        pub name: BoundedVec<u8, NameLimit>,
+        pub description: BoundedVec<u8, DescriptionLimit>,
+        pub members: Vec<AccountId>,
+        pub metadata: Option<CommunityMetaData<AccountId>>,
+        pub reference_id: Hash,
+        pub category: Category,
+        pub tag: BoundedVec<u8, TagLimit>,
+        pub primary_color: BoundedVec<u8, ColorLimit>,
+        pub secondary_color: BoundedVec<u8, ColorLimit>,
+    }
 
-    pub struct MigrateToV6<T>(sp_std::marker::PhantomData<T>);
-    impl<T: Config> OnRuntimeUpgrade for MigrateToV6<T> {
+    pub struct MigrateToV7<T>(sp_std::marker::PhantomData<T>);
+    impl<T: Config> OnRuntimeUpgrade for MigrateToV7<T> {
 
         fn on_runtime_upgrade() -> Weight {
             let current_version = Pallet::<T>::current_storage_version();
             let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-            if onchain_version == 5 && current_version == 6 {
+            if onchain_version == 6 && current_version == 7 {
                 let mut translated = 0u64;
-                for (id, community) in Communities::<T>::iter() {
+                Communities::<T>::translate::<
+                    OldCommunity<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
+                    _,
+                >(|_key, old_value| {
                     translated.saturating_inc();
-                    <CommunityAccount<T>>::try_mutate(community.founder, |communities| -> DispatchResult {
-                        communities
-                            .try_push(id)
-                            .map_err(|_| Error::<T>::TooManyCommunities)?;
-                        Ok(())
-                    }).unwrap();
-                }
+
+                    let random_seed = old_value.reference_id.encode();
+
+                    let random_number = u128::decode(&mut random_seed.as_ref())
+                        .expect("secure hashes should always be bigger than u32; qed");
+
+                    let random_value: [u8; 16] = random_number.to_be_bytes();
+                    Some( Community {
+                        founder: old_value.founder,
+                        logo: old_value.logo,
+                        name: old_value.name,
+                        description: old_value.description,
+                        members: old_value.members,
+                        metadata: old_value.metadata,
+                        reference_id: random_value,
+                        category: old_value.category,
+                        tag: old_value.tag,
+                        primary_color: old_value.primary_color,
+                        secondary_color: old_value.secondary_color
+                    }
+                    )
+                });
                 current_version.put::<Pallet<T>>();
                 log::info!(
 					target: LOG_TARGET,
