@@ -95,7 +95,7 @@ pub fn verify_proof(
 				}
 
 				if terminal {
-					if nibbles_iter.count() != INITIAL_INDEX as usize {
+					if nibbles_iter.count() != INITIAL_INDEX {
 						return Err(ErrorMessage::ProofTooShort);
 					} else {
 						return Ok(value);

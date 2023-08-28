@@ -91,7 +91,7 @@ pub struct EcdsaSignature(pub [u8; ETHEREUM_SIGNATURE_SIZE]);
 
 impl PartialEq for EcdsaSignature {
 	fn eq(&self, other: &Self) -> bool {
-		&self.0[..] == &other.0[..]
+		self.0[..] == other.0[..]
 	}
 }
 
@@ -292,10 +292,10 @@ pub mod pallet {
 
 			let (maybe_signer, maybe_json, storage_proof) = match call {
 				Call::claim { ethereum_signature, signed_json, storage_proof } => {
-					let blake2_256_hash: VechainHash = blake2_256(&signed_json);
+					let blake2_256_hash: VechainHash = blake2_256(signed_json);
 					(
-						Self::eth_recover(&ethereum_signature, blake2_256_hash),
-						serde_json::from_slice(&signed_json),
+						Self::eth_recover(ethereum_signature, blake2_256_hash),
+						serde_json::from_slice(signed_json),
 						storage_proof
 					)
 				},
@@ -367,7 +367,7 @@ impl<T: Config> Pallet<T> {
 			.ok_or(Error::<T>::InvalidProof)?;
 
 		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
-		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
+		let balance = Self::latest_claimed_balance(signer).unwrap_or(Zero::zero());
 		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
 		Ok((locked_balance, locked_balance - balance))

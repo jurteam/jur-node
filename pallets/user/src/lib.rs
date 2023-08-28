@@ -2,8 +2,8 @@
 //!
 //! A pallet allows any $JUR token holder to add username and profile image on the Jur.
 //!
-//!  ## Overview
-//!	User pallet will be the core pallet to store the basic details of JUR users.
+//! ## Overview
+//! User pallet will be the core pallet to store the basic details of JUR users.
 //! Currently this pallet will store the username and profile image of the JUR user.
 //! A user can add/update there username and profile image by using this pallet.
 //!
@@ -108,19 +108,18 @@ pub mod pallet {
 			if name.is_some() {
 				let username: String =
 					String::from_utf8(name.clone().unwrap().to_vec()).expect("Invalid username");
-				ensure!(!username.contains(" "), Error::<T>::UsernameInvalid);
+				ensure!(!username.contains(' '), Error::<T>::UsernameInvalid);
 			}
 			if avatar.is_some() {
 				let profile: String =
 					String::from_utf8(avatar.clone().unwrap().to_vec()).expect("Invalid username");
-				ensure!(!profile.contains(" "), Error::<T>::UsernameInvalid);
+				ensure!(!profile.contains(' '), Error::<T>::UsernameInvalid);
 			}
 
 			// Validating the duplicate username
 			for (account, userdata) in Users::<T>::iter() {
 				ensure!(
-					userdata.name != name || userdata.name == None ||
-					( account == user && userdata.name == name),Error::<T>::UsernameNotAvailable
+					userdata.name != name || userdata.name.is_none() || account == user,Error::<T>::UsernameNotAvailable
 				);
 			}
 

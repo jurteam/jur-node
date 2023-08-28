@@ -622,7 +622,7 @@ impl<T: Config> Pallet<T> {
 			description: bounded_description,
 			members,
 			metadata,
-			reference_id: random_value.clone(),
+			reference_id: random_value,
 			category,
 			tag: bounded_tag,
 			primary_color: bounded_primary_color,

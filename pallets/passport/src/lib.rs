@@ -148,7 +148,7 @@ pub mod pallet {
 			ensure!(origin == community.founder || community.members.contains(&origin), Error::<T>::MemberDoesNotExist);
 
 			let maybe_passport = Passports::<T>::get(community_id, &origin);
-			ensure!(maybe_passport.is_some() == false, Error::<T>::PassportAlreadyMinted);
+			ensure!(maybe_passport.is_none(), Error::<T>::PassportAlreadyMinted);
 
 			let mut passport_id = NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
 

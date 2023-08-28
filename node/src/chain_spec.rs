@@ -40,15 +40,15 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 }
 
 pub fn sudo_account_local() -> AccountId {
-	AccountId32::from_str(&"5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j".to_string()).expect("Invalid Account Id")
+	AccountId32::from_str("5DviAKtS4ns5TBuoHyigkkwEtNbG4sN1m8mw6XAfTBW7GG7j").expect("Invalid Account Id")
 }
 
 pub fn sudo_account_testnet() -> AccountId {
-	AccountId32::from_str(&"5ESNiXWyksqs5DxjSJ9gW2PA6gmgHLvGEUWdiaFfWDfNu82P".to_string()).expect("Invalid Account Id")
+	AccountId32::from_str("5ESNiXWyksqs5DxjSJ9gW2PA6gmgHLvGEUWdiaFfWDfNu82P").expect("Invalid Account Id")
 }
 
 pub fn sudo_account_mainnet() -> AccountId {
-	AccountId32::from_str(&"5H13qUDnaSjaahePMYTQoqezHGHWwQGreM5kkEbuMUHu5Vjn".to_string()).expect("Invalid Account Id")
+	AccountId32::from_str("5H13qUDnaSjaahePMYTQoqezHGHWwQGreM5kkEbuMUHu5Vjn").expect("Invalid Account Id")
 }
 
 

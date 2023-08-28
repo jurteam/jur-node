@@ -14,8 +14,8 @@
 //! ## Functionalities
 //!
 //! * A founder can create a new proposal for a particular community and specify:
-//! 		- if it’s historical or not
-//! 		- the ask/question to the other Members
+//!    - if it’s historical or not
+//!    - the ask/question to the other Members
 //! * A member can vote on an existing proposal
 //!
 //! ## Interface
@@ -243,7 +243,7 @@ pub mod pallet {
 						// If 51% or more then from all voters voted in favour of proposal
 						// then proposal is Accepted.
 						// Otherwise the proposal is rejected.
-						if yes_vote_info.vote_count > (1 * (*voters_count as u64)) / 2 {
+						if yes_vote_info.vote_count > (*voters_count as u64) / 2 {
 							ProposalResult::<T>::insert(
 								proposal_id,
 								(ProposalResultStatus::Accepted, yes_vote_info),
@@ -305,7 +305,7 @@ pub mod pallet {
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
 			ensure!(choices.len() >= 2, Error::<T>::InvalidChoicesGiven);
-			ensure!(proposal_duration >= 1 && proposal_duration <= PROPOSAL_DURATION_LIMIT, Error::<T>::InvalidProposalDuration);
+			ensure!((1..=PROPOSAL_DURATION_LIMIT).contains(&proposal_duration), Error::<T>::InvalidProposalDuration);
 
 			Self::do_create_proposal(
 				origin,
@@ -374,7 +374,7 @@ pub mod pallet {
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
 				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
-				let _voters = vote
+				vote
 					.who
 					.try_push(origin.clone())
 					.ok()
