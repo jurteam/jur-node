@@ -4,12 +4,17 @@ use frame_support::{pallet_prelude::Get, BoundedVec};
 use scale_info::TypeInfo;
 use sp_std::{prelude::*, vec::Vec};
 
-pub type CommunityMetaDataFor<T> =
-	CommunityMetaData<<T as frame_system::Config>::AccountId>;
+pub type CommunityMetaDataFor<T> = CommunityMetaData<<T as frame_system::Config>::AccountId>;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 #[scale_info(skip_type_params(NameLimit, DescriptionLimit, TagLimit, ColorLimit))]
-pub struct Community<AccountId, NameLimit: Get<u32>, DescriptionLimit: Get<u32>, TagLimit: Get<u32>, ColorLimit: Get<u32>> {
+pub struct Community<
+	AccountId,
+	NameLimit: Get<u32>,
+	DescriptionLimit: Get<u32>,
+	TagLimit: Get<u32>,
+	ColorLimit: Get<u32>,
+> {
 	pub founder: AccountId,
 	pub logo: Option<Vec<u8>>,
 	pub name: BoundedVec<u8, NameLimit>,
@@ -57,7 +62,7 @@ pub enum Category {
 	/// public.
 	Public,
 	/// A NFT Gated community.
-	NFTGated
+	NFTGated,
 }
 
 impl<AccountId> Default for CommunityType<AccountId> {

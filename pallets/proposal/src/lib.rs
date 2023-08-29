@@ -305,7 +305,10 @@ pub mod pallet {
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
 			ensure!(choices.len() >= 2, Error::<T>::InvalidChoicesGiven);
-			ensure!((1..=PROPOSAL_DURATION_LIMIT).contains(&proposal_duration), Error::<T>::InvalidProposalDuration);
+			ensure!(
+				(1..=PROPOSAL_DURATION_LIMIT).contains(&proposal_duration),
+				Error::<T>::InvalidProposalDuration
+			);
 
 			Self::do_create_proposal(
 				origin,
@@ -374,8 +377,7 @@ pub mod pallet {
 			// Adding the vote to the storage.
 			Votes::<T>::mutate(choice_id, |optional_vote| -> DispatchResult {
 				let vote = optional_vote.as_mut().ok_or(Error::<T>::VotesNotFound)?;
-				vote
-					.who
+				vote.who
 					.try_push(origin.clone())
 					.ok()
 					.ok_or(Error::<T>::AccountLimitReached)?;

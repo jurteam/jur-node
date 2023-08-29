@@ -119,7 +119,8 @@ pub mod pallet {
 			// Validating the duplicate username
 			for (account, userdata) in Users::<T>::iter() {
 				ensure!(
-					userdata.name != name || userdata.name.is_none() || account == user,Error::<T>::UsernameNotAvailable
+					userdata.name != name || userdata.name.is_none() || account == user,
+					Error::<T>::UsernameNotAvailable
 				);
 			}
 

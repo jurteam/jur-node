@@ -96,7 +96,8 @@ pub mod pallet {
 	/// Stores the `PassportId` that is going to be used for the next passport.
 	/// This gets incremented whenever a new passport is created.
 	#[pallet::storage]
-	pub type NextPassportId<T: Config> = StorageMap<_, Twox64Concat, T::CommunityId, T::PassportId, OptionQuery>;
+	pub type NextPassportId<T: Config> =
+		StorageMap<_, Twox64Concat, T::CommunityId, T::PassportId, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -137,28 +138,30 @@ pub mod pallet {
 		///
 		#[pallet::call_index(0)]
 		#[pallet::weight(<T as Config>::WeightInfo::mint())]
-		pub fn mint(
-			origin: OriginFor<T>,
-			community_id: T::CommunityId,
-		) -> DispatchResult {
+		pub fn mint(origin: OriginFor<T>, community_id: T::CommunityId) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
-			ensure!(origin == community.founder || community.members.contains(&origin), Error::<T>::MemberDoesNotExist);
+			ensure!(
+				origin == community.founder || community.members.contains(&origin),
+				Error::<T>::MemberDoesNotExist
+			);
 
 			let maybe_passport = Passports::<T>::get(community_id, &origin);
 			ensure!(maybe_passport.is_none(), Error::<T>::PassportAlreadyMinted);
 
-			let mut passport_id = NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
+			let mut passport_id =
+				NextPassportId::<T>::get(community_id).unwrap_or(T::PassportId::initial_value());
 
 			// Adding this check to reserve the slots for community
-			if community_id == T::CommunityId::initial_value() && passport_id < T::PassportId::jur_community_reserve_slots() {
+			if community_id == T::CommunityId::initial_value()
+				&& passport_id < T::PassportId::jur_community_reserve_slots()
+			{
 				passport_id = T::PassportId::jur_community_reserve_slots();
 			}
 
-			let passport_details =
-				PassportDetails { id: passport_id, address: None };
+			let passport_details = PassportDetails { id: passport_id, address: None };
 
 			<Passports<T>>::insert(community_id, &origin, passport_details);
 
@@ -190,7 +193,10 @@ pub mod pallet {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
-			ensure!(origin == community.founder || community.members.contains(&origin), Error::<T>::MemberDoesNotExist);
+			ensure!(
+				origin == community.founder || community.members.contains(&origin),
+				Error::<T>::MemberDoesNotExist
+			);
 
 			<Passports<T>>::get(community_id, &origin).ok_or(Error::<T>::PassportNotAvailable)?;
 

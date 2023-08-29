@@ -119,7 +119,7 @@ pub fn verify_proof(
 				};
 
 				root = convert(branch)?;
-			}
+			},
 			_ => return Err(ErrorMessage::ProofTooShort),
 		};
 	}
@@ -142,7 +142,7 @@ pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, ErrorMessag
 				None => Err(ErrorMessage::InvalidRLP),
 				Some(value) => Ok(value.as_val()?),
 			}
-		}
+		},
 		_ => Err(ErrorMessage::InvalidAccount),
 	}
 }
