@@ -3410,7 +3410,7 @@ dependencies = [
 
 [[package]]
 name = "jur-node"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "clap",
  "frame-benchmarking",
@@ -3456,7 +3456,7 @@ dependencies = [
 
 [[package]]
 name = "jur-node-runtime"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "frame-benchmarking",
  "frame-executive",
@@ -4875,7 +4875,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-community"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -4947,7 +4947,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-passport"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -4967,7 +4967,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-proposal"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5041,7 +5041,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-token-swap"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "bs58 0.5.0",
  "frame-benchmarking",
@@ -5126,7 +5126,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-user"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5144,7 +5144,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-whitelist"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
