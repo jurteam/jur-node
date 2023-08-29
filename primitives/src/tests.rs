@@ -2,8 +2,8 @@ use crate::proof::{
 	compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof,
 	ErrorMessage,
 };
-use frame_support::assert_ok;
 use crate::EthereumAddress;
+use frame_support::assert_ok;
 use hex_literal::hex;
 
 fn get_account_rlp() -> Vec<u8> {
@@ -39,15 +39,14 @@ fn verify_storage_proof_works() {
 
 #[test]
 fn verify_storage_proof_not_works_for_proof_without_prefix() {
-
 	assert_eq!(
 		verify_proof(
-			[255, 209, 120, 49, 99, 103, 39, 161, 43, 151, 204, 61, 119, 88, 144, 94, 8,
-			152,
-				107, 30, 102, 112, 131, 208, 46, 241, 200, 16, 220, 221, 103, 92,],
+			[
+				255, 209, 120, 49, 99, 103, 39, 161, 43, 151, 204, 61, 119, 88, 144, 94, 8, 152,
+				107, 30, 102, 112, 131, 208, 46, 241, 200, 16, 220, 221, 103, 92,
+			],
 			vec![vec![194, 128, 128]],
-			hex!
-			("13614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a611499221").to_vec(),
+			hex!("13614086fa178320f9277044fb1a8a462fdd1e42c15784123ab858a611499221").to_vec(),
 		),
 		Err(ErrorMessage::InvalidProofData)
 	);
@@ -94,12 +93,11 @@ fn verify_account_proof_works() {
 		hex!("f87e9f3b02dc6e1fe55f373af0e138b09941acd1723941e80ca5e067a8942da35d61b85cf85a80808094f077b491b355e64048ce21e3a6fc4751eeea77faa0b08505f2763206c8a2bd47c2b1318945e1b05abad77be1c54c794e3ba18cf579a033896be85e4ef6c4ad532cd0f0b75cf032244e8b0052cfe071a49394b98bea04").to_vec(),
 	];
 
-	assert_ok!(
-		verify_proof(
-			hex!("c066ed531c19ba6d36322481654fc6cdf089a79954e1e5941b18188f6bc199e3"),
-			account_proof,
-			hex!("5a0b02dc6e1fe55f373af0e138b09941acd1723941e80ca5e067a8942da35d61").to_vec()
-		));
+	assert_ok!(verify_proof(
+		hex!("c066ed531c19ba6d36322481654fc6cdf089a79954e1e5941b18188f6bc199e3"),
+		account_proof,
+		hex!("5a0b02dc6e1fe55f373af0e138b09941acd1723941e80ca5e067a8942da35d61").to_vec()
+	));
 }
 
 #[test]

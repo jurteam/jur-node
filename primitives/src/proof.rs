@@ -95,7 +95,7 @@ pub fn verify_proof(
 				}
 
 				if terminal {
-					if nibbles_iter.count() != INITIAL_INDEX as usize {
+					if nibbles_iter.count() != INITIAL_INDEX {
 						return Err(ErrorMessage::ProofTooShort);
 					} else {
 						return Ok(value);
@@ -119,7 +119,7 @@ pub fn verify_proof(
 				};
 
 				root = convert(branch)?;
-			}
+			},
 			_ => return Err(ErrorMessage::ProofTooShort),
 		};
 	}
@@ -142,7 +142,7 @@ pub fn extract_storage_root(account_rlp: Vec<u8>) -> Result<Vec<u8>, ErrorMessag
 				None => Err(ErrorMessage::InvalidRLP),
 				Some(value) => Ok(value.as_val()?),
 			}
-		}
+		},
 		_ => Err(ErrorMessage::InvalidAccount),
 	}
 }

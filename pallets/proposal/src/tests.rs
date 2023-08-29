@@ -4,7 +4,7 @@ use crate::{mock::*, Choices, Error, Votes};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
-use pallet_community::types::{CommunityMetaData, CommunityType, Category};
+use pallet_community::types::{Category, CommunityMetaData, CommunityType};
 
 fn get_community_metadata() -> CommunityMetaData<u64> {
 	let community_metadata = CommunityMetaData {
@@ -42,16 +42,13 @@ fn create_community() {
 		Category::Public,
 		Some("tag".into()),
 		Some("#222307".into()),
-		Some("#E76080".into())
+		Some("#E76080".into()),
 	)
 	.unwrap();
 }
 
 pub fn add_founder() {
-	Whitelist::add_founder(
-		RuntimeOrigin::root(),
-		1
-	).unwrap();
+	Whitelist::add_founder(RuntimeOrigin::root(), 1).unwrap();
 }
 
 fn create_proposal() {
@@ -69,10 +66,7 @@ fn create_proposal() {
 		1,
 		bounded_proposal_name,
 		bounded_proposal_description,
-		vec![
-			"Yes".as_bytes().to_vec(),
-			"No".as_bytes().to_vec(),
-		],
+		vec!["Yes".as_bytes().to_vec(), "No".as_bytes().to_vec()],
 		false,
 		5,
 	)
@@ -332,10 +326,7 @@ fn cast_vote_works_with_proposal_result_accepted() {
 			1,
 			bounded_proposal_name,
 			bounded_proposal_description,
-			vec![
-				"Yes".as_bytes().to_vec(),
-				"No".as_bytes().to_vec(),
-			],
+			vec!["Yes".as_bytes().to_vec(), "No".as_bytes().to_vec(),],
 			false,
 			1,
 		));
@@ -370,10 +361,7 @@ fn cast_vote_works_with_proposal_result_rejected() {
 			1,
 			bounded_proposal_name,
 			bounded_proposal_description,
-			vec![
-				"Yes".as_bytes().to_vec(),
-				"No".as_bytes().to_vec(),
-			],
+			vec!["Yes".as_bytes().to_vec(), "No".as_bytes().to_vec(),],
 			false,
 			1,
 		));
