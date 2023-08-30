@@ -293,10 +293,10 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100 * DOLLARS;
-	pub const ApprovalDeposit: Balance = DOLLARS;
+	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
 	pub const StringLimit: u32 = 50;
 	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = DOLLARS;
+	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
 }
 
 impl pallet_assets::Config for Runtime {
@@ -354,12 +354,12 @@ impl pallet_token_swap::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 24 * 60 * MINUTES;
+	pub const LaunchPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
 	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 24 * 60 * MINUTES;
+	pub const EnactmentPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
@@ -486,13 +486,13 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 			}
 
 			Author::on_unbalanced(fee_split.0);
-			<Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
 				&burn_fee_account,
-				fee_split.1,
+				fee_split.1.into(),
 			);
-			<Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
 				&society_reward_account,
-				pool_split.0,
+				pool_split.0.into(),
 			);
 			Treasury::on_unbalanced(pool_split.1);
 		}
@@ -529,9 +529,9 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSlash = ();
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ConstU128<{ DOLLARS }>;
+	type ProposalBondMinimum = ConstU128<{ 1 * DOLLARS }>;
 	type ProposalBondMaximum = ();
-	type SpendPeriod = ConstU32<{ DAYS }>;
+	type SpendPeriod = ConstU32<{ 1 * DAYS }>;
 	type Burn = Burn;
 	type BurnDestination = ();
 	type SpendFunds = ();
@@ -600,7 +600,7 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v7::MigrateToV7<Runtime>;
+pub type Migrations = pallet_community::migration::v6::MigrateToV6<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
