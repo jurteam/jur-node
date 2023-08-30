@@ -3,10 +3,9 @@
 //! A pallet allows any Sudo User to add users who can create the community on the chain.
 //! Also add the admin to manage that users.
 //!
-//!  ## Overview
-//!	This pallet will be the main pallet to add the users as founder
-//! and add admins to manage that founders.
-//! Currently the sudo user can add/revoke the admin to manage the founders.
+//! ## Overview
+//! This pallet will be the main pallet to add the users as founder and add admins to
+//! manage that founders. Currently the sudo user can add/revoke the admin to manage the founders.
 //! Sudo and admins can add the users into the founders list.
 //!
 //! ## Interface

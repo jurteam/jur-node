@@ -4,8 +4,8 @@ use futures::FutureExt;
 use jur_node_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{Backend, BlockBackend};
 use sc_consensus_aura::{ImportQueueParams, SlotProportion, StartAuraParams};
-pub use sc_executor::NativeElseWasmExecutor;
 use sc_consensus_grandpa::SharedVoterState;
+pub use sc_executor::NativeElseWasmExecutor;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager, WarpSyncParams};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
@@ -33,7 +33,7 @@ impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
 }
 
 pub(crate) type FullClient =
-sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ExecutorDispatch>>;
+	sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ExecutorDispatch>>;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 
@@ -60,7 +60,6 @@ pub fn new_partial(
 	>,
 	ServiceError,
 > {
-
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
@@ -83,7 +82,9 @@ pub fn new_partial(
 	let client = Arc::new(client);
 
 	let telemetry = telemetry.map(|(worker, telemetry)| {
-		task_manager.spawn_handle().spawn("telemetry", None, worker.run());
+		task_manager
+			.spawn_handle()
+			.spawn("telemetry", None, worker.run());
 		telemetry
 	});
 
@@ -156,7 +157,11 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
-		&client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
+		&client
+			.block_hash(0)
+			.ok()
+			.flatten()
+			.expect("Genesis block exists; qed"),
 		&config.chain_spec,
 	);
 
@@ -197,8 +202,8 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 				enable_http_requests: true,
 				custom_extensions: |_| vec![],
 			})
-				.run(client.clone(), task_manager.spawn_handle())
-				.boxed(),
+			.run(client.clone(), task_manager.spawn_handle())
+			.boxed(),
 		);
 	}
 

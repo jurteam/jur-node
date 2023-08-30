@@ -6,7 +6,7 @@ use super::*;
 use crate::Pallet as Proposal;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
-use pallet_community::types::{CommunityMetaData, CommunityType, Category};
+use pallet_community::types::{Category, CommunityMetaData, CommunityType};
 use sp_std::vec;
 
 const SEED: u32 = 0;
@@ -36,10 +36,7 @@ fn get_community_metadata<T: Config>() -> CommunityMetaData<T::AccountId> {
 }
 
 pub fn add_founder<T: Config>(caller: T::AccountId) {
-	pallet_whitelist::Pallet::<T>::add_founder(
-		RawOrigin::Root.into(),
-		caller
-	).unwrap();
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller).unwrap();
 }
 
 fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
@@ -62,7 +59,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		Category::Public,
 		Some("tag".into()),
 		Some("#222307".into()),
-		Some("#E76080".into())
+		Some("#E76080".into()),
 	)
 	.unwrap();
 

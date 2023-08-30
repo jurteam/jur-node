@@ -1,5 +1,5 @@
 use crate as pallet_community;
-use crate::{CommunityMetaData, CommunityType, Category};
+use crate::{Category, CommunityMetaData, CommunityType};
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
@@ -8,8 +8,8 @@ use frame_support_test::TestRandomness;
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
-	BuildStorage,
 	traits::{BlakeTwo256, Header as _, IdentityLookup},
+	BuildStorage,
 };
 
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -138,7 +138,7 @@ pub fn create_community() {
 		Category::Public,
 		Some("tag".into()),
 		Some("#222307".into()),
-		Some("#E76080".into())
+		Some("#E76080".into()),
 	)
 	.unwrap();
 }

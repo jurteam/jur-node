@@ -1,10 +1,10 @@
+use crate::types::Category;
 use crate::{
 	mock::*,
 	types::{CommunityMetaData, CommunityType},
 	Communities, Error,
 };
 use frame_support::{assert_noop, assert_ok};
-use crate::types::Category;
 
 #[test]
 fn create_community_works() {
@@ -67,7 +67,7 @@ fn create_community_works_only_with_name() {
 			Category::Public,
 			Some("tag".into()),
 			Some("#222307".into()),
-			Some("#E76080".into())
+			Some("#E76080".into()),
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(1));
@@ -81,35 +81,35 @@ fn create_community_not_works_with_invalid_color() {
 		add_founder();
 		assert_noop!(
 			Community::create_community(
-			RuntimeOrigin::signed(1),
-			// hash of IPFS path of dummy logo
-			None,
-			"Jur".into(),
-			None,
-			None,
-			None,
-			Category::Public,
-			Some("tag".into()),
-			Some("#invalid color".into()),
-			Some("#E76080".into())
-		),
+				RuntimeOrigin::signed(1),
+				// hash of IPFS path of dummy logo
+				None,
+				"Jur".into(),
+				None,
+				None,
+				None,
+				Category::Public,
+				Some("tag".into()),
+				Some("#invalid color".into()),
+				Some("#E76080".into())
+			),
 			Error::<Test>::BadColor
 		);
 
 		assert_noop!(
 			Community::create_community(
-			RuntimeOrigin::signed(1),
-			// hash of IPFS path of dummy logo
-			None,
-			"Jur".into(),
-			None,
-			None,
-			None,
-			Category::Public,
-			Some("tag".into()),
-			Some("#E76080".into()),
-			Some("#invalid color".into())
-		),
+				RuntimeOrigin::signed(1),
+				// hash of IPFS path of dummy logo
+				None,
+				"Jur".into(),
+				None,
+				None,
+				None,
+				Category::Public,
+				Some("tag".into()),
+				Some("#E76080".into()),
+				Some("#invalid color".into())
+			),
 			Error::<Test>::BadColor
 		);
 	});
@@ -459,25 +459,16 @@ fn update_community_tag_and_colors_works() {
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
-		assert_eq!(
-			Communities::<Test>::get(1).unwrap().tag,
-			"tag"
-				.as_bytes()
-				.to_vec()
-		);
+		assert_eq!(Communities::<Test>::get(1).unwrap().tag, "tag".as_bytes().to_vec());
 
 		assert_eq!(
 			Communities::<Test>::get(1).unwrap().primary_color,
-			"#222307"
-				.as_bytes()
-				.to_vec()
+			"#222307".as_bytes().to_vec()
 		);
 
 		assert_eq!(
 			Communities::<Test>::get(1).unwrap().secondary_color,
-			"#E76080"
-				.as_bytes()
-				.to_vec()
+			"#E76080".as_bytes().to_vec()
 		);
 
 		let tag = "Alpha";
@@ -494,6 +485,9 @@ fn update_community_tag_and_colors_works() {
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().tag, tag.as_bytes().to_vec());
 		assert_eq!(Communities::<Test>::get(1).unwrap().primary_color, p_color.as_bytes().to_vec());
-		assert_eq!(Communities::<Test>::get(1).unwrap().secondary_color, s_color.as_bytes().to_vec());
+		assert_eq!(
+			Communities::<Test>::get(1).unwrap().secondary_color,
+			s_color.as_bytes().to_vec()
+		);
 	});
 }

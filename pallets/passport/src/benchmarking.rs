@@ -6,7 +6,7 @@ use crate::Pallet as Passport;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::BoundedVec;
 use frame_system::RawOrigin;
-use pallet_community::types::{CommunityMetaData, CommunityType, Category};
+use pallet_community::types::{Category, CommunityMetaData, CommunityType};
 use sp_std::vec;
 use sp_std::vec::Vec;
 
@@ -56,7 +56,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		Category::Public,
 		Some("tag".into()),
 		Some("#222307".into()),
-		Some("#E76080".into())
+		Some("#E76080".into()),
 	)
 	.unwrap();
 
@@ -64,10 +64,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 }
 
 pub fn add_founder<T: Config>(caller: T::AccountId) {
-	pallet_whitelist::Pallet::<T>::add_founder(
-		RawOrigin::Root.into(),
-		caller
-	).unwrap();
+	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller).unwrap();
 }
 
 benchmarks! {
