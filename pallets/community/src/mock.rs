@@ -1,15 +1,15 @@
 use crate as pallet_community;
-use crate::{CommunityMetaData, CommunityType, Category};
-use frame_support::pallet_prelude::Hooks;
+use crate::{Category, CommunityMetaData, CommunityType};
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
 };
+use frame_support_test::TestRandomness;
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
-	BuildStorage,
 	traits::{BlakeTwo256, Header as _, IdentityLookup},
+	BuildStorage,
 };
 
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -19,7 +19,6 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		CollectiveFlip: pallet_insecure_randomness_collective_flip,
 		Community: pallet_community,
 		Whitelist: pallet_whitelist,
 	}
@@ -55,7 +54,6 @@ impl system::Config for Test {
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
-impl pallet_insecure_randomness_collective_flip::Config for Test {}
 
 impl pallet_community::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
@@ -66,7 +64,7 @@ impl pallet_community::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = ();
-	type MyRandomness = CollectiveFlip;
+	type MyRandomness = TestRandomness<Self>;
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
@@ -93,7 +91,6 @@ pub fn setup_blocks(blocks: u64) {
 	for i in 1..(blocks + 1) {
 		System::reset_events();
 		System::initialize(&i, &parent_hash, &Default::default());
-		CollectiveFlip::on_initialize(i);
 
 		let header = System::finalize();
 		parent_hash = header.hash();
@@ -141,7 +138,7 @@ pub fn create_community() {
 		Category::Public,
 		Some("tag".into()),
 		Some("#222307".into()),
-		Some("#E76080".into())
+		Some("#E76080".into()),
 	)
 	.unwrap();
 }

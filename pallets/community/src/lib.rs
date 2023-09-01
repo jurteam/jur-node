@@ -23,15 +23,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::Encode;
+use crate::types::*;
+use codec::{Decode, Encode};
 use frame_support::{dispatch::DispatchResult, traits::Randomness, BoundedVec};
 pub use pallet::*;
 use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 pub use weights::WeightInfo;
-
-use crate::types::*;
 
 pub mod types;
 
@@ -56,7 +55,7 @@ pub mod pallet {
 	use super::*;
 
 	/// The current storage version.
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(6);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(7);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -133,7 +132,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::CommunityId,
-		Community<T::AccountId, T::Hash, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
+		Community<T::AccountId, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
 	>;
 
 	/// The communities owned by a given account
@@ -144,7 +143,7 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId,
 		BoundedVec<T::CommunityId, T::CommunityLimit>,
-		ValueQuery
+		ValueQuery,
 	>;
 
 	/// Stores the `CommunityId` that is going to be used for the next
@@ -156,7 +155,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Created Community [communityId, referenceId, founder]
-		CreatedCommunity(T::CommunityId, T::Hash, T::AccountId),
+		CreatedCommunity(T::CommunityId, [u8; 16], T::AccountId),
 		/// Updated Community [community]
 		UpdatedCommunity(T::CommunityId),
 		/// Updated Community [community]
@@ -197,7 +196,7 @@ pub mod pallet {
 		/// Founder not whitelisted.
 		FounderNotExist,
 		/// Too Many Communities
-		TooManyCommunities
+		TooManyCommunities,
 	}
 
 	#[pallet::hooks]
@@ -239,7 +238,10 @@ pub mod pallet {
 
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
-			pallet_whitelist::Founders::<T>::get().binary_search(&founder).ok().ok_or(Error::<T>::FounderNotExist)?;
+			pallet_whitelist::Founders::<T>::get()
+				.binary_search(&founder)
+				.ok()
+				.ok_or(Error::<T>::FounderNotExist)?;
 
 			Self::do_create_community(
 				community_id,
@@ -252,7 +254,7 @@ pub mod pallet {
 				category,
 				tagline,
 				primary_color,
-				secondary_color
+				secondary_color,
 			)
 		}
 
@@ -520,12 +522,11 @@ pub mod pallet {
 		) -> DispatchResult {
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
-			let bounded_tag: BoundedVec<u8, T::TagLimit> =
-				if let Some(t) = tagline {
-					t.try_into().map_err(|_| Error::<T>::BadTag)?
-				} else {
-					Default::default()
-				};
+			let bounded_tag: BoundedVec<u8, T::TagLimit> = if let Some(t) = tagline {
+				t.try_into().map_err(|_| Error::<T>::BadTag)?
+			} else {
+				Default::default()
+			};
 
 			let bounded_primary_color: BoundedVec<u8, T::ColorLimit> =
 				if let Some(color) = primary_color {
@@ -584,12 +585,11 @@ impl<T: Config> Pallet<T> {
 				Default::default()
 			};
 
-		let bounded_tag: BoundedVec<u8, T::TagLimit> =
-			if let Some(tag) = maybe_tag {
-				tag.try_into().map_err(|_| Error::<T>::BadTag)?
-			} else {
-				Default::default()
-			};
+		let bounded_tag: BoundedVec<u8, T::TagLimit> = if let Some(tag) = maybe_tag {
+			tag.try_into().map_err(|_| Error::<T>::BadTag)?
+		} else {
+			Default::default()
+		};
 
 		let bounded_primary_color: BoundedVec<u8, T::ColorLimit> =
 			if let Some(color) = maybe_primary_color {
@@ -609,7 +609,12 @@ impl<T: Config> Pallet<T> {
 
 		// Random value.
 		let nonce = Self::get_and_increment_nonce();
-		let (random_value, _) = T::MyRandomness::random(&nonce);
+		let random_seed = T::MyRandomness::random(&nonce).encode();
+
+		let random_number = u128::decode(&mut random_seed.as_ref())
+			.expect("secure hashes should always be bigger than u32; qed");
+
+		let random_value: [u8; 16] = random_number.to_be_bytes();
 
 		let community = Community {
 			founder: founder.clone(),
@@ -622,7 +627,7 @@ impl<T: Config> Pallet<T> {
 			category,
 			tag: bounded_tag,
 			primary_color: bounded_primary_color,
-			secondary_color: bounded_secondary_color
+			secondary_color: bounded_secondary_color,
 		};
 
 		<CommunityAccount<T>>::try_mutate(founder.clone(), |communities| -> DispatchResult {

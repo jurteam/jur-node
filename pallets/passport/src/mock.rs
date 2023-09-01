@@ -6,8 +6,8 @@ use frame_support::{
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
-	BuildStorage,
 	traits::{BlakeTwo256, IdentityLookup},
+	BuildStorage,
 };
 
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -87,7 +87,10 @@ impl pallet_passport::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut ext: sp_io::TestExternalities = system::GenesisConfig::<Test>::default().build_storage().unwrap().into();
+	let mut ext: sp_io::TestExternalities = system::GenesisConfig::<Test>::default()
+		.build_storage()
+		.unwrap()
+		.into();
 	ext.execute_with(|| System::set_block_number(1));
 	ext
 }

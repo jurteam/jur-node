@@ -1,4 +1,3 @@
-
 //! # Jur Token Swap Pallet
 //! A pallet allowing users to submit a proof of deposit along with a signed message
 //! containing their Substrate address but signed with the Ethereum key (a secp256k1 signature).
@@ -68,7 +67,10 @@ use parity_scale_codec::{Decode, Encode};
 use primitives::proof::{
 	compute_storage_key_for_depositor, convert, decode_rlp, extract_storage_root, verify_proof,
 };
-use primitives::{Balance, CurrencyId, EthereumAddress, ACCOUNT_ID_INITIAL_INDEX, ETHEREUM_SIGNATURE_SIZE, ADDRESS_LEN, MAX_ACCOUNT_ID_INDEX, FROM_INDEX, VechainHash};
+use primitives::{
+	Balance, CurrencyId, EthereumAddress, VechainHash, ACCOUNT_ID_INITIAL_INDEX, ADDRESS_LEN,
+	ETHEREUM_SIGNATURE_SIZE, FROM_INDEX, MAX_ACCOUNT_ID_INDEX,
+};
 use scale_info::TypeInfo;
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::blake2_256, hashing::keccak_256};
 use sp_runtime::traits::Zero;
@@ -91,7 +93,7 @@ pub struct EcdsaSignature(pub [u8; ETHEREUM_SIGNATURE_SIZE]);
 
 impl PartialEq for EcdsaSignature {
 	fn eq(&self, other: &Self) -> bool {
-		&self.0[..] == &other.0[..]
+		self.0[..] == other.0[..]
 	}
 }
 
@@ -125,7 +127,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::traits::LockableCurrency;
 	use frame_system::pallet_prelude::*;
-	use primitives::{PRIORITY, ETHEREUM_ADDRESS_SIZE, ValidityError};
+	use primitives::{ValidityError, ETHEREUM_ADDRESS_SIZE, PRIORITY};
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -207,14 +209,30 @@ pub mod pallet {
 	impl<T> From<Error<T>> for TransactionValidityError {
 		fn from(error: Error<T>) -> Self {
 			match error {
-				Error::<T>::InvalidEthereumSignature => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidEthereumSignature.into())),
-				Error::<T>::InvalidSubstrateAddress => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into())),
-				Error::<T>::PrefixDoesNotMatch => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::PrefixDoesNotMatch.into())),
-				Error::<T>::ContentNotFound => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::ContentNotFound.into())),
-				Error::<T>::InvalidJson => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidJson.into())),
-				Error::<T>::NotSufficientLockedBalance => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::NotSufficientLockedBalance.into())),
-				Error::<T>::InvalidProof => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidProof.into())),
-				_ => TransactionValidityError::Invalid(InvalidTransaction::Custom(ValidityError::InvalidInput.into())),
+				Error::<T>::InvalidEthereumSignature => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::InvalidEthereumSignature.into()),
+				),
+				Error::<T>::InvalidSubstrateAddress => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::InvalidSubstrateAddress.into()),
+				),
+				Error::<T>::PrefixDoesNotMatch => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::PrefixDoesNotMatch.into()),
+				),
+				Error::<T>::ContentNotFound => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::ContentNotFound.into()),
+				),
+				Error::<T>::InvalidJson => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::InvalidJson.into()),
+				),
+				Error::<T>::NotSufficientLockedBalance => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::NotSufficientLockedBalance.into()),
+				),
+				Error::<T>::InvalidProof => TransactionValidityError::Invalid(
+					InvalidTransaction::Custom(ValidityError::InvalidProof.into()),
+				),
+				_ => TransactionValidityError::Invalid(InvalidTransaction::Custom(
+					ValidityError::InvalidInput.into(),
+				)),
 			}
 		}
 	}
@@ -271,8 +289,9 @@ pub mod pallet {
 			let account_rlp = verify_proof(vechain_root_hash, account_proof, deposit_contract_hash)
 				.ok()
 				.ok_or(Error::<T>::InvalidProof)?;
-			let storage_root =
-				extract_storage_root(account_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
+			let storage_root = extract_storage_root(account_rlp)
+				.ok()
+				.ok_or(Error::<T>::InvalidProof)?;
 
 			let root_information =
 				RootInfo { storage_root: storage_root.clone(), meta_block_number, ipfs_path };
@@ -289,14 +308,13 @@ pub mod pallet {
 
 		/// Verification of storageRoot. This proof is verified once at the same time as the update of the state root.
 		fn validate_unsigned(_source: TransactionSource, call: &Self::Call) -> TransactionValidity {
-
 			let (maybe_signer, maybe_json, storage_proof) = match call {
 				Call::claim { ethereum_signature, signed_json, storage_proof } => {
-					let blake2_256_hash: VechainHash = blake2_256(&signed_json);
+					let blake2_256_hash: VechainHash = blake2_256(signed_json);
 					(
-						Self::eth_recover(&ethereum_signature, blake2_256_hash),
-						serde_json::from_slice(&signed_json),
-						storage_proof
+						Self::eth_recover(ethereum_signature, blake2_256_hash),
+						serde_json::from_slice(signed_json),
+						storage_proof,
 					)
 				},
 				_ => return Err(InvalidTransaction::Call.into()),
@@ -326,13 +344,14 @@ pub mod pallet {
 }
 
 impl<T: Config> Pallet<T> {
+	fn get_address(signed_json: serde_json::Value) -> Result<Vec<u8>, Error<T>> {
+		// Step-2: Parse signed json as json and extract the payload >> content.
+		// Extract Substrate address after removing refix 'My JUR address is' and
+		// convert into T::AccountId and remove dest parameter
 
-	fn get_address(
-		signed_json: serde_json::Value,
-	) -> Result<Vec<u8>, Error<T>> {
-		// Step-2: Parse signed json as json and extract the payload >> content. Extract Substrate address after removing refix 'My JUR address is' and convert into T::AccountId and remove dest parameter
-
-		let content_str = signed_json["payload"]["content"].as_str().ok_or(Error::<T>::ContentNotFound)?;
+		let content_str = signed_json["payload"]["content"]
+			.as_str()
+			.ok_or(Error::<T>::ContentNotFound)?;
 
 		ensure!(
 			content_str.as_bytes().starts_with(T::Prefix::get()),
@@ -352,7 +371,6 @@ impl<T: Config> Pallet<T> {
 		signer: EthereumAddress,
 		storage_proof: Vec<Vec<u8>>,
 	) -> Result<(Balance, Balance), Error<T>> {
-
 		// Step-3: Proof Verification
 
 		let storage_key = compute_storage_key_for_depositor(signer);
@@ -363,11 +381,13 @@ impl<T: Config> Pallet<T> {
 			storage_proof,
 			storage_key,
 		)
+		.ok()
+		.ok_or(Error::<T>::InvalidProof)?;
+
+		let locked_balance = decode_rlp(storage_rlp)
 			.ok()
 			.ok_or(Error::<T>::InvalidProof)?;
-
-		let locked_balance = decode_rlp(storage_rlp).ok().ok_or(Error::<T>::InvalidProof)?;
-		let balance = Self::latest_claimed_balance(&signer).unwrap_or(Zero::zero());
+		let balance = Self::latest_claimed_balance(signer).unwrap_or(Zero::zero());
 		ensure!(locked_balance > balance, Error::<T>::NotSufficientLockedBalance);
 
 		Ok((locked_balance, locked_balance - balance))
@@ -384,12 +404,14 @@ impl<T: Config> Pallet<T> {
 		let signer = Self::eth_recover(&ethereum_signature, blake2_256_hash)
 			.ok_or(Error::<T>::InvalidEthereumSignature)?;
 
-		let vs: serde_json::Value =
-			serde_json::from_slice(&signed_json).ok().ok_or(Error::<T>::InvalidJson)?;
+		let vs: serde_json::Value = serde_json::from_slice(&signed_json)
+			.ok()
+			.ok_or(Error::<T>::InvalidJson)?;
 
 		let address = Self::get_address(vs)?;
 		let account_id =
-			T::AccountId::decode(&mut &address[ACCOUNT_ID_INITIAL_INDEX..MAX_ACCOUNT_ID_INDEX]).map_err(|_| Error::<T>::InvalidJson)?;
+			T::AccountId::decode(&mut &address[ACCOUNT_ID_INITIAL_INDEX..MAX_ACCOUNT_ID_INDEX])
+				.map_err(|_| Error::<T>::InvalidJson)?;
 		let (locked_balance, mint_amount) = Self::get_mint_amount(signer, storage_proof)?;
 		T::Balances::mint_into(&account_id, mint_amount)?;
 

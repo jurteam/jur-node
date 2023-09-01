@@ -1,6 +1,6 @@
 [package]
 name = "pallet-user"
-version = "0.1.0"
+version = "1.0.0"
 description = "Jur User Pallet"
 authors = ["Jur Team <https://github.com/jurteam>"]
 homepage = "https://jur.io/"
