@@ -9,8 +9,8 @@ use hex_literal::hex;
 use primitives::{Balance, CurrencyId, JUR};
 use sp_core::H256;
 use sp_runtime::{
-	BuildStorage,
 	traits::{BlakeTwo256, IdentityLookup},
+	BuildStorage,
 };
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -127,5 +127,8 @@ impl pallet_token_swap::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
+	system::GenesisConfig::<Test>::default()
+		.build_storage()
+		.unwrap()
+		.into()
 }

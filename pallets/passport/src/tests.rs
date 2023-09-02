@@ -2,7 +2,7 @@ use crate::{mock::*, Error, Passports};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
-use pallet_community::types::{CommunityMetaData, CommunityType, Category};
+use pallet_community::types::{Category, CommunityMetaData, CommunityType};
 
 fn get_community_metadata() -> CommunityMetaData<u64> {
 	let community_metadata = CommunityMetaData {
@@ -27,10 +27,7 @@ fn get_community_metadata() -> CommunityMetaData<u64> {
 }
 
 pub fn add_founder() {
-	Whitelist::add_founder(
-		RuntimeOrigin::root(),
-		1
-	).unwrap();
+	Whitelist::add_founder(RuntimeOrigin::root(), 1).unwrap();
 }
 
 fn create_community() {
@@ -39,14 +36,16 @@ fn create_community() {
 		// hash of IPFS path of dummy logo
 		Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
 		"Jur".into(),
-		Some("Jur is the core community of the Jur ecosystem, which includes all the contributors."
-			.into()),
+		Some(
+			"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+				.into(),
+		),
 		Some(vec![1, 2]),
 		Some(get_community_metadata()),
 		Category::Public,
 		Some("tag".into()),
 		Some("#222307".into()),
-		Some("#E76080".into())
+		Some("#E76080".into()),
 	)
 	.unwrap();
 }

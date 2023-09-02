@@ -1,6 +1,6 @@
 [package]
 name = "jur-node-runtime"
-version = "2.0.2"
+version = "2.0.3"
 edition = "2021"
 license = "Unlicense"
 publish = false
@@ -51,12 +51,12 @@ frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, g
 hex-literal = "0.4.1"
 
 # Local Dependencies
-pallet-token-swap = { version = "0.1.0", default-features = false, path = "../pallets/token-swap" }
-pallet-community = { version = "0.1.0", default-features = false, path = "../pallets/community" }
-pallet-proposal = { version = "0.1.0", default-features = false, path = "../pallets/proposal" }
-pallet-user = { version = "0.1.0", default-features = false, path = "../pallets/user" }
-pallet-passport = { version = "0.1.0", default-features = false, path = "../pallets/passport" }
-pallet-whitelist = { version = "0.1.0", default-features = false, path = "../pallets/whitelist" }
+pallet-token-swap = { version = "1.0.0", default-features = false, path = "../pallets/token-swap" }
+pallet-community = { version = "1.0.0", default-features = false, path = "../pallets/community" }
+pallet-proposal = { version = "1.0.0", default-features = false, path = "../pallets/proposal" }
+pallet-user = { version = "1.0.0", default-features = false, path = "../pallets/user" }
+pallet-passport = { version = "1.0.0", default-features = false, path = "../pallets/passport" }
+pallet-whitelist = { version = "1.0.0", default-features = false, path = "../pallets/whitelist" }
 
 
 primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
