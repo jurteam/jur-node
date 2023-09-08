@@ -34,7 +34,7 @@ pub mod v7 {
 			let current_version = Pallet::<T>::current_storage_version();
 			let onchain_version = Pallet::<T>::on_chain_storage_version();
 
-			if onchain_version == 6 && current_version == 7 {
+			if onchain_version == 0 && current_version == 7 {
 				let mut translated = 0u64;
 				Communities::<T>::translate::<
 					OldCommunity<
