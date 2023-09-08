@@ -55,7 +55,7 @@ frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/parityte
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 # Local Dependencies
-jur-node-runtime = { version = "2.1.0", path = "../runtime" }
+jur-node-runtime = { version = "2.1.1", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }
 
 # CLI-specific dependencies
