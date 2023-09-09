@@ -3409,7 +3409,7 @@ dependencies = [
 
 [[package]]
 name = "jur-node"
-version = "2.1.0"
+version = "2.1.1"
 dependencies = [
  "clap",
  "frame-benchmarking",
@@ -3455,7 +3455,7 @@ dependencies = [
 
 [[package]]
 name = "jur-node-runtime"
-version = "2.1.0"
+version = "2.1.1"
 dependencies = [
  "frame-benchmarking",
  "frame-executive",
@@ -3483,6 +3483,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-user",
+ "pallet-utility",
  "pallet-whitelist",
  "parity-scale-codec",
  "scale-info",
@@ -5135,6 +5136,22 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0#948fbd2fd1233dc26dbb9f9bbc1d2cca2c03945d"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
  "sp-core",
  "sp-io",
  "sp-runtime",
