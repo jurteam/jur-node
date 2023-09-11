@@ -78,7 +78,7 @@ benchmarks! {
 	)
 	verify {
 		assert_last_event::<T>(Event::<T>::MintedPassport(
-			<T as pallet::Config>::Helper::passport(5001)
+			<T as pallet::Config>::Helper::passport(5035)
 		).into());
 	}
 
@@ -101,7 +101,7 @@ benchmarks! {
 	}: _(RawOrigin::Signed(member), community_id, bounded_passport_address)
 	verify {
 		assert_last_event::<T>(Event::<T>::UpdatedPassport(
-			<T as pallet::Config>::Helper::passport(5001)
+			<T as pallet::Config>::Helper::passport(5035)
 		).into());
 	}
 
