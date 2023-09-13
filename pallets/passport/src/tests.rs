@@ -483,3 +483,43 @@ fn issue_badge_not_work_invalid_community_member() {
 		);
 	});
 }
+
+#[test]
+fn issue_badge_not_work_badge_already_issued() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		assert_ok!(Passport::issue_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			vec![2]
+		));
+
+		assert_noop!(
+			Passport::issue_badge(RuntimeOrigin::signed(1), 1, bounded_badge_name, vec![2]),
+			Error::<Test>::BadgeAlreadyIssued
+		);
+	});
+}

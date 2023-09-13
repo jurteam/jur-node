@@ -150,8 +150,8 @@ pub mod pallet {
 		BadgeNotAvailable,
 		/// Badge already exist in badge directory.
 		BadgeAlreadyExist,
-		/// Badge already assigned to the user.
-		BadgeAlreadyAssigned,
+		/// Badge already Issued to the user.
+		BadgeAlreadyIssued,
 	}
 
 	#[pallet::hooks]
@@ -308,25 +308,35 @@ pub mod pallet {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
+			// Ensuring the badge issuer should be the founder of the community
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
+			// checking the badge is available in the badge directory or not
 			<Badges<T>>::get(community_id, &name).ok_or(Error::<T>::BadgeNotAvailable)?;
 
-			members
-				.iter()
-				.find(|member| <Passports<T>>::get(community_id, member).is_some())
-				.ok_or(Error::<T>::PassportNotAvailable)?;
+			// Ensuring the members should have the passport and dont have the same badge
+			ensure!(
+				members
+					.iter()
+					.find(|member| <Passports<T>>::get(community_id, member).is_none())
+					.is_none(),
+				Error::<T>::PassportNotAvailable
+			);
 
-			// members
-			// 	.iter()
-			// 	.find(|member| {
-			// 		<Passports<T>>::get(community_id, member)
-			// 			.unwrap()
-			// 			.badges
-			// 			.contains(&*name)
-			// 	})
-			// 	.ok_or(Error::<T>::BadgeAlreadyAssigned)?;
+			ensure!(
+				members
+					.iter()
+					.find(|member| {
+						<Passports<T>>::get(community_id, member)
+							.unwrap()
+							.badges
+							.contains(&*name)
+					})
+					.is_none(),
+				Error::<T>::BadgeAlreadyIssued
+			);
 
+			// Issuing the badge to the members
 			for member in members {
 				Passports::<T>::try_mutate(
 					community_id,
