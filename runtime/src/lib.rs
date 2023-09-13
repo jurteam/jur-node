@@ -431,6 +431,8 @@ impl pallet_proposal::Config for Runtime {
 impl pallet_passport::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PassportId = PassportId;
+	type BadgeNameLimit = ConstU32<20>;
+	type DescriptionLimit = ConstU32<250>;
 	type AddressLimit = ConstU32<60>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
