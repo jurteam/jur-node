@@ -17,6 +17,8 @@
 //!
 //! * `mint`
 //! * `update_passport`
+//! * `add_badge`
+//! * `issue_badge`
 //!
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -35,8 +37,11 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+pub mod migration;
 pub mod weights;
 pub use weights::WeightInfo;
+
+const LOG_TARGET: &str = "runtime::passport";
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -44,6 +49,9 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 	use sp_std::vec::Vec;
+
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<PassportId> {
@@ -87,6 +95,7 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// Store passport metadata for a passport holder that belongs to a particular community
@@ -98,7 +107,7 @@ pub mod pallet {
 		T::CommunityId,
 		Blake2_128Concat,
 		T::AccountId,
-		PassportDetails<T::PassportId, T::AddressLimit>,
+		PassportDetails<T::PassportId, T::BadgeNameLimit, T::AddressLimit>,
 		OptionQuery,
 	>;
 
@@ -259,7 +268,7 @@ pub mod pallet {
 		/// Emits `AddedBadge` event when successful.
 		///
 		#[pallet::call_index(2)]
-		#[pallet::weight(<T as Config>::WeightInfo::mint())]
+		#[pallet::weight(<T as Config>::WeightInfo::add_badge())]
 		pub fn add_badge(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -297,7 +306,7 @@ pub mod pallet {
 		/// Emits `IssuedBadge` event when successful.
 		///
 		#[pallet::call_index(3)]
-		#[pallet::weight(<T as Config>::WeightInfo::mint())]
+		#[pallet::weight(<T as Config>::WeightInfo::issue_badge())]
 		pub fn issue_badge(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -330,7 +339,7 @@ pub mod pallet {
 						<Passports<T>>::get(community_id, member)
 							.unwrap()
 							.badges
-							.contains(&*name)
+							.contains(&name)
 					})
 					.is_none(),
 				Error::<T>::BadgeAlreadyIssued
@@ -349,7 +358,7 @@ pub mod pallet {
 						let mut badges = passport.badges.clone();
 
 						if !badges.contains(&name) {
-							badges.push(name.clone().to_vec());
+							badges.push(name.clone());
 							passport.badges = badges;
 						}
 

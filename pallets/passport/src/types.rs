@@ -5,11 +5,11 @@ use scale_info::TypeInfo;
 use sp_std::vec::Vec;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-#[scale_info(skip_type_params(AddressLimit))]
-pub struct PassportDetails<PassportId, AddressLimit: Get<u32>> {
+#[scale_info(skip_type_params(BadgeNameLimit, AddressLimit))]
+pub struct PassportDetails<PassportId, BadgeNameLimit: Get<u32>, AddressLimit: Get<u32>> {
 	pub id: PassportId,
 	pub address: Option<BoundedVec<u8, AddressLimit>>,
-	pub badges: Vec<Vec<u8>>,
+	pub badges: Vec<BoundedVec<u8, BadgeNameLimit>>,
 }
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, TypeInfo)]
