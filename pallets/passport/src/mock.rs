@@ -79,6 +79,8 @@ impl pallet_whitelist::Config for Test {
 impl pallet_passport::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type PassportId = u32;
+	type BadgeNameLimit = ConstU32<20>;
+	type DescriptionLimit = ConstU32<250>;
 	type AddressLimit = ConstU32<60>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();

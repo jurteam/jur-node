@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 109,
+	spec_version: 117,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -431,6 +431,8 @@ impl pallet_proposal::Config for Runtime {
 impl pallet_passport::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PassportId = PassportId;
+	type BadgeNameLimit = ConstU32<20>;
+	type DescriptionLimit = ConstU32<250>;
 	type AddressLimit = ConstU32<60>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
@@ -542,6 +544,13 @@ impl pallet_treasury::Config for Runtime {
 
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime {
@@ -562,6 +571,7 @@ construct_runtime!(
 		Whitelist: pallet_whitelist,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
+		Utility: pallet_utility,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
@@ -600,7 +610,7 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v7::MigrateToV7<Runtime>;
+pub type Migrations = pallet_passport::migration::v1::MigrateToV1<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
