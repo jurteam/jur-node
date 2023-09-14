@@ -6,7 +6,7 @@ use crate::Pallet as Passport;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::BoundedVec;
 use frame_system::RawOrigin;
-use pallet_community::types::{Category, CommunityMetaData, CommunityType};
+use pallet_community::types::{Category, CommunityMetaData, CommunityType, Customs};
 use sp_std::vec;
 use sp_std::vec::Vec;
 
@@ -16,13 +16,14 @@ fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
 	frame_system::Pallet::<T>::assert_last_event(generic_event.into());
 }
 
-fn get_community_metadata<T: Config>() -> CommunityMetaData<T::AccountId> {
+fn get_community_metadata<T: Config>() -> CommunityMetaData<T::CustomLimit> {
+	let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
+		.into();
+	let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
 	CommunityMetaData {
-		community_type: Some(CommunityType::Nation),
 		customs: Some(vec![
-			"in public transport young people should leave the seat to elderly or pregnant women"
-				.into(),
-			"name newborns with a name that starts with the letter A".into(),
+			Customs(custom_one.try_into().unwrap()),
+			Customs(custom_two.try_into().unwrap()),
 		]),
 		languages: Some(vec!["English".into(), "German".into()]),
 		norms: Some(vec![]),
@@ -57,6 +58,7 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 		Some("tag".into()),
 		Some("#222307".into()),
 		Some("#E76080".into()),
+		Some(CommunityType::Nation)
 	)
 	.unwrap();
 

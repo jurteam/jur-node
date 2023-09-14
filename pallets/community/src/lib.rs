@@ -55,7 +55,7 @@ pub mod pallet {
 	use super::*;
 
 	/// The current storage version.
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(7);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(8);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -114,6 +114,10 @@ pub mod pallet {
 		/// The number of community, allowed to create by a founder.
 		#[pallet::constant]
 		type CommunityLimit: Get<u32>;
+
+		/// The maximum length of custom.
+		#[pallet::constant]
+		type CustomLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -132,7 +136,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::CommunityId,
-		Community<T::AccountId, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
+		Community<T::AccountId, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit, T::CustomLimit>,
 	>;
 
 	/// The communities owned by a given account
@@ -197,6 +201,8 @@ pub mod pallet {
 		FounderNotExist,
 		/// Too Many Communities
 		TooManyCommunities,
+		/// Invalid custom given.
+		BadCustom,
 	}
 
 	#[pallet::hooks]
@@ -232,6 +238,7 @@ pub mod pallet {
 			tagline: Option<Vec<u8>>,
 			primary_color: Option<Vec<u8>>,
 			secondary_color: Option<Vec<u8>>,
+			community_type: Option<CommunityType<T::AccountId>>
 		) -> DispatchResult {
 			let community_id =
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
@@ -255,6 +262,7 @@ pub mod pallet {
 				tagline,
 				primary_color,
 				secondary_color,
+				community_type
 			)
 		}
 
@@ -574,6 +582,7 @@ impl<T: Config> Pallet<T> {
 		maybe_tag: Option<Vec<u8>>,
 		maybe_primary_color: Option<Vec<u8>>,
 		maybe_secondary_color: Option<Vec<u8>>,
+		community_type: Option<CommunityType<T::AccountId>>
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
@@ -628,6 +637,7 @@ impl<T: Config> Pallet<T> {
 			tag: bounded_tag,
 			primary_color: bounded_primary_color,
 			secondary_color: bounded_secondary_color,
+			community_type
 		};
 
 		<CommunityAccount<T>>::try_mutate(founder.clone(), |communities| -> DispatchResult {

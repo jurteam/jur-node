@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 109,
+	spec_version: 110,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -413,6 +413,7 @@ impl pallet_community::Config for Runtime {
 	type TagLimit = ConstU32<40>;
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
+	type CustomLimit = ConstU32<250>;
 }
 
 impl pallet_proposal::Config for Runtime {
@@ -608,7 +609,7 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v7::MigrateToV7<Runtime>;
+pub type Migrations = pallet_community::migration::v8::MigrateToV8<Runtime>;
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]

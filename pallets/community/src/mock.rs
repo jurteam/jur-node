@@ -1,5 +1,5 @@
 use crate as pallet_community;
-use crate::{Category, CommunityMetaData, CommunityType};
+use crate::{Category, CommunityMetaData, CommunityType, Customs};
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
@@ -68,6 +68,7 @@ impl pallet_community::Config for Test {
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
+	type CustomLimit = ConstU32<250>;
 }
 
 impl pallet_whitelist::Config for Test {
@@ -98,13 +99,14 @@ pub fn setup_blocks(blocks: u64) {
 	}
 }
 
-pub fn get_metadata() -> CommunityMetaData<u64> {
+pub fn get_metadata() -> CommunityMetaData<ConstU32<250>> {
+	let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
+		.into();
+	let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
 	let community_metadata = CommunityMetaData {
-		community_type: Some(CommunityType::Nation),
 		customs: Some(vec![
-			"in public transport young people should leave the seat to elderly or pregnant women"
-				.into(),
-			"name newborns with a name that starts with the letter A".into(),
+			Customs(custom_one.try_into().unwrap()),
+			Customs(custom_two.try_into().unwrap()),
 		]),
 		languages: Some(vec!["English".into(), "German".into()]),
 		norms: Some(vec![]),
@@ -139,6 +141,7 @@ pub fn create_community() {
 		Some("tag".into()),
 		Some("#222307".into()),
 		Some("#E76080".into()),
+		Some(CommunityType::Nation)
 	)
 	.unwrap();
 }

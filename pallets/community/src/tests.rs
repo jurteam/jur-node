@@ -1,9 +1,5 @@
 use crate::types::Category;
-use crate::{
-	mock::*,
-	types::{CommunityMetaData, CommunityType},
-	Communities, Error,
-};
+use crate::{mock::*, types::{CommunityMetaData, CommunityType}, Communities, Error, Customs};
 use frame_support::{assert_noop, assert_ok};
 
 #[test]
@@ -44,7 +40,8 @@ fn founder_with_more_communities_not_allowed() {
 			Category::Public,
 			Some("tag".into()),
 			Some("#222307".into()),
-			Some("#E76080".into())
+			Some("#E76080".into()),
+			Some(CommunityType::Nation)
 		),
 			Error::<Test>::TooManyCommunities
 		);
@@ -68,6 +65,7 @@ fn create_community_works_only_with_name() {
 			Some("tag".into()),
 			Some("#222307".into()),
 			Some("#E76080".into()),
+			Some(CommunityType::Nation)
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(1));
@@ -91,7 +89,8 @@ fn create_community_not_works_with_invalid_color() {
 				Category::Public,
 				Some("tag".into()),
 				Some("#invalid color".into()),
-				Some("#E76080".into())
+				Some("#E76080".into()),
+				Some(CommunityType::Nation)
 			),
 			Error::<Test>::BadColor
 		);
@@ -108,7 +107,8 @@ fn create_community_not_works_with_invalid_color() {
 				Category::Public,
 				Some("tag".into()),
 				Some("#E76080".into()),
-				Some("#invalid color".into())
+				Some("#invalid color".into()),
+				Some(CommunityType::Nation)
 			),
 			Error::<Test>::BadColor
 		);
@@ -227,13 +227,13 @@ fn update_metadata_works() {
 				.languages,
 			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
 		);
-
+		let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
+			.into();
+		let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
 		let community_metadata = CommunityMetaData {
-			community_type: Some(CommunityType::Nation),
 			customs: Some(vec![
-				"in public transport young people should leave the seat to elderly or pregnant women"
-					.into(),
-				"name newborns with a name that starts with the letter A".into(),
+				Customs(custom_one.try_into().unwrap()),
+				Customs(custom_two.try_into().unwrap()),
 			]),
 			languages: Some(vec!["Spanish".into(), "Swish".into()]),
 			norms: None,
