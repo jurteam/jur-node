@@ -48,6 +48,7 @@ std = [
 	"frame-system/std",
 	"primitives/std",
 	"sp-std/std",
+	"sp-runtime/std",
 	"pallet-community/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]
