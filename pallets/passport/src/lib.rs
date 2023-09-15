@@ -325,23 +325,19 @@ pub mod pallet {
 
 			// Ensuring the members should have the passport and dont have the same badge
 			ensure!(
-				members
+				!members
 					.iter()
-					.find(|member| <Passports<T>>::get(community_id, member).is_none())
-					.is_none(),
+					.any(|member| <Passports<T>>::get(community_id, member).is_none()),
 				Error::<T>::PassportNotAvailable
 			);
 
 			ensure!(
-				members
-					.iter()
-					.find(|member| {
-						<Passports<T>>::get(community_id, member)
-							.unwrap()
-							.badges
-							.contains(&name)
-					})
-					.is_none(),
+				!members.iter().any(|member| {
+					<Passports<T>>::get(community_id, member)
+						.unwrap()
+						.badges
+						.contains(&name)
+				}),
 				Error::<T>::BadgeAlreadyIssued
 			);
 
