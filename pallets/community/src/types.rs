@@ -6,24 +6,24 @@ use sp_std::{prelude::*, vec::Vec};
 use frame_support::pallet_prelude::{CloneNoBound, PartialEqNoBound, RuntimeDebugNoBound};
 
 pub type CommunityMetaDataFor<T> =
-	CommunityMetaData<<T as Config>::CustomLimit>;
+	CommunityMetaData<<T as Config>::StringLimit>;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-#[scale_info(skip_type_params(NameLimit, DescriptionLimit, TagLimit, ColorLimit, CustomLimit))]
+#[scale_info(skip_type_params(NameLimit, DescriptionLimit, TagLimit, ColorLimit, StringLimit))]
 pub struct Community<
 	AccountId,
 	NameLimit: Get<u32>,
 	DescriptionLimit: Get<u32>,
 	TagLimit: Get<u32>,
 	ColorLimit: Get<u32>,
-	CustomLimit: Get<u32>
+	StringLimit: Get<u32>
 > {
 	pub founder: AccountId,
 	pub logo: Option<Vec<u8>>,
 	pub name: BoundedVec<u8, NameLimit>,
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub members: Vec<AccountId>,
-	pub metadata: Option<CommunityMetaData<CustomLimit>>,
+	pub metadata: Option<CommunityMetaData<StringLimit>>,
 	pub reference_id: [u8; 16],
 	pub category: Category,
 	pub tag: BoundedVec<u8, TagLimit>,
@@ -34,20 +34,44 @@ pub struct Community<
 }
 
 #[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo, Default)]
-#[scale_info(skip_type_params(CustomLimit))]
-pub struct CommunityMetaData<CustomLimit: Get<u32>> {
-	pub customs: Option<Vec<Customs<CustomLimit>>>,
-	pub languages: Option<Vec<Vec<u8>>>,
-	pub norms: Option<Vec<Vec<u8>>>,
-	pub religions: Option<Vec<Vec<u8>>>,
-	pub territories: Option<Vec<Vec<u8>>>,
-	pub traditions: Option<Vec<Vec<u8>>>,
-	pub values: Option<Vec<Vec<u8>>>,
+#[scale_info(skip_type_params(StringLimit))]
+pub struct CommunityMetaData<StringLimit: Get<u32>> {
+	pub customs: Option<Vec<Customs<StringLimit>>>,
+	pub languages: Option<Vec<Languages<StringLimit>>>,
+	pub norms: Option<Vec<Norms<StringLimit>>>,
+	pub religions: Option<Vec<Religions<StringLimit>>>,
+	pub territories: Option<Vec<Territories<StringLimit>>>,
+	pub traditions: Option<Vec<Traditions<StringLimit>>>,
+	pub values: Option<Vec<Values<StringLimit>>>,
 }
 
 #[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
-#[scale_info(skip_type_params(CustomLimit))]
-pub struct Customs<CustomLimit: Get<u32>>(pub BoundedVec<u8, CustomLimit>);
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Customs<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
+
+#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Languages<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
+
+#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Norms<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
+
+#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Religions<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
+
+#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Territories<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
+
+#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Traditions<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
+
+#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(StringLimit))]
+pub struct Values<StringLimit: Get<u32>>(pub BoundedVec<u8, StringLimit>);
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 pub struct State<AccountId> {

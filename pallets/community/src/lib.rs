@@ -117,7 +117,7 @@ pub mod pallet {
 
 		/// The maximum length of custom.
 		#[pallet::constant]
-		type CustomLimit: Get<u32>;
+		type StringLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -136,7 +136,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::CommunityId,
-		Community<T::AccountId, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit, T::CustomLimit>,
+		Community<T::AccountId, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit, T::StringLimit>,
 	>;
 
 	/// The communities owned by a given account
@@ -201,8 +201,6 @@ pub mod pallet {
 		FounderNotExist,
 		/// Too Many Communities
 		TooManyCommunities,
-		/// Invalid custom given.
-		BadCustom,
 	}
 
 	#[pallet::hooks]

@@ -60,30 +60,75 @@ pub mod v8 {
 					translated.saturating_inc();
 
 					let mut community_type: Option<CommunityType<T::AccountId>> = None;
-					let mut meta_data: Option<CommunityMetaData<T::CustomLimit>> = None;
+					let mut meta_data: Option<CommunityMetaData<T::StringLimit>> = None;
 					if let Some(meta) = old_value.metadata {
 						community_type = meta.community_type;
 
-						let mut customs: Option<Vec<Customs<T::CustomLimit>>> = None;
+						let mut customs: Option<Vec<Customs<T::StringLimit>>> = None;
+						let mut languages: Option<Vec<Languages<T::StringLimit>>> = None;
+						let mut norms: Option<Vec<Norms<T::StringLimit>>> = None;
+						let mut religions: Option<Vec<Religions<T::StringLimit>>> = None;
+						let mut territories: Option<Vec<Territories<T::StringLimit>>> = None;
+						let mut traditions: Option<Vec<Traditions<T::StringLimit>>> = None;
+						let mut values: Option<Vec<Values<T::StringLimit>>> = None;
 
 						if let Some(cus) = meta.customs {
-
 							customs = Some(cus.into_iter().map(|c| {
 								let new_custom = c.try_into().map_err(|_| "can't convert").unwrap();
-
 								Customs(new_custom)
-							}).collect::<Vec<Customs<T::CustomLimit>>>());
+							}).collect::<Vec<Customs<T::StringLimit>>>());
+						}
 
+						if let Some(old_value) = meta.languages {
+							languages = Some(old_value.into_iter().map(|c| {
+								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
+								Languages(new_value)
+							}).collect::<Vec<Languages<T::StringLimit>>>());
+						}
+
+						if let Some(old_value) = meta.norms {
+							norms = Some(old_value.into_iter().map(|c| {
+								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
+								Norms(new_value)
+							}).collect::<Vec<Norms<T::StringLimit>>>());
+						}
+
+						if let Some(old_value) = meta.religions {
+							religions = Some(old_value.into_iter().map(|c| {
+								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
+								Religions(new_value)
+							}).collect::<Vec<Religions<T::StringLimit>>>());
+						}
+
+						if let Some(old_value) = meta.territories {
+							territories = Some(old_value.into_iter().map(|c| {
+								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
+								Territories(new_value)
+							}).collect::<Vec<Territories<T::StringLimit>>>());
+						}
+
+						if let Some(old_value) = meta.traditions {
+							traditions = Some(old_value.into_iter().map(|c| {
+								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
+								Traditions(new_value)
+							}).collect::<Vec<Traditions<T::StringLimit>>>());
+						}
+
+						if let Some(old_value) = meta.values {
+							values = Some(old_value.into_iter().map(|c| {
+								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
+								Values(new_value)
+							}).collect::<Vec<Values<T::StringLimit>>>());
 						}
 
 						meta_data = Some(CommunityMetaData{
 							customs,
-							languages: meta.languages,
-							norms: meta.norms,
-							religions: meta.religions,
-							territories: meta.territories,
-							traditions: meta.traditions,
-							values: meta.values
+							languages,
+							norms,
+							religions,
+							territories,
+							traditions,
+							values
 						});
 					}
 

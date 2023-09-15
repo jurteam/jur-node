@@ -4,26 +4,50 @@ use crate::{mock::*, Choices, Error, Votes};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
-use pallet_community::types::{Category, CommunityMetaData, CommunityType, Customs};
+use pallet_community::types::{Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories, Traditions, Values};
 
 fn get_community_metadata() -> CommunityMetaData<ConstU32<250>> {
 	let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
 		.into();
 	let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
+
+	let languages_1: Vec<u8> = "English".into();
+	let languages_2: Vec<u8> = "German".into();
+
+	let religions_1: Vec<u8> = "Christianity".into();
+	let religions_2: Vec<u8> = "Buddhism".into();
+
+	let territories: Vec<u8> = "Mars".into();
+
+	let traditions_1: Vec<u8> = "Exchange gifts for Christmas".into();
+	let traditions_2: Vec<u8> = "Organize one charity event every 100 blocks".into();
+
+	let values_1: Vec<u8> = "Peace".into();
+	let values_2: Vec<u8> = "No gender discrimination".into();
+
 	let community_metadata = CommunityMetaData {
 		customs: Some(vec![
 			Customs(custom_one.try_into().unwrap()),
 			Customs(custom_two.try_into().unwrap()),
 		]),
-		languages: Some(vec!["English".into(), "German".into()]),
-		norms: Some(vec![]),
-		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
-		territories: Some(vec!["Mars".into()]),
-		traditions: Some(vec![
-			"Exchange gifts for Christmas".into(),
-			"Organize one charity event every 100 blocks".into(),
+		languages: Some(vec![
+			Languages(languages_1.try_into().unwrap()),
+			Languages(languages_2.try_into().unwrap())
 		]),
-		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
+		norms: Some(vec![]),
+		religions: Some(vec![
+			Religions(religions_1.try_into().unwrap()),
+			Religions(religions_2.try_into().unwrap())
+		]),
+		territories: Some(vec![Territories(territories.try_into().unwrap())]),
+		traditions: Some(vec![
+			Traditions(traditions_1.try_into().unwrap()),
+			Traditions(traditions_2.try_into().unwrap())
+		]),
+		values: Some(vec![
+			Values(values_1.try_into().unwrap()),
+			Values(values_2.try_into().unwrap())
+		]),
 	};
 
 	community_metadata
