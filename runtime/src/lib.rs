@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 110,
+	spec_version: 119,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -293,10 +293,10 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100 * DOLLARS;
-	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
+	pub const ApprovalDeposit: Balance = DOLLARS;
 	pub const StringLimit: u32 = 50;
 	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+	pub const MetadataDepositPerByte: Balance = DOLLARS;
 }
 
 impl pallet_assets::Config for Runtime {
@@ -338,7 +338,7 @@ impl pallet_sudo::Config for Runtime {
 parameter_types! {
 	pub Prefix: &'static [u8] = b"My JUR address is ";
 	pub const NativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
-	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("D77229999a1ca62b5bfb2735BaC12069b3794c44"));
+	pub const EthAddress: EthereumAddress = EthereumAddress(hex!("37abc97DD3dA0b81fe635e35Ea1655A15FfF4d76"));
 }
 
 /// Configure the pallet-token-swap in pallets/token-swap.
@@ -354,12 +354,12 @@ impl pallet_token_swap::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
+	pub const LaunchPeriod: BlockNumber = 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
 	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
+	pub const EnactmentPeriod: BlockNumber = 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
@@ -432,6 +432,8 @@ impl pallet_proposal::Config for Runtime {
 impl pallet_passport::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PassportId = PassportId;
+	type BadgeNameLimit = ConstU32<20>;
+	type DescriptionLimit = ConstU32<250>;
 	type AddressLimit = ConstU32<60>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
@@ -487,13 +489,13 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 			}
 
 			Author::on_unbalanced(fee_split.0);
-			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+			<Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
 				&burn_fee_account,
-				fee_split.1.into(),
+				fee_split.1,
 			);
-			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+			<Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
 				&society_reward_account,
-				pool_split.0.into(),
+				pool_split.0,
 			);
 			Treasury::on_unbalanced(pool_split.1);
 		}
@@ -530,9 +532,9 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSlash = ();
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ConstU128<{ 1 * DOLLARS }>;
+	type ProposalBondMinimum = ConstU128<{ DOLLARS }>;
 	type ProposalBondMaximum = ();
-	type SpendPeriod = ConstU32<{ 1 * DAYS }>;
+	type SpendPeriod = ConstU32<{ DAYS }>;
 	type Burn = Burn;
 	type BurnDestination = ();
 	type SpendFunds = ();

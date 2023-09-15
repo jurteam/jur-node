@@ -1,4 +1,4 @@
-use crate::{mock::*, Error, Passports};
+use crate::{mock::*, types::BadgesType, Error, Passports};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
@@ -211,6 +211,341 @@ fn update_passport_not_works_for_unminted_passport() {
 		assert_noop!(
 			Passport::update_passport(RuntimeOrigin::signed(1), 1, bounded_passport_address),
 			Error::<Test>::PassportNotAvailable
+		);
+	});
+}
+
+#[test]
+fn add_badge() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name,
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+	});
+}
+
+#[test]
+fn add_badge_not_work_for_invalid_community() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_noop!(
+			Passport::add_badge(
+				RuntimeOrigin::signed(1),
+				2,
+				bounded_badge_name,
+				BadgesType::Participation,
+				bounded_badge_description,
+				bounded_badge_address
+			),
+			Error::<Test>::CommunityDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn add_badge_not_work_for_invalid_founder() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_noop!(
+			Passport::add_badge(
+				RuntimeOrigin::signed(2),
+				1,
+				bounded_badge_name,
+				BadgesType::Participation,
+				bounded_badge_description,
+				bounded_badge_address
+			),
+			Error::<Test>::NotAllowed
+		);
+	});
+}
+
+#[test]
+fn add_badge_not_work_for_badge_already_exist() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description.clone(),
+			bounded_badge_address.clone()
+		));
+
+		assert_noop!(
+			Passport::add_badge(
+				RuntimeOrigin::signed(1),
+				1,
+				bounded_badge_name,
+				BadgesType::Participation,
+				bounded_badge_description,
+				bounded_badge_address
+			),
+			Error::<Test>::BadgeAlreadyExist
+		);
+	});
+}
+
+#[test]
+fn issue_badge() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		assert_ok!(Passport::issue_badge(RuntimeOrigin::signed(1), 1, bounded_badge_name, vec![2]));
+	});
+}
+
+#[test]
+fn issue_badge_not_work_invalid_community() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		assert_noop!(
+			Passport::issue_badge(RuntimeOrigin::signed(1), 2, bounded_badge_name, vec![2]),
+			Error::<Test>::CommunityDoesNotExist
+		);
+	});
+}
+
+#[test]
+fn issue_badge_not_work_invalid_founder() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		assert_noop!(
+			Passport::issue_badge(RuntimeOrigin::signed(2), 1, bounded_badge_name, vec![2]),
+			Error::<Test>::NotAllowed
+		);
+	});
+}
+
+#[test]
+fn issue_badge_not_work_invalid_badge_name() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		let badge_name: Vec<u8> = "JUR Meet".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		assert_noop!(
+			Passport::issue_badge(RuntimeOrigin::signed(1), 1, bounded_badge_name, vec![2]),
+			Error::<Test>::BadgeNotAvailable
+		);
+	});
+}
+
+#[test]
+fn issue_badge_not_work_invalid_community_member() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		assert_noop!(
+			Passport::issue_badge(RuntimeOrigin::signed(1), 1, bounded_badge_name, vec![4]),
+			Error::<Test>::PassportNotAvailable
+		);
+	});
+}
+
+#[test]
+fn issue_badge_not_work_badge_already_issued() {
+	new_test_ext().execute_with(|| {
+		mint_passport();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, ConstU32<60>> = badge_address.try_into().unwrap();
+
+		assert_ok!(Passport::add_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address
+		));
+
+		assert_ok!(Passport::issue_badge(
+			RuntimeOrigin::signed(1),
+			1,
+			bounded_badge_name.clone(),
+			vec![2]
+		));
+
+		assert_noop!(
+			Passport::issue_badge(RuntimeOrigin::signed(1), 1, bounded_badge_name, vec![2]),
+			Error::<Test>::BadgeAlreadyIssued
 		);
 	});
 }
