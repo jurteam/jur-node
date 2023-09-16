@@ -33,7 +33,7 @@ jobs:
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         grep SCCACHE_GHA_ENABLED ~/.cargo/env || echo 'export SCCACHE_GHA_ENABLED=true' >>~/.cargo/env
         grep RUSTC_WRAPPER ~/.cargo/env || echo 'export RUSTC_WRAPPER=sccache' >>~/.cargo/env
-        source ~/.cargoenv
+        source ~/.cargo/env
         cargo install sccache
         rustup default stable
         rustup update nightly
