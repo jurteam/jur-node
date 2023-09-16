@@ -49,6 +49,12 @@ jobs:
     - name: Install protoc
       uses: arduino/setup-protoc@v2
     - uses: actions/checkout@v4
+    - uses: actions/cache/restore@v3
+      with:
+        key: ${{ runner.os }}-toolchain-${{ hashFiles('**/rust-toolchain.toml') }}
+        path: |
+          ~/.cargo/
+          ~/.rustup/
     - name: cache dependencies
       id: cache-cargo
       uses: actions/cache@v3
