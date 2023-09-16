@@ -31,15 +31,15 @@ jobs:
       if: steps.cache-rustup.outputs.cache-hit != 'true'
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        grep SCCACHE_GHA_ENABLED ~/.cargo/env || echo 'export SCCACHE_GHA_ENABLED=true' >>~/.cargo/env
-        grep RUSTC_WRAPPER ~/.cargo/env || echo 'export RUSTC_WRAPPER=sccache' >>~/.cargo/env
         source ~/.cargo/env
-        cargo install sccache
         rustup default stable
         rustup update nightly
         rustup update stable
         rustup toolchain install nightly
         rustup target add wasm32-unknown-unknown --toolchain nightly
+        grep SCCACHE_GHA_ENABLED ~/.cargo/env || echo 'export SCCACHE_GHA_ENABLED=true' >>~/.cargo/env
+        grep RUSTC_WRAPPER ~/.cargo/env || echo 'export RUSTC_WRAPPER=sccache' >>~/.cargo/env
+        cargo install sccache
 
   build-deps:
     runs-on: ubuntu-latest
