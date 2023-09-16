@@ -1,5 +1,9 @@
 use crate::types::Category;
-use crate::{mock::*, types::{CommunityMetaData, CommunityType}, Communities, Error, Customs, Languages, Religions, Traditions, Values};
+use crate::{
+	mock::*,
+	types::{CommunityMetaData, CommunityType},
+	Communities, Customs, Error, Languages, Religions, Traditions, Values,
+};
 use frame_support::{assert_noop, assert_ok};
 
 #[test]
@@ -65,7 +69,7 @@ fn create_community_works_only_with_name() {
 			Some("tag".into()),
 			Some("#222307".into()),
 			Some("#E76080".into()),
-			Some(CommunityType::Nation)
+			Some(CommunityType::Nation),
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(1));
@@ -231,8 +235,9 @@ fn update_metadata_works() {
 			])
 		);
 
-		let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
-			.into();
+		let custom_one: Vec<u8> =
+			"in public transport young people should leave the seat to elderly or pregnant women"
+				.into();
 		let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
 
 		let languages_1: Vec<u8> = "Spanish".into();
@@ -254,24 +259,23 @@ fn update_metadata_works() {
 			]),
 			languages: Some(vec![
 				Languages(languages_1.try_into().unwrap()),
-				Languages(languages_2.try_into().unwrap())
+				Languages(languages_2.try_into().unwrap()),
 			]),
 			norms: Some(vec![]),
 			religions: Some(vec![
 				Religions(religions_1.try_into().unwrap()),
-				Religions(religions_2.try_into().unwrap())
+				Religions(religions_2.try_into().unwrap()),
 			]),
 			territories: Some(vec![]),
 			traditions: Some(vec![
 				Traditions(traditions_1.try_into().unwrap()),
-				Traditions(traditions_2.try_into().unwrap())
+				Traditions(traditions_2.try_into().unwrap()),
 			]),
 			values: Some(vec![
 				Values(values_1.try_into().unwrap()),
-				Values(values_2.try_into().unwrap())
+				Values(values_2.try_into().unwrap()),
 			]),
 		};
-
 
 		assert_ok!(Community::update_metadata(RuntimeOrigin::signed(1), 1, community_metadata));
 
@@ -286,7 +290,6 @@ fn update_metadata_works() {
 				Languages("Swish".as_bytes().to_vec().try_into().unwrap())
 			])
 		);
-
 	});
 }
 

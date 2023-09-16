@@ -1,12 +1,11 @@
 use super::*;
 use codec::{Decode, Encode};
+use frame_support::pallet_prelude::{CloneNoBound, PartialEqNoBound, RuntimeDebugNoBound};
 use frame_support::{pallet_prelude::Get, BoundedVec};
 use scale_info::TypeInfo;
 use sp_std::{prelude::*, vec::Vec};
-use frame_support::pallet_prelude::{CloneNoBound, PartialEqNoBound, RuntimeDebugNoBound};
 
-pub type CommunityMetaDataFor<T> =
-	CommunityMetaData<<T as Config>::StringLimit>;
+pub type CommunityMetaDataFor<T> = CommunityMetaData<<T as Config>::StringLimit>;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 #[scale_info(skip_type_params(NameLimit, DescriptionLimit, TagLimit, ColorLimit, StringLimit))]
@@ -16,7 +15,7 @@ pub struct Community<
 	DescriptionLimit: Get<u32>,
 	TagLimit: Get<u32>,
 	ColorLimit: Get<u32>,
-	StringLimit: Get<u32>
+	StringLimit: Get<u32>,
 > {
 	pub founder: AccountId,
 	pub logo: Option<Vec<u8>>,
@@ -30,10 +29,11 @@ pub struct Community<
 	pub primary_color: BoundedVec<u8, ColorLimit>,
 	pub secondary_color: BoundedVec<u8, ColorLimit>,
 	pub community_type: Option<CommunityType<AccountId>>,
-
 }
 
-#[derive(PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo, Default)]
+#[derive(
+	PartialEqNoBound, Eq, CloneNoBound, Encode, Decode, RuntimeDebugNoBound, TypeInfo, Default,
+)]
 #[scale_info(skip_type_params(StringLimit))]
 pub struct CommunityMetaData<StringLimit: Get<u32>> {
 	pub customs: Option<Vec<Customs<StringLimit>>>,

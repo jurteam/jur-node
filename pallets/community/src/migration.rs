@@ -73,62 +73,103 @@ pub mod v8 {
 						let mut values: Option<Vec<Values<T::StringLimit>>> = None;
 
 						if let Some(cus) = meta.customs {
-							customs = Some(cus.into_iter().map(|c| {
-								let new_custom = c.try_into().map_err(|_| "can't convert").unwrap();
-								Customs(new_custom)
-							}).collect::<Vec<Customs<T::StringLimit>>>());
+							customs = Some(
+								cus.into_iter()
+									.map(|c| {
+										let new_custom =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Customs(new_custom)
+									})
+									.collect::<Vec<Customs<T::StringLimit>>>(),
+							);
 						}
 
 						if let Some(old_value) = meta.languages {
-							languages = Some(old_value.into_iter().map(|c| {
-								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
-								Languages(new_value)
-							}).collect::<Vec<Languages<T::StringLimit>>>());
+							languages = Some(
+								old_value
+									.into_iter()
+									.map(|c| {
+										let new_value =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Languages(new_value)
+									})
+									.collect::<Vec<Languages<T::StringLimit>>>(),
+							);
 						}
 
 						if let Some(old_value) = meta.norms {
-							norms = Some(old_value.into_iter().map(|c| {
-								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
-								Norms(new_value)
-							}).collect::<Vec<Norms<T::StringLimit>>>());
+							norms = Some(
+								old_value
+									.into_iter()
+									.map(|c| {
+										let new_value =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Norms(new_value)
+									})
+									.collect::<Vec<Norms<T::StringLimit>>>(),
+							);
 						}
 
 						if let Some(old_value) = meta.religions {
-							religions = Some(old_value.into_iter().map(|c| {
-								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
-								Religions(new_value)
-							}).collect::<Vec<Religions<T::StringLimit>>>());
+							religions = Some(
+								old_value
+									.into_iter()
+									.map(|c| {
+										let new_value =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Religions(new_value)
+									})
+									.collect::<Vec<Religions<T::StringLimit>>>(),
+							);
 						}
 
 						if let Some(old_value) = meta.territories {
-							territories = Some(old_value.into_iter().map(|c| {
-								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
-								Territories(new_value)
-							}).collect::<Vec<Territories<T::StringLimit>>>());
+							territories = Some(
+								old_value
+									.into_iter()
+									.map(|c| {
+										let new_value =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Territories(new_value)
+									})
+									.collect::<Vec<Territories<T::StringLimit>>>(),
+							);
 						}
 
 						if let Some(old_value) = meta.traditions {
-							traditions = Some(old_value.into_iter().map(|c| {
-								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
-								Traditions(new_value)
-							}).collect::<Vec<Traditions<T::StringLimit>>>());
+							traditions = Some(
+								old_value
+									.into_iter()
+									.map(|c| {
+										let new_value =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Traditions(new_value)
+									})
+									.collect::<Vec<Traditions<T::StringLimit>>>(),
+							);
 						}
 
 						if let Some(old_value) = meta.values {
-							values = Some(old_value.into_iter().map(|c| {
-								let new_value = c.try_into().map_err(|_| "can't convert").unwrap();
-								Values(new_value)
-							}).collect::<Vec<Values<T::StringLimit>>>());
+							values = Some(
+								old_value
+									.into_iter()
+									.map(|c| {
+										let new_value =
+											c.try_into().map_err(|_| "can't convert").unwrap();
+										Values(new_value)
+									})
+									.collect::<Vec<Values<T::StringLimit>>>(),
+							);
 						}
 
-						meta_data = Some(CommunityMetaData{
+						meta_data = Some(CommunityMetaData {
 							customs,
 							languages,
 							norms,
 							religions,
 							territories,
 							traditions,
-							values
+							values,
 						});
 					}
 
@@ -144,7 +185,7 @@ pub mod v8 {
 						tag: old_value.tag,
 						primary_color: old_value.primary_color,
 						secondary_color: old_value.secondary_color,
-						community_type
+						community_type,
 					})
 				});
 				current_version.put::<Pallet<T>>();

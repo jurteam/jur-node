@@ -15,8 +15,9 @@ fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
 }
 
 fn get_metadata<T: Config>() -> CommunityMetaData<T::StringLimit> {
-	let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
-		.into();
+	let custom_one: Vec<u8> =
+		"in public transport young people should leave the seat to elderly or pregnant women"
+			.into();
 	let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
 
 	let languages_1: Vec<u8> = "English".into();
@@ -40,21 +41,21 @@ fn get_metadata<T: Config>() -> CommunityMetaData<T::StringLimit> {
 		]),
 		languages: Some(vec![
 			Languages(languages_1.try_into().unwrap()),
-			Languages(languages_2.try_into().unwrap())
+			Languages(languages_2.try_into().unwrap()),
 		]),
 		norms: Some(vec![]),
 		religions: Some(vec![
 			Religions(religions_1.try_into().unwrap()),
-			Religions(religions_2.try_into().unwrap())
+			Religions(religions_2.try_into().unwrap()),
 		]),
 		territories: Some(vec![Territories(territories.try_into().unwrap())]),
 		traditions: Some(vec![
 			Traditions(traditions_1.try_into().unwrap()),
-			Traditions(traditions_2.try_into().unwrap())
+			Traditions(traditions_2.try_into().unwrap()),
 		]),
 		values: Some(vec![
 			Values(values_1.try_into().unwrap()),
-			Values(values_2.try_into().unwrap())
+			Values(values_2.try_into().unwrap()),
 		]),
 	}
 }
@@ -100,7 +101,7 @@ benchmarks! {
 			Some("tag".into()),
 			Some("#222307".into()),
 			Some("#E76080".into()),
-            Some(CommunityType::Nation)
+			Some(CommunityType::Nation)
 		).unwrap();
 
 		let logo = "abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq";
@@ -131,7 +132,7 @@ benchmarks! {
 			Some("tag".into()),
 			Some("#222307".into()),
 			Some("#E76080".into()),
-            Some(CommunityType::Nation)
+			Some(CommunityType::Nation)
 		).unwrap();
 
 		let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
@@ -233,7 +234,7 @@ benchmarks! {
 		Some("tag".into()),
 		Some("#222307".into()),
 		Some("#E76080".into()),
-        Some(CommunityType::Nation)
+		Some(CommunityType::Nation)
 	).unwrap();
 
 		let member: T::AccountId = account("sub", 2, SEED);
@@ -263,7 +264,7 @@ benchmarks! {
 		Some("tag".into()),
 		Some("#222307".into()),
 		Some("#E76080".into()),
-        Some(CommunityType::Nation)
+		Some(CommunityType::Nation)
 	).unwrap();
 
 	}: _(

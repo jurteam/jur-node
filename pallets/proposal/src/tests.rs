@@ -4,11 +4,15 @@ use crate::{mock::*, Choices, Error, Votes};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
-use pallet_community::types::{Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories, Traditions, Values};
+use pallet_community::types::{
+	Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories,
+	Traditions, Values,
+};
 
 fn get_community_metadata() -> CommunityMetaData<ConstU32<250>> {
-	let custom_one: Vec<u8> = "in public transport young people should leave the seat to elderly or pregnant women"
-		.into();
+	let custom_one: Vec<u8> =
+		"in public transport young people should leave the seat to elderly or pregnant women"
+			.into();
 	let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
 
 	let languages_1: Vec<u8> = "English".into();
@@ -32,21 +36,21 @@ fn get_community_metadata() -> CommunityMetaData<ConstU32<250>> {
 		]),
 		languages: Some(vec![
 			Languages(languages_1.try_into().unwrap()),
-			Languages(languages_2.try_into().unwrap())
+			Languages(languages_2.try_into().unwrap()),
 		]),
 		norms: Some(vec![]),
 		religions: Some(vec![
 			Religions(religions_1.try_into().unwrap()),
-			Religions(religions_2.try_into().unwrap())
+			Religions(religions_2.try_into().unwrap()),
 		]),
 		territories: Some(vec![Territories(territories.try_into().unwrap())]),
 		traditions: Some(vec![
 			Traditions(traditions_1.try_into().unwrap()),
-			Traditions(traditions_2.try_into().unwrap())
+			Traditions(traditions_2.try_into().unwrap()),
 		]),
 		values: Some(vec![
 			Values(values_1.try_into().unwrap()),
-			Values(values_2.try_into().unwrap())
+			Values(values_2.try_into().unwrap()),
 		]),
 	};
 
