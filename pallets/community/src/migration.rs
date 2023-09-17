@@ -173,9 +173,16 @@ pub mod v8 {
 						});
 					}
 
+					let bounded_logo: BoundedVec<u8, T::LogoLimit> =
+						if let Some(logo) = old_value.logo {
+							logo.try_into().map_err(|_| "can't convert").unwrap()
+						} else {
+							Default::default()
+						};
+
 					Some(Community {
 						founder: old_value.founder,
-						logo: old_value.logo,
+						logo: bounded_logo,
 						name: old_value.name,
 						description: old_value.description,
 						members: old_value.members,

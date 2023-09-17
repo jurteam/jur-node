@@ -8,7 +8,14 @@ use sp_std::{prelude::*, vec::Vec};
 pub type CommunityMetaDataFor<T> = CommunityMetaData<<T as Config>::StringLimit>;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
-#[scale_info(skip_type_params(NameLimit, DescriptionLimit, TagLimit, ColorLimit, StringLimit))]
+#[scale_info(skip_type_params(
+	NameLimit,
+	DescriptionLimit,
+	TagLimit,
+	ColorLimit,
+	StringLimit,
+	LogoLimit
+))]
 pub struct Community<
 	AccountId,
 	NameLimit: Get<u32>,
@@ -16,9 +23,10 @@ pub struct Community<
 	TagLimit: Get<u32>,
 	ColorLimit: Get<u32>,
 	StringLimit: Get<u32>,
+	LogoLimit: Get<u32>,
 > {
 	pub founder: AccountId,
-	pub logo: Option<Vec<u8>>,
+	pub logo: BoundedVec<u8, LogoLimit>,
 	pub name: BoundedVec<u8, NameLimit>,
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub members: Vec<AccountId>,

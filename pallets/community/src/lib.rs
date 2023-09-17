@@ -118,6 +118,10 @@ pub mod pallet {
 		/// The maximum length of custom.
 		#[pallet::constant]
 		type StringLimit: Get<u32>;
+
+		/// The maximum length of logo.
+		#[pallet::constant]
+		type LogoLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -143,6 +147,7 @@ pub mod pallet {
 			T::TagLimit,
 			T::ColorLimit,
 			T::StringLimit,
+			T::LogoLimit,
 		>,
 	>;
 
@@ -208,6 +213,8 @@ pub mod pallet {
 		FounderNotExist,
 		/// Too Many Communities
 		TooManyCommunities,
+		/// Invalid logo given.
+		BadLogo,
 	}
 
 	#[pallet::hooks]
@@ -306,7 +313,13 @@ pub mod pallet {
 
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
 
-				community.logo = logo;
+				let bounded_logo: BoundedVec<u8, T::LogoLimit> = if let Some(l) = logo {
+					l.try_into().map_err(|_| Error::<T>::BadLogo)?
+				} else {
+					Default::default()
+				};
+
+				community.logo = bounded_logo;
 				community.description = bounded_description;
 
 				Self::deposit_event(Event::UpdatedCommunity(community_id));
@@ -578,7 +591,7 @@ impl<T: Config> Pallet<T> {
 	pub fn do_create_community(
 		community_id: T::CommunityId,
 		founder: T::AccountId,
-		logo: Option<Vec<u8>>,
+		maybe_logo: Option<Vec<u8>>,
 		name: Vec<u8>,
 		maybe_description: Option<Vec<u8>>,
 		maybe_members: Option<Vec<T::AccountId>>,
@@ -619,6 +632,12 @@ impl<T: Config> Pallet<T> {
 				Default::default()
 			};
 
+		let bounded_logo: BoundedVec<u8, T::LogoLimit> = if let Some(logo) = maybe_logo {
+			logo.try_into().map_err(|_| Error::<T>::BadLogo)?
+		} else {
+			Default::default()
+		};
+
 		let members = if let Some(members) = maybe_members { members } else { Vec::new() };
 
 		// Random value.
@@ -632,7 +651,7 @@ impl<T: Config> Pallet<T> {
 
 		let community = Community {
 			founder: founder.clone(),
-			logo,
+			logo: bounded_logo,
 			name: bounded_name,
 			description: bounded_description,
 			members,

@@ -158,7 +158,7 @@ fn update_community_works() {
 		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(1).unwrap().logo.unwrap(),
+			Communities::<Test>::get(1).unwrap().logo.to_vec(),
 			"bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq"
 				.as_bytes()
 				.to_vec()
@@ -174,7 +174,7 @@ fn update_community_works() {
 			Some(description.into())
 		));
 
-		assert_eq!(Communities::<Test>::get(1).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(1).unwrap().logo.to_vec(), logo.as_bytes().to_vec());
 	});
 }
 

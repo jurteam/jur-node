@@ -414,6 +414,7 @@ impl pallet_community::Config for Runtime {
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
 	type StringLimit = ConstU32<1024>;
+	type LogoLimit = ConstU32<60>;
 }
 
 impl pallet_proposal::Config for Runtime {
