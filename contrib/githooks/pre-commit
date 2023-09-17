@@ -1,0 +1,28 @@
+#!/bin/bash
+
+f_echo_stderr() {
+  echo $@ >&2
+}
+
+f_exit_success() {
+  [ x"$@" != "x" ] && f_echo_stderr $@ || exit 0
+}
+trap f_exit_success EXIT
+
+
+case "${JUR_NODE_GIT_PRECOMMIT}" in
+  0|no|false|off) exit 0 ;;
+  *) : ;;
+esac
+
+# if [ "$(git diff --cached --name-only -- '*.rs')" = "" ]; then
+#   f_echo_stderr "No changes to source files are staged, exiting."
+#   exit 0
+# fi
+
+cargo fmt -- --check
+
+[[ "${JUR_NODE_GIT_PRECOMMIT_FEATS}" =~ "clippy" ]] && \
+  cargo clippy --version &>/dev/null && cargo clippy
+
+exit 0

@@ -67,11 +67,7 @@ substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/pa
 [features]
 default = []
 # Dependencies that are only required if runtime benchmarking should be build.
-runtime-benchmarks = [
-    "jur-node-runtime/runtime-benchmarks",
-    "frame-benchmarking/runtime-benchmarks",
-    "frame-benchmarking-cli/runtime-benchmarks",
-]
+runtime-benchmarks = ["jur-node-runtime/runtime-benchmarks", "frame-benchmarking/runtime-benchmarks", "frame-benchmarking-cli/runtime-benchmarks"]
 # Enable features that allow the runtime to be tried and debugged. Name might be subject to change
 # in the near future.
 try-runtime = ["jur-node-runtime/try-runtime", "try-runtime-cli/try-runtime"]
