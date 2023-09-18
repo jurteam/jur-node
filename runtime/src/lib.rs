@@ -612,7 +612,10 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v8::MigrateToV8<Runtime>;
+type Migrations = (
+	pallet_passport::migration::v1::MigrateToV1<Runtime>,
+	pallet_community::migration::v8::MigrateToV8<Runtime>,
+);
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
