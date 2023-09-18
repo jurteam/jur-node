@@ -198,7 +198,7 @@ pub mod v8 {
 				current_version.put::<Pallet<T>>();
 				log::info!(
 					target: LOG_TARGET,
-					"Upgraded {} pools, storage to version {:?}",
+					"Community Upgraded {} pools, storage to version {:?}",
 					translated,
 					current_version
 				);
@@ -206,7 +206,7 @@ pub mod v8 {
 			} else {
 				log::info!(
 					target: LOG_TARGET,
-					"Migration did not execute. This probably should be removed"
+					"Community Migration did not execute. This probably should be removed"
 				);
 				T::DbWeight::get().reads(1)
 			}
