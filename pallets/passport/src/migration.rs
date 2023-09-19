@@ -37,7 +37,7 @@ pub mod v1 {
 				current_version.put::<Pallet<T>>();
 				log::info!(
 					target: LOG_TARGET,
-					"Upgraded {} pools, storage to version {:?}",
+					"Passport Upgraded {} pools, storage to version {:?}",
 					translated,
 					current_version
 				);
@@ -45,7 +45,7 @@ pub mod v1 {
 			} else {
 				log::info!(
 					target: LOG_TARGET,
-					"Migration did not execute. This probably should be removed"
+					"Passport Migration did not execute. This probably should be removed"
 				);
 				T::DbWeight::get().reads(1)
 			}
