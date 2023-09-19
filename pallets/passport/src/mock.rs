@@ -69,6 +69,8 @@ impl pallet_community::Config for Test {
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
+	type StringLimit = ConstU32<250>;
+	type LogoLimit = ConstU32<60>;
 }
 
 impl pallet_whitelist::Config for Test {

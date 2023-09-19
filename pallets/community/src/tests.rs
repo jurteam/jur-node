@@ -2,7 +2,7 @@ use crate::types::Category;
 use crate::{
 	mock::*,
 	types::{CommunityMetaData, CommunityType},
-	Communities, Error,
+	Communities, Customs, Error, Languages, Religions, Traditions, Values,
 };
 use frame_support::{assert_noop, assert_ok};
 
@@ -44,7 +44,8 @@ fn founder_with_more_communities_not_allowed() {
 			Category::Public,
 			Some("tag".into()),
 			Some("#222307".into()),
-			Some("#E76080".into())
+			Some("#E76080".into()),
+			Some(CommunityType::Nation)
 		),
 			Error::<Test>::TooManyCommunities
 		);
@@ -68,6 +69,7 @@ fn create_community_works_only_with_name() {
 			Some("tag".into()),
 			Some("#222307".into()),
 			Some("#E76080".into()),
+			Some(CommunityType::Nation),
 		)
 		.unwrap();
 		assert!(Communities::<Test>::contains_key(1));
@@ -91,7 +93,8 @@ fn create_community_not_works_with_invalid_color() {
 				Category::Public,
 				Some("tag".into()),
 				Some("#invalid color".into()),
-				Some("#E76080".into())
+				Some("#E76080".into()),
+				Some(CommunityType::Nation)
 			),
 			Error::<Test>::BadColor
 		);
@@ -108,7 +111,8 @@ fn create_community_not_works_with_invalid_color() {
 				Category::Public,
 				Some("tag".into()),
 				Some("#E76080".into()),
-				Some("#invalid color".into())
+				Some("#invalid color".into()),
+				Some(CommunityType::Nation)
 			),
 			Error::<Test>::BadColor
 		);
@@ -154,7 +158,7 @@ fn update_community_works() {
 		assert!(Communities::<Test>::contains_key(1));
 
 		assert_eq!(
-			Communities::<Test>::get(1).unwrap().logo.unwrap(),
+			Communities::<Test>::get(1).unwrap().logo.to_vec(),
 			"bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq"
 				.as_bytes()
 				.to_vec()
@@ -170,7 +174,7 @@ fn update_community_works() {
 			Some(description.into())
 		));
 
-		assert_eq!(Communities::<Test>::get(1).unwrap().logo.unwrap(), logo.as_bytes().to_vec());
+		assert_eq!(Communities::<Test>::get(1).unwrap().logo.to_vec(), logo.as_bytes().to_vec());
 	});
 }
 
@@ -225,25 +229,52 @@ fn update_metadata_works() {
 				.metadata
 				.unwrap()
 				.languages,
-			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
+			Some(vec![
+				Languages("English".as_bytes().to_vec().try_into().unwrap()),
+				Languages("German".as_bytes().to_vec().try_into().unwrap())
+			])
 		);
 
+		let custom_one: Vec<u8> =
+			"in public transport young people should leave the seat to elderly or pregnant women"
+				.into();
+		let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
+
+		let languages_1: Vec<u8> = "Spanish".into();
+		let languages_2: Vec<u8> = "Swish".into();
+
+		let religions_1: Vec<u8> = "Christianity".into();
+		let religions_2: Vec<u8> = "Buddhism".into();
+
+		let traditions_1: Vec<u8> = "Exchange gifts for Christmas".into();
+		let traditions_2: Vec<u8> = "Organize one charity event every 100 blocks".into();
+
+		let values_1: Vec<u8> = "Peace".into();
+		let values_2: Vec<u8> = "No gender discrimination".into();
+
 		let community_metadata = CommunityMetaData {
-			community_type: Some(CommunityType::Nation),
 			customs: Some(vec![
-				"in public transport young people should leave the seat to elderly or pregnant women"
-					.into(),
-				"name newborns with a name that starts with the letter A".into(),
+				Customs(custom_one.try_into().unwrap()),
+				Customs(custom_two.try_into().unwrap()),
 			]),
-			languages: Some(vec!["Spanish".into(), "Swish".into()]),
-			norms: None,
-			religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
-			territories: None,
+			languages: Some(vec![
+				Languages(languages_1.try_into().unwrap()),
+				Languages(languages_2.try_into().unwrap()),
+			]),
+			norms: Some(vec![]),
+			religions: Some(vec![
+				Religions(religions_1.try_into().unwrap()),
+				Religions(religions_2.try_into().unwrap()),
+			]),
+			territories: Some(vec![]),
 			traditions: Some(vec![
-				"Exchange gifts for Christmas".into(),
-				"Organize one charity event every 100 blocks".into(),
+				Traditions(traditions_1.try_into().unwrap()),
+				Traditions(traditions_2.try_into().unwrap()),
 			]),
-			values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
+			values: Some(vec![
+				Values(values_1.try_into().unwrap()),
+				Values(values_2.try_into().unwrap()),
+			]),
 		};
 
 		assert_ok!(Community::update_metadata(RuntimeOrigin::signed(1), 1, community_metadata));
@@ -254,19 +285,11 @@ fn update_metadata_works() {
 				.metadata
 				.unwrap()
 				.languages,
-			Some(vec!["Spanish".as_bytes().to_vec(), "Swish".as_bytes().to_vec()])
+			Some(vec![
+				Languages("Spanish".as_bytes().to_vec().try_into().unwrap()),
+				Languages("Swish".as_bytes().to_vec().try_into().unwrap())
+			])
 		);
-
-		assert_eq!(
-			Communities::<Test>::get(1)
-				.unwrap()
-				.metadata
-				.unwrap()
-				.territories,
-			None
-		);
-
-		assert_eq!(Communities::<Test>::get(1).unwrap().metadata.unwrap().norms, None);
 	});
 }
 
@@ -283,7 +306,10 @@ fn update_metadata_not_works_for_invalid_community_id() {
 				.metadata
 				.unwrap()
 				.languages,
-			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
+			Some(vec![
+				Languages("English".as_bytes().to_vec().try_into().unwrap()),
+				Languages("German".as_bytes().to_vec().try_into().unwrap())
+			])
 		);
 
 		assert_noop!(
@@ -306,7 +332,10 @@ fn update_metadata_not_works_for_invalid_caller() {
 				.metadata
 				.unwrap()
 				.languages,
-			Some(vec!["English".as_bytes().to_vec(), "German".as_bytes().to_vec()])
+			Some(vec![
+				Languages("English".as_bytes().to_vec().try_into().unwrap()),
+				Languages("German".as_bytes().to_vec().try_into().unwrap())
+			])
 		);
 
 		assert_noop!(
