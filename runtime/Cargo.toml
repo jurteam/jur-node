@@ -1,6 +1,6 @@
 [package]
 name = "jur-node-runtime"
-version = "2.1.2"
+version = "3.0.0"
 edition = "2021"
 license = "Unlicense"
 publish = false
