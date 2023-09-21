@@ -103,7 +103,45 @@ jur node.
 ### Multi-Node Jur Testnet
 
 ## Generate Keys
-Generate Aura and Grandpa session keys using this [tutorial](https://docs.substrate.io/tutorials/get-started/trusted-network/#generate-your-account-and-keys)
+
+The `jur-node key` command provides all the necessary features needed to manage handle key generation and persistence.
+For more detail about the various options and commands available, please refer to the command's help screen: `jur-node key --help`.
+
+The proof-of-authority consensus *Aura* requires an `sr25519` key. It could be generated as follows:
+
+```
+./target/release/jur-node key generate --scheme Sr25519 --password-interactive -w 24
+```
+
+The previous command would generate a similar output:
+
+```
+Key password:
+Secret phrase:       escape gift blossom cake produce human copper rain hope embark search solid youth cricket sort dad shed december winter involve dolphin click annual liar
+  Network ID:        substrate
+  Secret seed:       0x657ae6e1cac3c3f3bf7fc1387c5001fa4120c7bc0379a8a6f84694bba1ea16b7
+  Public key (hex):  0x8492c34ad3e619e056406188ca7f38c331db9866812b104c8656d1a15eb3b047
+  Account ID:        0x8492c34ad3e619e056406188ca7f38c331db9866812b104c8656d1a15eb3b047
+  Public key (SS58): 5F4XmwRwxjiKnGmM4zd6WYhUo1QRrQQo9nLcQVqg6W5WZoUt
+  SS58 Address:      5F4XmwRwxjiKnGmM4zd6WYhUo1QRrQQo9nLcQVqg6W5WZoUt
+```
+
+Note: **Store the secret phrase in a safe place.**
+
+Unlike *Aura*, *Grandpa* requires a *ed25519* key. One could either generate a brand new one with a command similar to the following one:
+
+```
+./target/release/jur-node key generate --scheme Ed25519 --password-interactive -w 24
+```
+
+Note: **Store the memorable phrase in a safe place.**
+
+Alternatively, one could reuse the *secret phrase* generated earlier and derive a new key using the *Ed25519* scheme.
+The following command does exactly that:
+
+```
+./target/release/jur-node key inspect --password-interactive --scheme Ed25519 "escape gift blossom cake produce human copper rain hope embark search solid youth cricket sort dad shed december winter involve dolphin click annual liar"
+```
 
 If validators are not part of chain_spec, follow `Add validators` section of this [tutorial](https://docs.substrate.io/tutorials/get-started/trusted-network/#create-a-custom-chain-specification)
 

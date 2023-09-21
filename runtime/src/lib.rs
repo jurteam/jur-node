@@ -120,7 +120,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 109,
+	spec_version: 110,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -293,10 +293,10 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100 * DOLLARS;
-	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
+	pub const ApprovalDeposit: Balance = DOLLARS;
 	pub const StringLimit: u32 = 50;
 	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+	pub const MetadataDepositPerByte: Balance = DOLLARS;
 }
 
 impl pallet_assets::Config for Runtime {
@@ -354,12 +354,12 @@ impl pallet_token_swap::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
+	pub const LaunchPeriod: BlockNumber = 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
 	pub const InstantAllowed: bool = true;
 	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 1 * 24 * 60 * MINUTES;
+	pub const EnactmentPeriod: BlockNumber = 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxVotes: u32 = 100;
 	pub const MaxProposals: u32 = 100;
@@ -413,6 +413,8 @@ impl pallet_community::Config for Runtime {
 	type TagLimit = ConstU32<40>;
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
+	type StringLimit = ConstU32<1024>;
+	type LogoLimit = ConstU32<60>;
 }
 
 impl pallet_proposal::Config for Runtime {
@@ -431,6 +433,8 @@ impl pallet_proposal::Config for Runtime {
 impl pallet_passport::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PassportId = PassportId;
+	type BadgeNameLimit = ConstU32<20>;
+	type DescriptionLimit = ConstU32<250>;
 	type AddressLimit = ConstU32<60>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
@@ -486,13 +490,13 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 			}
 
 			Author::on_unbalanced(fee_split.0);
-			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+			<Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
 				&burn_fee_account,
-				fee_split.1.into(),
+				fee_split.1,
 			);
-			let _ = <Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
+			<Runtime as pallet_token_swap::Config>::Balances::resolve_creating(
 				&society_reward_account,
-				pool_split.0.into(),
+				pool_split.0,
 			);
 			Treasury::on_unbalanced(pool_split.1);
 		}
@@ -529,9 +533,9 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type OnSlash = ();
 	type ProposalBond = ProposalBond;
-	type ProposalBondMinimum = ConstU128<{ 1 * DOLLARS }>;
+	type ProposalBondMinimum = ConstU128<{ DOLLARS }>;
 	type ProposalBondMaximum = ();
-	type SpendPeriod = ConstU32<{ 1 * DAYS }>;
+	type SpendPeriod = ConstU32<{ DAYS }>;
 	type Burn = Burn;
 	type BurnDestination = ();
 	type SpendFunds = ();
@@ -541,6 +545,13 @@ impl pallet_treasury::Config for Runtime {
 }
 
 impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
+
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -562,6 +573,7 @@ construct_runtime!(
 		Whitelist: pallet_whitelist,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
+		Utility: pallet_utility,
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
@@ -600,7 +612,10 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-pub type Migrations = pallet_community::migration::v7::MigrateToV7<Runtime>;
+type Migrations = (
+	pallet_passport::migration::v1::MigrateToV1<Runtime>,
+	pallet_community::migration::v8::MigrateToV8<Runtime>,
+);
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]

@@ -1,5 +1,8 @@
 use crate as pallet_community;
-use crate::{Category, CommunityMetaData, CommunityType};
+use crate::{
+	Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories,
+	Traditions, Values,
+};
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
@@ -68,6 +71,8 @@ impl pallet_community::Config for Test {
 	type TagLimit = ConstU32<50>;
 	type ColorLimit = ConstU32<7>;
 	type CommunityLimit = ConstU32<3>;
+	type StringLimit = ConstU32<250>;
+	type LogoLimit = ConstU32<60>;
 }
 
 impl pallet_whitelist::Config for Test {
@@ -98,23 +103,49 @@ pub fn setup_blocks(blocks: u64) {
 	}
 }
 
-pub fn get_metadata() -> CommunityMetaData<u64> {
+pub fn get_metadata() -> CommunityMetaData<ConstU32<250>> {
+	let custom_one: Vec<u8> =
+		"in public transport young people should leave the seat to elderly or pregnant women"
+			.into();
+	let custom_two: Vec<u8> = "name newborns with a name that starts with the letter A".into();
+
+	let languages_1: Vec<u8> = "English".into();
+	let languages_2: Vec<u8> = "German".into();
+
+	let religions_1: Vec<u8> = "Christianity".into();
+	let religions_2: Vec<u8> = "Buddhism".into();
+
+	let territories: Vec<u8> = "Mars".into();
+
+	let traditions_1: Vec<u8> = "Exchange gifts for Christmas".into();
+	let traditions_2: Vec<u8> = "Organize one charity event every 100 blocks".into();
+
+	let values_1: Vec<u8> = "Peace".into();
+	let values_2: Vec<u8> = "No gender discrimination".into();
+
 	let community_metadata = CommunityMetaData {
-		community_type: Some(CommunityType::Nation),
 		customs: Some(vec![
-			"in public transport young people should leave the seat to elderly or pregnant women"
-				.into(),
-			"name newborns with a name that starts with the letter A".into(),
+			Customs(custom_one.try_into().unwrap()),
+			Customs(custom_two.try_into().unwrap()),
 		]),
-		languages: Some(vec!["English".into(), "German".into()]),
+		languages: Some(vec![
+			Languages(languages_1.try_into().unwrap()),
+			Languages(languages_2.try_into().unwrap()),
+		]),
 		norms: Some(vec![]),
-		religions: Some(vec!["Christianity".into(), "Buddhism".into()]),
-		territories: Some(vec!["Mars".into()]),
-		traditions: Some(vec![
-			"Exchange gifts for Christmas".into(),
-			"Organize one charity event every 100 blocks".into(),
+		religions: Some(vec![
+			Religions(religions_1.try_into().unwrap()),
+			Religions(religions_2.try_into().unwrap()),
 		]),
-		values: Some(vec!["Peace".into(), "No gender discrimination".into()]),
+		territories: Some(vec![Territories(territories.try_into().unwrap())]),
+		traditions: Some(vec![
+			Traditions(traditions_1.try_into().unwrap()),
+			Traditions(traditions_2.try_into().unwrap()),
+		]),
+		values: Some(vec![
+			Values(values_1.try_into().unwrap()),
+			Values(values_2.try_into().unwrap()),
+		]),
 	};
 
 	community_metadata
@@ -139,6 +170,7 @@ pub fn create_community() {
 		Some("tag".into()),
 		Some("#222307".into()),
 		Some("#E76080".into()),
+		Some(CommunityType::Nation),
 	)
 	.unwrap();
 }

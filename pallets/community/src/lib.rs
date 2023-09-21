@@ -55,7 +55,7 @@ pub mod pallet {
 	use super::*;
 
 	/// The current storage version.
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(7);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(8);
 
 	#[cfg(feature = "runtime-benchmarks")]
 	pub trait BenchmarkHelper<CommunityId> {
@@ -114,6 +114,14 @@ pub mod pallet {
 		/// The number of community, allowed to create by a founder.
 		#[pallet::constant]
 		type CommunityLimit: Get<u32>;
+
+		/// The maximum length of custom.
+		#[pallet::constant]
+		type StringLimit: Get<u32>;
+
+		/// The maximum length of logo.
+		#[pallet::constant]
+		type LogoLimit: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -132,7 +140,15 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		T::CommunityId,
-		Community<T::AccountId, T::NameLimit, T::DescriptionLimit, T::TagLimit, T::ColorLimit>,
+		Community<
+			T::AccountId,
+			T::NameLimit,
+			T::DescriptionLimit,
+			T::TagLimit,
+			T::ColorLimit,
+			T::StringLimit,
+			T::LogoLimit,
+		>,
 	>;
 
 	/// The communities owned by a given account
@@ -197,6 +213,8 @@ pub mod pallet {
 		FounderNotExist,
 		/// Too Many Communities
 		TooManyCommunities,
+		/// Invalid logo given.
+		BadLogo,
 	}
 
 	#[pallet::hooks]
@@ -232,6 +250,7 @@ pub mod pallet {
 			tagline: Option<Vec<u8>>,
 			primary_color: Option<Vec<u8>>,
 			secondary_color: Option<Vec<u8>>,
+			community_type: Option<CommunityType<T::AccountId>>,
 		) -> DispatchResult {
 			let community_id =
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
@@ -255,6 +274,7 @@ pub mod pallet {
 				tagline,
 				primary_color,
 				secondary_color,
+				community_type,
 			)
 		}
 
@@ -293,7 +313,13 @@ pub mod pallet {
 
 				ensure!(founder == community.founder, Error::<T>::NoPermission);
 
-				community.logo = logo;
+				let bounded_logo: BoundedVec<u8, T::LogoLimit> = if let Some(l) = logo {
+					l.try_into().map_err(|_| Error::<T>::BadLogo)?
+				} else {
+					Default::default()
+				};
+
+				community.logo = bounded_logo;
 				community.description = bounded_description;
 
 				Self::deposit_event(Event::UpdatedCommunity(community_id));
@@ -565,7 +591,7 @@ impl<T: Config> Pallet<T> {
 	pub fn do_create_community(
 		community_id: T::CommunityId,
 		founder: T::AccountId,
-		logo: Option<Vec<u8>>,
+		maybe_logo: Option<Vec<u8>>,
 		name: Vec<u8>,
 		maybe_description: Option<Vec<u8>>,
 		maybe_members: Option<Vec<T::AccountId>>,
@@ -574,6 +600,7 @@ impl<T: Config> Pallet<T> {
 		maybe_tag: Option<Vec<u8>>,
 		maybe_primary_color: Option<Vec<u8>>,
 		maybe_secondary_color: Option<Vec<u8>>,
+		community_type: Option<CommunityType<T::AccountId>>,
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
@@ -605,6 +632,12 @@ impl<T: Config> Pallet<T> {
 				Default::default()
 			};
 
+		let bounded_logo: BoundedVec<u8, T::LogoLimit> = if let Some(logo) = maybe_logo {
+			logo.try_into().map_err(|_| Error::<T>::BadLogo)?
+		} else {
+			Default::default()
+		};
+
 		let members = if let Some(members) = maybe_members { members } else { Vec::new() };
 
 		// Random value.
@@ -618,7 +651,7 @@ impl<T: Config> Pallet<T> {
 
 		let community = Community {
 			founder: founder.clone(),
-			logo,
+			logo: bounded_logo,
 			name: bounded_name,
 			description: bounded_description,
 			members,
@@ -628,6 +661,7 @@ impl<T: Config> Pallet<T> {
 			tag: bounded_tag,
 			primary_color: bounded_primary_color,
 			secondary_color: bounded_secondary_color,
+			community_type,
 		};
 
 		<CommunityAccount<T>>::try_mutate(founder.clone(), |communities| -> DispatchResult {
