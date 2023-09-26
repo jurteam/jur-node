@@ -77,11 +77,10 @@ pub mod v8 {
 								cus.into_iter()
 									.map(|c| {
 										let new_custom =
-											c.clone().try_into().unwrap_or_else(|err| {
+											c.clone().try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert custom, reason: {:?}.",
-													err
+													"Failed to convert custom"
 												);
 												Default::default()
 											});
@@ -97,7 +96,13 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.try_into().unwrap_or_else(|_| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert language"
+												);
+												Default::default()
+											});
 										Languages(new_value)
 									})
 									.collect::<Vec<Languages<T::StringLimit>>>(),
@@ -110,7 +115,13 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.try_into().unwrap_or_else(|_| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert norms"
+												);
+												Default::default()
+											});
 										Norms(new_value)
 									})
 									.collect::<Vec<Norms<T::StringLimit>>>(),
@@ -123,7 +134,13 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.try_into().unwrap_or_else(|_| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert religions"
+												);
+												Default::default()
+											});
 										Religions(new_value)
 									})
 									.collect::<Vec<Religions<T::StringLimit>>>(),
@@ -136,7 +153,13 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.try_into().unwrap_or_else(|_| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert territories"
+												);
+												Default::default()
+											});
 										Territories(new_value)
 									})
 									.collect::<Vec<Territories<T::StringLimit>>>(),
@@ -149,7 +172,13 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.try_into().unwrap_or_else(|_| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert traditions"
+												);
+												Default::default()
+											});
 										Traditions(new_value)
 									})
 									.collect::<Vec<Traditions<T::StringLimit>>>(),
@@ -162,7 +191,13 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.try_into().unwrap_or_else(|_| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert values"
+												);
+												Default::default()
+											});
 										Values(new_value)
 									})
 									.collect::<Vec<Values<T::StringLimit>>>(),
@@ -182,7 +217,13 @@ pub mod v8 {
 
 					let bounded_logo: BoundedVec<u8, T::LogoLimit> =
 						if let Some(logo) = old_value.logo {
-							logo.try_into().map_err(|_| "can't convert").unwrap()
+							logo.try_into().unwrap_or_else(|_| {
+								log::error!(
+													target: LOG_TARGET,
+													"Failed to convert logo"
+												);
+								Default::default()
+							})
 						} else {
 							Default::default()
 						};
