@@ -80,8 +80,7 @@ pub mod v8 {
 											c.clone().try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert this custom {:?}, reason: {:?}.",
-													c,
+													"Failed to convert custom, reason: {:?}.",
 													err
 												);
 												Default::default()
