@@ -13,7 +13,7 @@ repository = "https://github.com/jurteam/jur-node/"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-parity-scale-codec = { version = "3.6.8", default-features = false, features = ["derive"] }
+parity-scale-codec = { default-features = false, features = ["derive"] }
 primitives = { package = 'jur-primitives', path = '../../primitives', default-features = false }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0"}

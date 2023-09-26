@@ -1,10 +1,12 @@
 use hex_literal::hex;
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, GrandpaConfig, RuntimeGenesisConfig, Signature,
+	AccountId, AuraConfig, BalancesConfig, Block, GrandpaConfig, RuntimeGenesisConfig, Signature,
 	SudoConfig, SystemConfig, WASM_BINARY,
 };
+use sc_chain_spec::ChainSpecExtension;
 use sc_service::ChainType;
 use sc_service::Properties;
+use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_core::crypto::UncheckedInto;
@@ -13,8 +15,23 @@ use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
 use std::str::FromStr;
 
+/// Node `ChainSpec` extensions.
+///
+/// Additional parameters for some Substrate core modules,
+/// customizable from the chain spec.
+#[derive(Default, Clone, Serialize, Deserialize, ChainSpecExtension)]
+#[serde(rename_all = "camelCase")]
+pub struct Extensions {
+	/// Block numbers with known hashes.
+	pub fork_blocks: sc_client_api::ForkBlocks<Block>,
+	/// Known bad block hashes.
+	pub bad_blocks: sc_client_api::BadBlocks<Block>,
+	/// The light sync state extension used by the sync-state rpc.
+	pub light_sync_state: sc_sync_state_rpc::LightSyncStateExtension,
+}
+
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
-pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig>;
+pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig, Extensions>;
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -97,7 +114,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Properties
 		None,
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
@@ -163,7 +180,7 @@ pub fn local_config() -> Result<ChainSpec, String> {
 		None,
 		Some(properties),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
@@ -229,7 +246,7 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 		None,
 		Some(properties),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
@@ -299,7 +316,7 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 		None,
 		Some(properties),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
