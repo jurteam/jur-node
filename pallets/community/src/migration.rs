@@ -77,7 +77,14 @@ pub mod v8 {
 								cus.into_iter()
 									.map(|c| {
 										let new_custom =
-											c.try_into().map_err(|_| "can't convert").unwrap();
+											c.clone().try_into().unwrap_or_else(|err| {
+												log::error!(
+													target: LOG_TARGET,
+													"Failed to convert custom, reason: {:?}.",
+													err
+												);
+												Default::default()
+											});
 										Customs(new_custom)
 									})
 									.collect::<Vec<Customs<T::StringLimit>>>(),
