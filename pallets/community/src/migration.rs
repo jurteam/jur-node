@@ -95,14 +95,13 @@ pub mod v8 {
 								old_value
 									.into_iter()
 									.map(|c| {
-										let new_value =
-											c.try_into().unwrap_or_else(|_| {
-												log::error!(
-													target: LOG_TARGET,
-													"Failed to convert language"
-												);
-												Default::default()
-											});
+										let new_value = c.try_into().unwrap_or_else(|_| {
+											log::error!(
+												target: LOG_TARGET,
+												"Failed to convert language"
+											);
+											Default::default()
+										});
 										Languages(new_value)
 									})
 									.collect::<Vec<Languages<T::StringLimit>>>(),
@@ -114,14 +113,13 @@ pub mod v8 {
 								old_value
 									.into_iter()
 									.map(|c| {
-										let new_value =
-											c.try_into().unwrap_or_else(|_| {
-												log::error!(
-													target: LOG_TARGET,
-													"Failed to convert norms"
-												);
-												Default::default()
-											});
+										let new_value = c.try_into().unwrap_or_else(|_| {
+											log::error!(
+												target: LOG_TARGET,
+												"Failed to convert norms"
+											);
+											Default::default()
+										});
 										Norms(new_value)
 									})
 									.collect::<Vec<Norms<T::StringLimit>>>(),
@@ -133,14 +131,13 @@ pub mod v8 {
 								old_value
 									.into_iter()
 									.map(|c| {
-										let new_value =
-											c.try_into().unwrap_or_else(|_| {
-												log::error!(
-													target: LOG_TARGET,
-													"Failed to convert religions"
-												);
-												Default::default()
-											});
+										let new_value = c.try_into().unwrap_or_else(|_| {
+											log::error!(
+												target: LOG_TARGET,
+												"Failed to convert religions"
+											);
+											Default::default()
+										});
 										Religions(new_value)
 									})
 									.collect::<Vec<Religions<T::StringLimit>>>(),
@@ -152,14 +149,13 @@ pub mod v8 {
 								old_value
 									.into_iter()
 									.map(|c| {
-										let new_value =
-											c.try_into().unwrap_or_else(|_| {
-												log::error!(
-													target: LOG_TARGET,
-													"Failed to convert territories"
-												);
-												Default::default()
-											});
+										let new_value = c.try_into().unwrap_or_else(|_| {
+											log::error!(
+												target: LOG_TARGET,
+												"Failed to convert territories"
+											);
+											Default::default()
+										});
 										Territories(new_value)
 									})
 									.collect::<Vec<Territories<T::StringLimit>>>(),
@@ -171,14 +167,13 @@ pub mod v8 {
 								old_value
 									.into_iter()
 									.map(|c| {
-										let new_value =
-											c.try_into().unwrap_or_else(|_| {
-												log::error!(
-													target: LOG_TARGET,
-													"Failed to convert traditions"
-												);
-												Default::default()
-											});
+										let new_value = c.try_into().unwrap_or_else(|_| {
+											log::error!(
+												target: LOG_TARGET,
+												"Failed to convert traditions"
+											);
+											Default::default()
+										});
 										Traditions(new_value)
 									})
 									.collect::<Vec<Traditions<T::StringLimit>>>(),
@@ -190,14 +185,13 @@ pub mod v8 {
 								old_value
 									.into_iter()
 									.map(|c| {
-										let new_value =
-											c.try_into().unwrap_or_else(|_| {
-												log::error!(
-													target: LOG_TARGET,
-													"Failed to convert values"
-												);
-												Default::default()
-											});
+										let new_value = c.try_into().unwrap_or_else(|_| {
+											log::error!(
+												target: LOG_TARGET,
+												"Failed to convert values"
+											);
+											Default::default()
+										});
 										Values(new_value)
 									})
 									.collect::<Vec<Values<T::StringLimit>>>(),
@@ -219,9 +213,9 @@ pub mod v8 {
 						if let Some(logo) = old_value.logo {
 							logo.try_into().unwrap_or_else(|_| {
 								log::error!(
-													target: LOG_TARGET,
-													"Failed to convert logo"
-												);
+									target: LOG_TARGET,
+									"Failed to convert logo"
+								);
 								Default::default()
 							})
 						} else {

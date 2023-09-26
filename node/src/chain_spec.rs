@@ -3,8 +3,10 @@ use jur_node_runtime::{
 	AccountId, AuraConfig, BalancesConfig, Block, GrandpaConfig, RuntimeGenesisConfig, Signature,
 	SudoConfig, SystemConfig, WASM_BINARY,
 };
+use sc_chain_spec::ChainSpecExtension;
 use sc_service::ChainType;
 use sc_service::Properties;
+use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_core::crypto::UncheckedInto;
@@ -12,9 +14,6 @@ use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
 use std::str::FromStr;
-use sc_chain_spec::ChainSpecExtension;
-use serde::{Deserialize, Serialize};
-
 
 /// Node `ChainSpec` extensions.
 ///
@@ -30,7 +29,6 @@ pub struct Extensions {
 	/// The light sync state extension used by the sync-state rpc.
 	pub light_sync_state: sc_sync_state_rpc::LightSyncStateExtension,
 }
-
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig, Extensions>;
