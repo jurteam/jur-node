@@ -613,6 +613,7 @@ pub type Executive = frame_executive::Executive<
 >;
 
 type Migrations = (
+	pallet_passport::migration::v1::MigrateToV1<Runtime>,
 	pallet_community::migration::v8::MigrateToV8<Runtime>,
 );
 
