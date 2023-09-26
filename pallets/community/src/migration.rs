@@ -80,8 +80,7 @@ pub mod v8 {
 											c.clone().try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert custom, reason: {:?}.",
-													err
+													"Failed to convert custom"
 												);
 												Default::default()
 											});
@@ -100,8 +99,7 @@ pub mod v8 {
 											c.try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert language, reason: {:?}.",
-													err
+													"Failed to convert language"
 												);
 												Default::default()
 											});
@@ -120,8 +118,7 @@ pub mod v8 {
 											c.try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert norms, reason: {:?}.",
-													err
+													"Failed to convert norms"
 												);
 												Default::default()
 											});
@@ -140,8 +137,7 @@ pub mod v8 {
 											c.try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert religions, reason: {:?}.",
-													err
+													"Failed to convert religions"
 												);
 												Default::default()
 											});
@@ -160,8 +156,7 @@ pub mod v8 {
 											c.try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert territories, reason: {:?}.",
-													err
+													"Failed to convert territories"
 												);
 												Default::default()
 											});
@@ -180,8 +175,7 @@ pub mod v8 {
 											c.try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert traditions, reason: {:?}.",
-													err
+													"Failed to convert traditions"
 												);
 												Default::default()
 											});
@@ -200,8 +194,7 @@ pub mod v8 {
 											c.try_into().unwrap_or_else(|err| {
 												log::error!(
 													target: LOG_TARGET,
-													"Failed to convert values, reason: {:?}.",
-													err
+													"Failed to convert values"
 												);
 												Default::default()
 											});
@@ -227,8 +220,7 @@ pub mod v8 {
 							logo.try_into().unwrap_or_else(|err| {
 								log::error!(
 													target: LOG_TARGET,
-													"Failed to convert logo, reason: {:?}.",
-													err
+													"Failed to convert logo"
 												);
 								Default::default()
 							})
