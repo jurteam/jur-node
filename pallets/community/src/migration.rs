@@ -77,7 +77,7 @@ pub mod v8 {
 								cus.into_iter()
 									.map(|c| {
 										let new_custom =
-											c.clone().try_into().unwrap_or_else(|err| {
+											c.clone().try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert custom"
@@ -96,7 +96,7 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().unwrap_or_else(|err| {
+											c.try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert language"
@@ -115,7 +115,7 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().unwrap_or_else(|err| {
+											c.try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert norms"
@@ -134,7 +134,7 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().unwrap_or_else(|err| {
+											c.try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert religions"
@@ -153,7 +153,7 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().unwrap_or_else(|err| {
+											c.try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert territories"
@@ -172,7 +172,7 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().unwrap_or_else(|err| {
+											c.try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert traditions"
@@ -191,7 +191,7 @@ pub mod v8 {
 									.into_iter()
 									.map(|c| {
 										let new_value =
-											c.try_into().unwrap_or_else(|err| {
+											c.try_into().unwrap_or_else(|_| {
 												log::error!(
 													target: LOG_TARGET,
 													"Failed to convert values"
@@ -217,7 +217,7 @@ pub mod v8 {
 
 					let bounded_logo: BoundedVec<u8, T::LogoLimit> =
 						if let Some(logo) = old_value.logo {
-							logo.try_into().unwrap_or_else(|err| {
+							logo.try_into().unwrap_or_else(|_| {
 								log::error!(
 													target: LOG_TARGET,
 													"Failed to convert logo"
