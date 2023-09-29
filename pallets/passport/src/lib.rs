@@ -141,6 +141,8 @@ pub mod pallet {
 		AddedBadge(Vec<u8>),
 		/// Issued Badge
 		IssuedBadge(Vec<u8>),
+		/// Migrated Passport [passport]
+		MigratedPassport(T::PassportId),
 	}
 
 	#[pallet::error]
@@ -161,6 +163,8 @@ pub mod pallet {
 		BadgeAlreadyExist,
 		/// Badge already Issued to the user.
 		BadgeAlreadyIssued,
+		/// Community id is not valid.
+		InvalidCommunityId,
 	}
 
 	#[pallet::hooks]
@@ -364,6 +368,86 @@ pub mod pallet {
 			}
 
 			Self::deposit_event(Event::IssuedBadge(name.to_vec()));
+			Ok(())
+		}
+
+		/// Migrate the passport of existing JUR passport holders.
+		///
+		/// The origin must be Signed and admin of passport migration.
+		///
+		/// Parameters:
+		/// - `community_id`: Id of the community.
+		/// - `account_id`: Account Id of the User.
+		/// - `passport_id`: Account Id of the User.
+		/// - `address`: Passport IPFS address of the User.
+		/// - `badges`: badges need to assign to the User.
+		///
+		/// Emits `MigratedPassport` event when successful.
+		///
+		#[pallet::call_index(4)]
+		#[pallet::weight(<T as Config>::WeightInfo::mint())]
+		pub fn migrate_passport(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+			account_id: T::AccountId,
+			passport_id: T::PassportId,
+			address: BoundedVec<u8, T::AddressLimit>,
+			badges: Vec<BoundedVec<u8, T::BadgeNameLimit>>,
+		) -> DispatchResult {
+			let origin = ensure_signed(origin)?;
+			let _community = pallet_community::Communities::<T>::get(community_id)
+				.ok_or(Error::<T>::CommunityDoesNotExist)?;
+
+			// Ensure the origin should be admin.
+			pallet_whitelist::Admins::<T>::get()
+				.binary_search(&origin)
+				.ok()
+				.ok_or(Error::<T>::NotAllowed)?;
+
+			ensure!(
+				community_id == T::CommunityId::initial_value(),
+				Error::<T>::InvalidCommunityId
+			);
+
+			// Add the user as community member.
+			pallet_community::Communities::<T>::try_mutate(
+				community_id,
+				|maybe_community| -> DispatchResult {
+					let community = maybe_community
+						.as_mut()
+						.ok_or(Error::<T>::CommunityDoesNotExist)?;
+
+					let mut community_members = community.members.clone();
+
+					// If user not part of community then adding to community
+					if !community_members.contains(&account_id) {
+						community_members.push(account_id.clone());
+					}
+
+					community.members = community_members;
+
+					Ok(())
+				},
+			)?;
+
+			// Validate the badges in the community badges library.
+			ensure!(
+				!badges
+					.iter()
+					.any(|badge| <Badges<T>>::get(community_id, &badge).is_none()),
+				Error::<T>::BadgeNotAvailable
+			);
+
+			// Checking the passport should not be already minted.
+			let maybe_passport = Passports::<T>::get(community_id, &account_id);
+			ensure!(maybe_passport.is_none(), Error::<T>::PassportAlreadyMinted);
+
+			let passport_details =
+				PassportDetails { id: passport_id, address: Some(address), badges };
+
+			<Passports<T>>::insert(community_id, &account_id, passport_details);
+
+			Self::deposit_event(Event::MigratedPassport(passport_id));
 			Ok(())
 		}
 	}
