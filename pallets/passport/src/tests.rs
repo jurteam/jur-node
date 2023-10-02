@@ -660,7 +660,7 @@ fn passport_migration_not_works_for_invalid_community() {
 				bounded_passport_address,
 				vec![bounded_badge_name]
 			),
-			Error::<Test>::CommunityDoesNotExist
+			Error::<Test>::InvalidCommunityId
 		);
 	});
 }
