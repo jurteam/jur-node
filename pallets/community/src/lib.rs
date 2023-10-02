@@ -25,7 +25,7 @@
 
 use crate::types::*;
 use codec::{Decode, Encode};
-use frame_support::{dispatch::DispatchResult, traits::Randomness, BoundedVec};
+use frame_support::{dispatch::DispatchResult, traits::Randomness, BoundedVec, ensure};
 pub use pallet::*;
 use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
@@ -215,6 +215,8 @@ pub mod pallet {
 		TooManyCommunities,
 		/// Invalid logo given.
 		BadLogo,
+		/// Community already exist
+		CommunityAlreadyExist,
 	}
 
 	#[pallet::hooks]
@@ -604,6 +606,11 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
+
+		ensure!(Communities::<T>::iter_values()
+			.into_iter()
+			.find(|community| community.name == bounded_name).is_none(), Error::<T>::CommunityAlreadyExist);
+
 
 		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
 			if let Some(desc) = maybe_description {

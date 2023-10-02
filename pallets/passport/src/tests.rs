@@ -93,7 +93,24 @@ fn mint_passport_works_for_founder() {
 		create_community();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 1));
 		assert_eq!(Passports::<Test>::get(1, 1).unwrap().id, 5035);
-		create_community();
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur1".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_community_metadata()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into()),
+			Some(CommunityType::Nation),
+		)
+			.unwrap();
 		assert_ok!(Passport::mint(RuntimeOrigin::signed(1), 2));
 		assert_eq!(Passports::<Test>::get(2, 1).unwrap().id, 1);
 	});
