@@ -385,7 +385,7 @@ pub mod pallet {
 		/// Emits `MigratedPassport` event when successful.
 		///
 		#[pallet::call_index(4)]
-		#[pallet::weight(<T as Config>::WeightInfo::mint())]
+		#[pallet::weight(<T as Config>::WeightInfo::migrate_passport())]
 		pub fn migrate_passport(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,

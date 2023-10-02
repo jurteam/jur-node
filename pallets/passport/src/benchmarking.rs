@@ -100,6 +100,10 @@ pub fn add_founder<T: Config>(caller: T::AccountId) {
 	pallet_whitelist::Pallet::<T>::add_founder(RawOrigin::Root.into(), caller).unwrap();
 }
 
+pub fn add_admin<T: Config>(caller: T::AccountId) {
+	pallet_whitelist::Pallet::<T>::add_admin(RawOrigin::Root.into(), caller).unwrap();
+}
+
 benchmarks! {
 	mint {
 		let caller: T::AccountId = whitelisted_caller();
@@ -213,6 +217,44 @@ benchmarks! {
 
 	verify {
 		assert_last_event::<T>(Event::<T>::IssuedBadge(badge_name).into());
+	}
+
+	migrate_passport {
+		let caller: T::AccountId = whitelisted_caller();
+		let member: T::AccountId = account("sub", 1, SEED);
+		add_founder::<T>(caller.clone());
+		let community_id = create_community::<T>(caller.clone());
+		add_admin::<T>(caller.clone());
+
+		let passport_id: <T as Config>::PassportId = T::PassportId::initial_value();
+
+		let badge_name: Vec<u8> = "JUR Meetup".into();
+		let bounded_badge_name: BoundedVec<u8, <T as pallet::Config>::BadgeNameLimit> =
+		badge_name.clone().try_into().unwrap();
+
+		let badge_description: Vec<u8> =
+			"JUR Meetup is the get together time for the jur community".into();
+		let bounded_badge_description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit> =
+			badge_description.try_into().unwrap();
+
+		let badge_address: Vec<u8> =
+			"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
+		let bounded_badge_address: BoundedVec<u8, <T as pallet::Config>::AddressLimit> =
+		badge_address.try_into().unwrap();
+
+		Passport::<T>::add_badge(
+			RawOrigin::Signed(caller.clone()).into(),
+			community_id.clone(),
+			bounded_badge_name.clone(),
+			BadgesType::Participation,
+			bounded_badge_description,
+			bounded_badge_address.clone()
+		).unwrap();
+
+	}: _(RawOrigin::Signed(caller), community_id, member, passport_id, bounded_badge_address, vec![bounded_badge_name])
+
+	verify {
+		assert_last_event::<T>(Event::<T>::MigratedPassport(passport_id).into());
 	}
 
 	impl_benchmark_test_suite!(Passport, crate::mock::new_test_ext(), crate::mock::Test);
