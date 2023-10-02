@@ -25,7 +25,7 @@
 
 use crate::types::*;
 use codec::{Decode, Encode};
-use frame_support::{dispatch::DispatchResult, traits::Randomness, BoundedVec, ensure};
+use frame_support::{dispatch::DispatchResult, ensure, traits::Randomness, BoundedVec};
 pub use pallet::*;
 use primitives::Incrementable;
 use sp_runtime::RuntimeDebug;
@@ -607,10 +607,13 @@ impl<T: Config> Pallet<T> {
 		let bounded_name: BoundedVec<u8, T::NameLimit> =
 			name.clone().try_into().map_err(|_| Error::<T>::BadName)?;
 
-		ensure!(Communities::<T>::iter_values()
-			.into_iter()
-			.find(|community| community.name == bounded_name).is_none(), Error::<T>::CommunityAlreadyExist);
-
+		ensure!(
+			Communities::<T>::iter_values()
+				.into_iter()
+				.find(|community| community.name == bounded_name)
+				.is_none(),
+			Error::<T>::CommunityAlreadyExist
+		);
 
 		let bounded_description: BoundedVec<u8, T::DescriptionLimit> =
 			if let Some(desc) = maybe_description {
