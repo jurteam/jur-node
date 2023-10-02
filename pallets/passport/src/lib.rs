@@ -395,14 +395,14 @@ pub mod pallet {
 			badges: Vec<BoundedVec<u8, T::BadgeNameLimit>>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
-			let _community = pallet_community::Communities::<T>::get(community_id)
-				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
 			// Ensure the origin should be admin.
-			pallet_whitelist::Admins::<T>::get()
-				.binary_search(&origin)
-				.ok()
-				.ok_or(Error::<T>::NotAllowed)?;
+			ensure!(
+				pallet_whitelist::Admins::<T>::get()
+					.binary_search(&origin)
+					.is_ok(),
+				Error::<T>::NotAllowed
+			);
 
 			ensure!(
 				community_id == T::CommunityId::initial_value(),
