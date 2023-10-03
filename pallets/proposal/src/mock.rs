@@ -77,7 +77,6 @@ impl pallet_community::Config for Test {
 
 impl pallet_whitelist::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	#[cfg(feature = "runtime-benchmarks")]
 	type WeightInfo = ();
 }
 
