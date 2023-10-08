@@ -41,6 +41,7 @@ sp-version = { version = "22.0.0", default-features = false, git = "https://gith
 pallet-multisig = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 sp-staking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 sp-consensus-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
+sp-storage = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 
 # Used for the node token-swap's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
@@ -107,7 +108,8 @@ std = [
 	"sp-consensus-grandpa/std",
 	"pallet-treasury/std",
 	"pallet-authorship/std",
-	"pallet-insecure-randomness-collective-flip/std"
+	"pallet-insecure-randomness-collective-flip/std",
+	"sp-storage/std"
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

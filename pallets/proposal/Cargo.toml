@@ -23,6 +23,7 @@ frame-support = { git = "https://github.com/paritytech/polkadot-sdk", default-fe
 frame-system = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 sp-std = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
 
 # Jur custom pallets
 pallet-community = { package = 'pallet-community', path = '../community', default-features = false }
@@ -34,7 +35,6 @@ serde = { version = "1.0.132" }
 # Substrate
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
 sp-io = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
 pallet-insecure-randomness-collective-flip = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
 
 
@@ -49,6 +49,7 @@ std = [
 	"frame-system/std",
 	"primitives/std",
 	"sp-std/std",
+	"sp-runtime/std",
 	"pallet-community/std",
 ]
 try-runtime = [ "frame-support/try-runtime" ]

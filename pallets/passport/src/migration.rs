@@ -1,6 +1,7 @@
 use super::*;
 use frame_support::sp_runtime::Saturating;
-use frame_support::{log, traits::OnRuntimeUpgrade};
+use frame_support::traits::OnRuntimeUpgrade;
+use log;
 use sp_std::vec;
 
 pub mod v1 {

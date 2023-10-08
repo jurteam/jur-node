@@ -1,5 +1,5 @@
 use super::*;
-use frame_support::{traits::OnRuntimeUpgrade};
+use frame_support::traits::OnRuntimeUpgrade;
 use log;
 use sp_runtime::Saturating;
 
