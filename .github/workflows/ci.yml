@@ -113,5 +113,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [install_toolchain,build-deps]
     steps:
+    - name: Install protoc
+      uses: arduino/setup-protoc@v2
+    - uses: actions/checkout@v4
+    - uses: actions/cache/restore@v3
+      with:
+        key: ${{ runner.os }}-toolchain-${{ hashFiles('**/rust-toolchain.toml') }}
+        path: |
+          ~/.cargo/
+          ~/.rustup/
     - name: Test
       run: SKIP_WASM_BUILD= cargo test --workspace --features runtime-benchmarks
