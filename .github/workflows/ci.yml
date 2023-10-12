@@ -116,17 +116,25 @@ jobs:
     - name: Install protoc
       uses: arduino/setup-protoc@v2
     - uses: actions/checkout@v4
-    - name: Free Up GitHub Actions Ubuntu Runner Disk Space
-      uses: jlumbroso/free-disk-space@main
+    - uses: actions/cache/restore@v3
       with:
-          # This might remove tools that are actually needed, if set to "true" but frees about 6 GB
-          tool-cache: false
-
-          # All of these default to true, but feel free to set to "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
+        key: ${{ runner.os }}-toolchain-${{ hashFiles('**/rust-toolchain.toml') }}
+        path: |
+          ~/.cargo/
+          ~/.rustup/
+    - uses: actions/cache/restore@v3
+      with:
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        path: |
+          ~/.cargo/
+          ./target/
+    - name: cargo test cache
+      id: cache-cargo-test
+      uses: actions/cache@v3
+      with:
+        key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+        path: |
+          ~/.cargo/
+          ./target/
     - name: Test
       run: SKIP_WASM_BUILD= cargo test --workspace --features runtime-benchmarks
