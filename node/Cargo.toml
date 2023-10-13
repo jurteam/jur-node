@@ -1,6 +1,6 @@
 [package]
 name = "jur-node"
-version = "3.1.0"
+version = "3.2.0"
 edition = "2021"
 license = "Unlicense"
 publish = false
@@ -58,7 +58,7 @@ frame-benchmarking = {  git = "https://github.com/paritytech/polkadot-sdk", bran
 frame-benchmarking-cli = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 # Local Dependencies
-jur-node-runtime = { version = "3.1.0", path = "../runtime" }
+jur-node-runtime = { version = "3.2.0", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }
 
 # CLI-specific dependencies
