@@ -14,10 +14,58 @@ fn create_community_works() {
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 		setup_blocks(5);
-		create_community();
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur1".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into()),
+			Some(CommunityType::Nation),
+		)
+			.unwrap();
 		assert_ne!(
 			Some(Communities::<Test>::get(2).unwrap().reference_id),
 			Some(Communities::<Test>::get(1).unwrap().reference_id)
+		);
+	});
+}
+
+#[test]
+fn create_community_not_works_with_duplicate_name() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(1));
+		add_founder();
+		create_community();
+		assert!(Communities::<Test>::contains_key(1));
+		setup_blocks(5);
+		assert_noop!(
+			Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into()),
+			Some(CommunityType::Nation),
+		),
+			Error::<Test>::CommunityAlreadyExist
 		);
 	});
 }
@@ -27,14 +75,48 @@ fn founder_with_more_communities_not_allowed() {
 	new_test_ext().execute_with(|| {
 		add_founder();
 		create_community();
-		create_community();
-		create_community();
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur1".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into()),
+			Some(CommunityType::Nation),
+		)
+			.unwrap();
+		Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"Jur2".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into()),
+			Some(CommunityType::Nation),
+		)
+			.unwrap();
 		assert_noop!(
 			Community::create_community(
 			RuntimeOrigin::signed(1),
 			// hash of IPFS path of dummy logo
 			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
-			"Jur".into(),
+			"Jur3".into(),
 			Some(
 				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
 				.into(),

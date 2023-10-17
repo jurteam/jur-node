@@ -37,6 +37,10 @@ pub(crate) type FullClient =
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 
+/// The minimum period of blocks on which justifications will be
+/// imported and generated.
+const GRANDPA_JUSTIFICATION_PERIOD: u32 = 512;
+
 #[allow(clippy::type_complexity)]
 pub fn new_partial(
 	config: &Configuration,
@@ -45,7 +49,7 @@ pub fn new_partial(
 		FullClient,
 		FullBackend,
 		FullSelectChain,
-		sc_consensus::DefaultImportQueue<Block, FullClient>,
+		sc_consensus::DefaultImportQueue<Block>,
 		sc_transaction_pool::FullPool<Block, FullClient>,
 		(
 			sc_consensus_grandpa::GrandpaBlockImport<
@@ -72,7 +76,6 @@ pub fn new_partial(
 		.transpose()?;
 
 	let executor = sc_service::new_native_or_wasm_executor(config);
-
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
 			config,
@@ -100,6 +103,7 @@ pub fn new_partial(
 
 	let (grandpa_block_import, grandpa_link) = sc_consensus_grandpa::block_import(
 		client.clone(),
+		GRANDPA_JUSTIFICATION_PERIOD,
 		&client,
 		select_chain.clone(),
 		telemetry.as_ref().map(|x| x.handle()),
@@ -156,6 +160,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 	} = new_partial(&config)?;
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
 		&client
 			.block_hash(0)
@@ -164,10 +169,10 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 			.expect("Genesis block exists; qed"),
 		&config.chain_spec,
 	);
-
 	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
 		grandpa_protocol_name.clone(),
 	));
+
 	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
 		grandpa_link.shared_authority_set().clone(),
@@ -296,7 +301,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		let grandpa_config = sc_consensus_grandpa::Config {
 			// FIXME #1578 make this available through chainspec
 			gossip_duration: Duration::from_millis(333),
-			justification_period: 512,
+			justification_generation_period: GRANDPA_JUSTIFICATION_PERIOD,
 			name: Some(name),
 			observer_enabled: false,
 			keystore,

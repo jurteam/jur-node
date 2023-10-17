@@ -1,7 +1,7 @@
 use codec::{Decode, Encode};
-use frame_support::RuntimeDebug;
 use frame_support::{pallet_prelude::Get, BoundedVec};
 use scale_info::TypeInfo;
+use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]

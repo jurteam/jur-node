@@ -122,19 +122,5 @@ jobs:
         path: |
           ~/.cargo/
           ~/.rustup/
-    - uses: actions/cache/restore@v3
-      with:
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        path: |
-          ~/.cargo/
-          ./target/
-    - name: cargo test cache
-      id: cache-cargo-test
-      uses: actions/cache@v3
-      with:
-        key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
-        path: |
-          ~/.cargo/
-          ./target/
     - name: Test
       run: SKIP_WASM_BUILD= cargo test --workspace --features runtime-benchmarks

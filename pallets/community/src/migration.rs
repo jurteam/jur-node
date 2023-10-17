@@ -1,5 +1,6 @@
 use super::*;
-use frame_support::{log, traits::OnRuntimeUpgrade};
+use frame_support::traits::OnRuntimeUpgrade;
+use log;
 use sp_runtime::Saturating;
 
 pub mod v8 {
