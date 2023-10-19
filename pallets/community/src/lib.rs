@@ -620,11 +620,11 @@ where
 						.unwrap_or(Default::default())
 						.split_whitespace()
 						.collect();
-					let o_name: String = String::from_utf8(community.name.to_vec())
+					let original_name: String = String::from_utf8(community.name.to_vec())
 						.unwrap_or(Default::default())
 						.split_whitespace()
 						.collect();
-					name.to_lowercase() == o_name.to_lowercase()
+					name.to_lowercase() == original_name.to_lowercase()
 				})
 				.is_none(),
 			Error::<T>::CommunityAlreadyExist
