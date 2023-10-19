@@ -52,7 +52,7 @@ fn create_community_not_works_with_duplicate_name() {
 			RuntimeOrigin::signed(1),
 			// hash of IPFS path of dummy logo
 			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
-			"Jur".into(),
+			"    JUR       ".into(),
 			Some(
 				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
 					.into(),
