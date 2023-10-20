@@ -558,7 +558,7 @@ impl pallet_utility::Config for Runtime {
 impl pallet_staking::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
-	type MonetaryGovernanceOrigin = MonetaryGovernanceOrigin;
+	type MonetaryGovernanceOrigin = EnsureRoot<AccountId>;
 	/// Minimum round length is 2 minutes (10 * 12 second block times)
 	type MinBlocksPerRound = ConstU32<10>;
 	/// If a collator doesn't produce any block on this number of rounds, it is notified as inactive
@@ -589,9 +589,9 @@ impl pallet_staking::Config for Runtime {
 	type MinDelegation = ConstU128<{ 500 * DOLLARS }>;
 	type BlockAuthor = AuthorInherent;
 	type OnCollatorPayout = ();
-	type PayoutCollatorReward = PayoutCollatorOrOrbiterReward;
-	type OnInactiveCollator = OnInactiveCollator;
-	type OnNewRound = OnNewRound;
+	type PayoutCollatorReward = ();
+	type OnInactiveCollator = ();
+	type OnNewRound = ();
 	type WeightInfo = ();
 	type MaxCandidates = ConstU32<200>;
 }
