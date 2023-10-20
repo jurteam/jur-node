@@ -59,7 +59,7 @@ pallet-proposal = { version = "1.0.0", default-features = false, path = "../pall
 pallet-user = { version = "1.0.0", default-features = false, path = "../pallets/user" }
 pallet-passport = { version = "1.0.0", default-features = false, path = "../pallets/passport" }
 pallet-whitelist = { version = "1.0.0", default-features = false, path = "../pallets/whitelist" }
-
+pallet-staking = { version = "1.0.0", default-features = false, path = "../pallets/staking" }
 
 primitives = { package = 'jur-primitives', path = '../primitives', default-features = false }
 
@@ -87,6 +87,7 @@ std = [
 	"pallet-token-swap/std",
 	"pallet-user/std",
 	"pallet-whitelist/std",
+	"pallet-staking/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -124,7 +125,8 @@ runtime-benchmarks = [
 	"pallet-proposal/runtime-benchmarks",
 	"pallet-passport/runtime-benchmarks",
 	"pallet-user/runtime-benchmarks",
-	"pallet-whitelist/runtime-benchmarks"
+	"pallet-whitelist/runtime-benchmarks",
+	"pallet-staking/runtime-benchmarks",
 ]
 try-runtime = [
 	"frame-try-runtime/try-runtime",
@@ -148,4 +150,5 @@ try-runtime = [
 	"pallet-insecure-randomness-collective-flip/try-runtime",
 	"pallet-user/try-runtime",
 	"pallet-whitelist/try-runtime",
+	"pallet-staking/try-runtime",
 ]
