@@ -28,6 +28,7 @@ use codec::{Decode, Encode};
 use frame_support::{dispatch::DispatchResult, ensure, traits::Randomness, BoundedVec};
 pub use pallet::*;
 use primitives::Incrementable;
+use scale_info::prelude::string::String;
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
 pub use weights::WeightInfo;
@@ -189,6 +190,7 @@ pub mod pallet {
 	}
 
 	// Errors inform users that something went wrong.
+	#[derive(PartialEq)]
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Community does not exist.
@@ -589,7 +591,10 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config> Pallet<T> {
+impl<T: Config> Pallet<T>
+where
+	Error<T>: PartialEq,
+{
 	pub fn do_create_community(
 		community_id: T::CommunityId,
 		founder: T::AccountId,
@@ -610,7 +615,17 @@ impl<T: Config> Pallet<T> {
 		ensure!(
 			Communities::<T>::iter_values()
 				.into_iter()
-				.find(|community| community.name == bounded_name)
+				.find(|community| {
+					let name: String = String::from_utf8(name.clone())
+						.unwrap_or(Default::default())
+						.split_whitespace()
+						.collect();
+					let original_name: String = String::from_utf8(community.name.to_vec())
+						.unwrap_or(Default::default())
+						.split_whitespace()
+						.collect();
+					name.to_lowercase() == original_name.to_lowercase()
+				})
 				.is_none(),
 			Error::<T>::CommunityAlreadyExist
 		);
