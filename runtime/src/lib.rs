@@ -21,7 +21,7 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,OpaqueKeys, },
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
@@ -51,6 +51,8 @@ use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
+use sp_runtime::traits::ConvertInto;
+
 
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 pub use pallet_staking::{weights::WeightInfo, InflationInfo, Range};
@@ -93,11 +95,12 @@ pub mod opaque {
 	/// Opaque block identifier type.
 	pub type BlockId = generic::BlockId<Block>;
 
-	impl_opaque_keys! {
-		pub struct SessionKeys {
-			pub aura: Aura,
-			pub grandpa: Grandpa,
-		}
+
+}
+impl_opaque_keys! {
+	pub struct SessionKeys {
+		pub aura: Aura,
+		pub grandpa: Grandpa,
 	}
 }
 
@@ -135,6 +138,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 ///
 /// Change this to adjust the block time.
 pub const MILLISECS_PER_BLOCK: u64 = 6000;
+// pub use crate::opaque::SessionKeys;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
@@ -508,8 +512,8 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 pub struct AuraAccountAdapter;
 impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
 	fn find_author<'a, I>(digests: I) -> Option<AccountId>
-	where
-		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+		where
+			I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
 		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests)
 			.and_then(|k| AccountId::try_from(k.as_ref()).ok())
@@ -517,8 +521,8 @@ impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
 }
 
 impl pallet_authorship::Config for Runtime {
-	type FindAuthor = AuraAccountAdapter;
-	type EventHandler = ();
+	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
+	type EventHandler = Staking;
 }
 
 parameter_types! {
@@ -555,6 +559,38 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
+// pub struct DummyBeacon {}
+// impl nimbus_primitives::SlotBeacon for DummyBeacon {
+// 	fn slot() -> u32 {
+// 		1
+// 	}
+// }
+
+// impl pallet_author_inherent::Config for Runtime {
+// 	// We start a new slot each time we see a new relay block.
+// 	type SlotBeacon = DummyBeacon;
+// 	type AccountLookup = ();
+//
+// 	type AuthorId = AccountId;
+// 	type WeightInfo = ();
+// 	/// Nimbus filter pipeline step 1:
+// 	/// Filters out NimbusIds not registered as SessionKeys of some AccountId
+// 	type CanAuthor = AuraAuthorFilter;
+// }
+
+
+// impl pallet_aura_style_filter::Config for Runtime {
+// 	/// Nimbus filter pipeline (final) step 3:
+// 	/// Choose 1 collator from PotentialAuthors as eligible
+// 	/// for each slot in round-robin fashion
+// 	type PotentialAuthors = Staking;
+// }
+
+parameter_types! {
+	/// Minimum stake required to be reserved to be a candidate
+	pub const MinCandidateStk: u128 = 2 * DOLLARS;
+}
+
 impl pallet_staking::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
@@ -576,7 +612,7 @@ impl pallet_staking::Config for Runtime {
 	/// Rounds before the reward is paid
 	type RewardPaymentDelay = ConstU32<2>;
 	/// Minimum collators selected per round, default at genesis and minimum forever after
-	type MinSelectedCandidates = ConstU32<8>;
+	type MinSelectedCandidates = ConstU32<2>; // changed
 	/// Maximum top delegations per candidate
 	type MaxTopDelegationsPerCandidate = ConstU32<300>;
 	/// Maximum bottom delegations per candidate
@@ -584,16 +620,34 @@ impl pallet_staking::Config for Runtime {
 	/// Maximum delegations per delegator
 	type MaxDelegationsPerDelegator = ConstU32<100>;
 	/// Minimum stake required to be reserved to be a candidate
-	type MinCandidateStk = ConstU128<{ 20000 * DOLLARS }>;
+	type MinCandidateStk = MinCandidateStk;
 	/// Minimum stake required to be reserved to be a delegator
-	type MinDelegation = ConstU128<{ 500 * DOLLARS }>;
-	type BlockAuthor = AuthorInherent;
+	type MinDelegation = ConstU128<{ 5 * DOLLARS }>;
+	// type BlockAuthor = AuthorInherent;
 	type OnCollatorPayout = ();
 	type PayoutCollatorReward = ();
 	type OnInactiveCollator = ();
 	type OnNewRound = ();
 	type WeightInfo = ();
 	type MaxCandidates = ConstU32<200>;
+}
+
+parameter_types! {
+	pub const Period: u32 = 6 * HOURS;
+}
+
+
+impl pallet_session::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type ValidatorId = <Self as frame_system::Config>::AccountId;
+	type ValidatorIdOf = ConvertInto;
+	type ShouldEndSession = Staking;
+	type NextSessionRotation = Staking;
+	type SessionManager = Staking;
+	// Essentially just Aura, but lets be pedantic.
+	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = SessionKeys;
+	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -618,9 +672,13 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		Utility: pallet_utility,
 		Staking: pallet_staking,
+		Session: pallet_session,
+
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
+		// AuthorInherent: pallet_author_inherent,
+        // AuraAuthorFilter: pallet_aura_style_filter,
 	}
 );
 
@@ -643,7 +701,7 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
@@ -759,13 +817,13 @@ impl_runtime_apis! {
 
 	impl sp_session::SessionKeys<Block> for Runtime {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
-			opaque::SessionKeys::generate(seed)
+			SessionKeys::generate(seed)
 		}
 
 		fn decode_session_keys(
 			encoded: Vec<u8>,
 		) -> Option<Vec<(Vec<u8>, KeyTypeId)>> {
-			opaque::SessionKeys::decode_into_raw_public_keys(&encoded)
+			SessionKeys::decode_into_raw_public_keys(&encoded)
 		}
 	}
 
