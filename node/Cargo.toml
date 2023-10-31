@@ -58,6 +58,7 @@ frame-benchmarking = {  git = "https://github.com/paritytech/polkadot-sdk", bran
 frame-benchmarking-cli = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 # Local Dependencies
+pallet-staking = { version = "1.0.0", default-features = false, path = "../pallets/staking" }
 jur-node-runtime = { version = "3.2.0", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }
 
