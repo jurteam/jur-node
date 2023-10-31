@@ -1,8 +1,9 @@
 use hex_literal::hex;
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, Block, GrandpaConfig, RuntimeGenesisConfig, Signature,
-	SudoConfig, SystemConfig, WASM_BINARY,SessionKeys,
+	AccountId, AuraConfig, BalancesConfig, Block, GrandpaConfig, RuntimeGenesisConfig, SessionKeys,
+	Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
+use pallet_staking::{InflationInfo, Range};
 use sc_chain_spec::ChainSpecExtension;
 use sc_service::ChainType;
 use sc_service::Properties;
@@ -13,9 +14,8 @@ use sp_core::crypto::UncheckedInto;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
-use std::str::FromStr;
 use sp_runtime::{Perbill, Percent};
-use pallet_staking::{InflationInfo, Range};
+use std::str::FromStr;
 
 /// Node `ChainSpec` extensions.
 ///
@@ -48,9 +48,7 @@ pub fn inflation_config(
 	annual_inflation_percentage: u32,
 ) -> InflationInfo<Balance> {
 	fn to_round_inflation(annual: Range<Perbill>, blocks_per_round: u32) -> Range<Perbill> {
-		use pallet_staking::inflation::{
-			perbill_annual_to_perbill_round, BLOCKS_PER_YEAR,
-		};
+		use pallet_staking::inflation::{perbill_annual_to_perbill_round, BLOCKS_PER_YEAR};
 		perbill_annual_to_perbill_round(annual, BLOCKS_PER_YEAR / blocks_per_round)
 	}
 
@@ -68,20 +66,16 @@ pub fn inflation_config(
 	}
 }
 
-fn session_keys(
-	aura: AuraId,
-	grandpa: GrandpaId,
-) -> SessionKeys {
+fn session_keys(aura: AuraId, grandpa: GrandpaId) -> SessionKeys {
 	SessionKeys { aura, grandpa }
 }
-
 
 type AccountPublic = <Signature as Verify>::Signer;
 
 /// Generate an account ID from seed.
 pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-	where
-		AccountPublic: From<<TPublic::Pair as Pair>::Public>,
+where
+	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
 {
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
@@ -92,7 +86,7 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AccountId, AuraId, Grand
 		get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", s)),
 		get_account_id_from_seed::<sr25519::Public>(s),
 		get_from_seed::<AuraId>(s),
-		get_from_seed::<GrandpaId>(s)
+		get_from_seed::<GrandpaId>(s),
 	)
 }
 
@@ -110,8 +104,6 @@ pub fn sudo_account_mainnet() -> AccountId {
 	AccountId32::from_str("5H13qUDnaSjaahePMYTQoqezHGHWwQGreM5kkEbuMUHu5Vjn")
 		.expect("Invalid Account Id")
 }
-
-
 
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
@@ -180,9 +172,11 @@ pub fn local_config() -> Result<ChainSpec, String> {
 				vec![
 					(
 						// 5Grpw9i5vNyF6pbbvw7vA8pC5Vo8GMUbG8zraLMmAn32kTNH
-						hex!["d41e0bf1d76de368bdb91896b0d02d758950969ea795b1e7154343ee210de649"].into(),
+						hex!["d41e0bf1d76de368bdb91896b0d02d758950969ea795b1e7154343ee210de649"]
+							.into(),
 						// 5DLMZF33f61KvPDbJU5c2dPNQZ3jJyptsacpvsDhwNS1wUuU
-						hex!["382bd29103cf3af5f7c032bbedccfb3144fe672ca2c606147974bc2984ca2b14"].into(),
+						hex!["382bd29103cf3af5f7c032bbedccfb3144fe672ca2c606147974bc2984ca2b14"]
+							.into(),
 						hex!["4076403ada1e84a045cfc627efe8f7f1a734e95a50644e7030c0cb1a70dc580f"]
 							.unchecked_into(),
 						hex!["e52e2901ea2bb2795601f1e130e1936c7f861e6375ea70ad7ca92ee9a121a75f"]
@@ -190,9 +184,11 @@ pub fn local_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5CFDk3yCSgQ2goiaksMfRMFRS7ZU28BZqPQDeAsgZUa6FRzt
-						hex!["08050f1b6bcd4651004df427c884073652bafd54e5ca25cea69169532db2910b"].into(),
+						hex!["08050f1b6bcd4651004df427c884073652bafd54e5ca25cea69169532db2910b"]
+							.into(),
 						// 5F1ks2enazaPktQa3HURLK8GywzNZaGirovPtFvvbv91TLhJ
-						hex!["8275157f2a1d8373106cb00078a73a92a3303f3bf6eb72c3a67413bd943b020b"].into(),
+						hex!["8275157f2a1d8373106cb00078a73a92a3303f3bf6eb72c3a67413bd943b020b"]
+							.into(),
 						hex!["e8a6d9e3b7961f74fffcd7f7847957dc8e469e07cc49711c52beef4ecae92147"]
 							.unchecked_into(),
 						hex!["e9e9d202692f8446f013c0b550e4bb1507d6de60a52cdaee0a4863cc554897f9"]
@@ -200,9 +196,11 @@ pub fn local_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5F6YideXfGcskpdFUczu3nZcJFmU9WKHgjjNVQjqgeVGRs66
-						hex!["861c6d95051f942bb022f13fc2125b2974933d8ab1441bfdee9855e9d8051556"].into(),
+						hex!["861c6d95051f942bb022f13fc2125b2974933d8ab1441bfdee9855e9d8051556"]
+							.into(),
 						// 5F92x4qKNYaHtfp5Yy7kb9r6gHCHkN3YSvNuedERPHgrURTn
-						hex!["8801f479e09a78515f1badee0169864dae45648109091e29b03a7b4ea97ec018"].into(),
+						hex!["8801f479e09a78515f1badee0169864dae45648109091e29b03a7b4ea97ec018"]
+							.into(),
 						hex!["accec13ca659e4eb665dcf13d269a2ae529dcf7eed870453417c745e15e3ad27"]
 							.unchecked_into(),
 						hex!["ee1773c391a8d3e404f2b6f1f0ec5e22b9719a753b2a24376ab50113283d49d0"]
@@ -258,9 +256,11 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 				vec![
 					(
 						// 5Grpw9i5vNyF6pbbvw7vA8pC5Vo8GMUbG8zraLMmAn32kTNH
-						hex!["d41e0bf1d76de368bdb91896b0d02d758950969ea795b1e7154343ee210de649"].into(),
+						hex!["d41e0bf1d76de368bdb91896b0d02d758950969ea795b1e7154343ee210de649"]
+							.into(),
 						// 5DLMZF33f61KvPDbJU5c2dPNQZ3jJyptsacpvsDhwNS1wUuU
-						hex!["382bd29103cf3af5f7c032bbedccfb3144fe672ca2c606147974bc2984ca2b14"].into(),
+						hex!["382bd29103cf3af5f7c032bbedccfb3144fe672ca2c606147974bc2984ca2b14"]
+							.into(),
 						hex!["1c10840139097128f7b28315814351ac9d3b3015615acc87c821685bd3c12f75"]
 							.unchecked_into(),
 						hex!["b3728b98ab621a98f17a727542de3748aa2427495c82ba94f9c4d2f726efc393"]
@@ -268,9 +268,11 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5CFDk3yCSgQ2goiaksMfRMFRS7ZU28BZqPQDeAsgZUa6FRzt
-						hex!["08050f1b6bcd4651004df427c884073652bafd54e5ca25cea69169532db2910b"].into(),
+						hex!["08050f1b6bcd4651004df427c884073652bafd54e5ca25cea69169532db2910b"]
+							.into(),
 						// 5F1ks2enazaPktQa3HURLK8GywzNZaGirovPtFvvbv91TLhJ
-						hex!["8275157f2a1d8373106cb00078a73a92a3303f3bf6eb72c3a67413bd943b020b"].into(),
+						hex!["8275157f2a1d8373106cb00078a73a92a3303f3bf6eb72c3a67413bd943b020b"]
+							.into(),
 						hex!["60ba45f02ae84bcd0c4f3dbf48af1cdc7dd3b6b555e9ff4bf49b049f46501a7d"]
 							.unchecked_into(),
 						hex!["403eeb3e1674713e25b61b01d6a71da99b2cad0abd21500e20c2853df9f70efd"]
@@ -278,9 +280,11 @@ pub fn jur_testnet_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5F6YideXfGcskpdFUczu3nZcJFmU9WKHgjjNVQjqgeVGRs66
-						hex!["861c6d95051f942bb022f13fc2125b2974933d8ab1441bfdee9855e9d8051556"].into(),
+						hex!["861c6d95051f942bb022f13fc2125b2974933d8ab1441bfdee9855e9d8051556"]
+							.into(),
 						// 5F92x4qKNYaHtfp5Yy7kb9r6gHCHkN3YSvNuedERPHgrURTn
-						hex!["8801f479e09a78515f1badee0169864dae45648109091e29b03a7b4ea97ec018"].into(),
+						hex!["8801f479e09a78515f1badee0169864dae45648109091e29b03a7b4ea97ec018"]
+							.into(),
 						hex!["34a2e82b426fcba4f45b118415296b0bcb4ffc5ac569a01a4d7f4612459a6742"]
 							.unchecked_into(),
 						hex!["0d2358b76bc57cc34fb972b3326dec12d68b7047b5307fe6d0b9bee0b89c9835"]
@@ -336,9 +340,11 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 				vec![
 					(
 						// 5Grpw9i5vNyF6pbbvw7vA8pC5Vo8GMUbG8zraLMmAn32kTNH
-						hex!["d41e0bf1d76de368bdb91896b0d02d758950969ea795b1e7154343ee210de649"].into(),
+						hex!["d41e0bf1d76de368bdb91896b0d02d758950969ea795b1e7154343ee210de649"]
+							.into(),
 						// 5DLMZF33f61KvPDbJU5c2dPNQZ3jJyptsacpvsDhwNS1wUuU
-						hex!["382bd29103cf3af5f7c032bbedccfb3144fe672ca2c606147974bc2984ca2b14"].into(),
+						hex!["382bd29103cf3af5f7c032bbedccfb3144fe672ca2c606147974bc2984ca2b14"]
+							.into(),
 						hex!["3a7ba9a4e315a6ce061338c3605d4f2b4de436b29e8c6a44ef7a9f6c06670523"]
 							.unchecked_into(),
 						hex!["2ad9eddbc9a121413f0658b798bc9fedc9ebfaa03979844871780f97e32cddea"]
@@ -346,9 +352,11 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5CFDk3yCSgQ2goiaksMfRMFRS7ZU28BZqPQDeAsgZUa6FRzt
-						hex!["08050f1b6bcd4651004df427c884073652bafd54e5ca25cea69169532db2910b"].into(),
+						hex!["08050f1b6bcd4651004df427c884073652bafd54e5ca25cea69169532db2910b"]
+							.into(),
 						// 5F1ks2enazaPktQa3HURLK8GywzNZaGirovPtFvvbv91TLhJ
-						hex!["8275157f2a1d8373106cb00078a73a92a3303f3bf6eb72c3a67413bd943b020b"].into(),
+						hex!["8275157f2a1d8373106cb00078a73a92a3303f3bf6eb72c3a67413bd943b020b"]
+							.into(),
 						hex!["28799c33bdff7174671cdf00a31de7072db82c3e0caf7b07bf308f191511db48"]
 							.unchecked_into(),
 						hex!["2f030305d54e650281312ed900590ad0b560fcd02b7efaedbd8ab7e3d0c05752"]
@@ -356,9 +364,11 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5F6YideXfGcskpdFUczu3nZcJFmU9WKHgjjNVQjqgeVGRs66
-						hex!["861c6d95051f942bb022f13fc2125b2974933d8ab1441bfdee9855e9d8051556"].into(),
+						hex!["861c6d95051f942bb022f13fc2125b2974933d8ab1441bfdee9855e9d8051556"]
+							.into(),
 						// 5F92x4qKNYaHtfp5Yy7kb9r6gHCHkN3YSvNuedERPHgrURTn
-						hex!["8801f479e09a78515f1badee0169864dae45648109091e29b03a7b4ea97ec018"].into(),
+						hex!["8801f479e09a78515f1badee0169864dae45648109091e29b03a7b4ea97ec018"]
+							.into(),
 						hex!["2e7bffef555f987c9c63bffdb52c0fbf32c713bfe62ffd8d300f26a1531d5c69"]
 							.unchecked_into(),
 						hex!["a1ad48550ce00756b725d57926988771f6a960fc3ac414a0dcd4ea87a0d46618"]
@@ -366,9 +376,11 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 					),
 					(
 						// 5FxxpyvEnE2sVujvhr6x4A4G171uv4WKSLvrUNst9M8MfdpV
-						hex!["ac8fdba5bbe008f65d0e85181daa5443c2eb492fea729a5981b2161467f8655c"].into(),
+						hex!["ac8fdba5bbe008f65d0e85181daa5443c2eb492fea729a5981b2161467f8655c"]
+							.into(),
 						// 5FxFAYsTNf31D5AGbXW9ETZPUZofpreHjJkdKehidcvDt5X4
-						hex!["ac039bef73f76755d3747d711554f7fb0f16022da51483e0d600c9c7c8cbf821"].into(),
+						hex!["ac039bef73f76755d3747d711554f7fb0f16022da51483e0d600c9c7c8cbf821"]
+							.into(),
 						hex!["a459a5db296d38e80e38ea5cb863c7f88b5ba6ea5dc2f888cae9726e8f908c36"]
 							.unchecked_into(),
 						hex!["f87122bdc0f31343bba1c1b8f11e1584e5ed42234ce479df89608aecde43260d"]
@@ -453,13 +465,7 @@ fn testnet_genesis(
 		session: jur_node_runtime::SessionConfig {
 			keys: initial_authorities
 				.iter()
-				.map(|x| {
-					(
-						x.0.clone(),
-						x.0.clone(),
-						session_keys(x.2.clone(), x.3.clone()),
-					)
-				})
+				.map(|x| (x.0.clone(), x.0.clone(), session_keys(x.2.clone(), x.3.clone())))
 				.collect::<Vec<_>>(),
 		},
 	}

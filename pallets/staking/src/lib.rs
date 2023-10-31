@@ -91,7 +91,7 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
-		DispatchErrorWithPostInfo, Perbill, Percent,Permill
+		DispatchErrorWithPostInfo, Perbill, Percent, Permill,
 	};
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
@@ -103,7 +103,7 @@ pub mod pallet {
 	pub type RoundIndex = u32;
 	type RewardPoint = u32;
 	pub type BalanceOf<T> =
-	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 	pub const COLLATOR_LOCK_ID: LockIdentifier = *b"stkngcol";
 	pub const DELEGATOR_LOCK_ID: LockIdentifier = *b"stkngdel";
@@ -119,8 +119,8 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// The currency type
 		type Currency: Currency<Self::AccountId>
-		+ ReservableCurrency<Self::AccountId>
-		+ LockableCurrency<Self::AccountId>;
+			+ ReservableCurrency<Self::AccountId>
+			+ LockableCurrency<Self::AccountId>;
 		/// The origin for monetary governance
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		/// Minimum number of blocks per round
@@ -483,7 +483,7 @@ pub mod pallet {
 	#[pallet::getter(fn parachain_bond_info)]
 	/// Parachain bond config info { account, percent_of_inflation }
 	pub(crate) type ParachainBondInfo<T: Config> =
-	StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery>;
+		StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn round)]
@@ -505,15 +505,15 @@ pub mod pallet {
 	#[pallet::getter(fn candidate_info)]
 	/// Get collator candidate info associated with an account if account is candidate else None
 	pub(crate) type CandidateInfo<T: Config> =
-	StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
+		StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
 
 	pub struct AddGet<T, R> {
 		_phantom: PhantomData<(T, R)>,
 	}
 	impl<T, R> Get<u32> for AddGet<T, R>
-		where
-			T: Get<u32>,
-			R: Get<u32>,
+	where
+		T: Get<u32>,
+		R: Get<u32>,
 	{
 		fn get() -> u32 {
 			T::get() + R::get()
@@ -574,7 +574,7 @@ pub mod pallet {
 	#[pallet::getter(fn selected_candidates)]
 	/// The collator candidates selected for the current round
 	type SelectedCandidates<T: Config> =
-	StorageValue<_, BoundedVec<T::AccountId, T::MaxCandidates>, ValueQuery>;
+		StorageValue<_, BoundedVec<T::AccountId, T::MaxCandidates>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn total)]
@@ -607,7 +607,7 @@ pub mod pallet {
 	#[pallet::getter(fn delayed_payouts)]
 	/// Delayed payouts
 	pub type DelayedPayouts<T: Config> =
-	StorageMap<_, Twox64Concat, RoundIndex, DelayedPayout<BalanceOf<T>>, OptionQuery>;
+		StorageMap<_, Twox64Concat, RoundIndex, DelayedPayout<BalanceOf<T>>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn staked)]
@@ -2207,7 +2207,9 @@ pub mod pallet {
 		}
 	}
 
-	impl<T: Config> frame_support::traits::EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
+	impl<T: Config> frame_support::traits::EstimateNextSessionRotation<BlockNumberFor<T>>
+		for Pallet<T>
+	{
 		fn average_session_length() -> BlockNumberFor<T> {
 			BlockNumberFor::<T>::from(<Round<T>>::get().length)
 		}

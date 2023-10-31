@@ -21,7 +21,10 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,OpaqueKeys, },
+	traits::{
+		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys,
+		Verify,
+	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
@@ -48,11 +51,10 @@ pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
+use sp_runtime::traits::ConvertInto;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
-use sp_runtime::traits::ConvertInto;
-
 
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 pub use pallet_staking::{weights::WeightInfo, InflationInfo, Range};
@@ -94,8 +96,6 @@ pub mod opaque {
 	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 	/// Opaque block identifier type.
 	pub type BlockId = generic::BlockId<Block>;
-
-
 }
 impl_opaque_keys! {
 	pub struct SessionKeys {
@@ -512,8 +512,8 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 pub struct AuraAccountAdapter;
 impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
 	fn find_author<'a, I>(digests: I) -> Option<AccountId>
-		where
-			I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
 		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests)
 			.and_then(|k| AccountId::try_from(k.as_ref()).ok())
@@ -559,33 +559,6 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
-// pub struct DummyBeacon {}
-// impl nimbus_primitives::SlotBeacon for DummyBeacon {
-// 	fn slot() -> u32 {
-// 		1
-// 	}
-// }
-
-// impl pallet_author_inherent::Config for Runtime {
-// 	// We start a new slot each time we see a new relay block.
-// 	type SlotBeacon = DummyBeacon;
-// 	type AccountLookup = ();
-//
-// 	type AuthorId = AccountId;
-// 	type WeightInfo = ();
-// 	/// Nimbus filter pipeline step 1:
-// 	/// Filters out NimbusIds not registered as SessionKeys of some AccountId
-// 	type CanAuthor = AuraAuthorFilter;
-// }
-
-
-// impl pallet_aura_style_filter::Config for Runtime {
-// 	/// Nimbus filter pipeline (final) step 3:
-// 	/// Choose 1 collator from PotentialAuthors as eligible
-// 	/// for each slot in round-robin fashion
-// 	type PotentialAuthors = Staking;
-// }
-
 parameter_types! {
 	/// Minimum stake required to be reserved to be a candidate
 	pub const MinCandidateStk: u128 = 2 * DOLLARS;
@@ -623,7 +596,6 @@ impl pallet_staking::Config for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	/// Minimum stake required to be reserved to be a delegator
 	type MinDelegation = ConstU128<{ 5 * DOLLARS }>;
-	// type BlockAuthor = AuthorInherent;
 	type OnCollatorPayout = ();
 	type PayoutCollatorReward = ();
 	type OnInactiveCollator = ();
@@ -635,7 +607,6 @@ impl pallet_staking::Config for Runtime {
 parameter_types! {
 	pub const Period: u32 = 6 * HOURS;
 }
-
 
 impl pallet_session::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -678,7 +649,7 @@ construct_runtime!(
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 		// AuthorInherent: pallet_author_inherent,
-        // AuraAuthorFilter: pallet_aura_style_filter,
+		// AuraAuthorFilter: pallet_aura_style_filter,
 	}
 );
 
@@ -701,7 +672,7 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
