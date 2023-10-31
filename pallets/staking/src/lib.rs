@@ -91,7 +91,7 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::{
 		traits::{Saturating, Zero},
-		DispatchErrorWithPostInfo, Perbill, Percent,
+		DispatchErrorWithPostInfo, Perbill, Percent,Permill
 	};
 	use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
@@ -103,7 +103,7 @@ pub mod pallet {
 	pub type RoundIndex = u32;
 	type RewardPoint = u32;
 	pub type BalanceOf<T> =
-		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 	pub const COLLATOR_LOCK_ID: LockIdentifier = *b"stkngcol";
 	pub const DELEGATOR_LOCK_ID: LockIdentifier = *b"stkngdel";
@@ -119,8 +119,8 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// The currency type
 		type Currency: Currency<Self::AccountId>
-			+ ReservableCurrency<Self::AccountId>
-			+ LockableCurrency<Self::AccountId>;
+		+ ReservableCurrency<Self::AccountId>
+		+ LockableCurrency<Self::AccountId>;
 		/// The origin for monetary governance
 		type MonetaryGovernanceOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		/// Minimum number of blocks per round
@@ -167,7 +167,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinDelegation: Get<BalanceOf<Self>>;
 		/// Get the current block author
-		type BlockAuthor: Get<Self::AccountId>;
+		// type BlockAuthor: Get<Self::AccountId>;
 		/// Handler to notify the runtime when a collator is paid.
 		/// If you don't need it, you can specify the type `()`.
 		type OnCollatorPayout: OnCollatorPayout<Self::AccountId, BalanceOf<Self>>;
@@ -464,9 +464,9 @@ pub mod pallet {
 			weight = weight.saturating_add(T::DbWeight::get().reads_writes(3, 2));
 			weight
 		}
-		fn on_finalize(_n: BlockNumberFor<T>) {
-			Self::award_points_to_block_author();
-		}
+		// fn on_finalize(_n: BlockNumberFor<T>) {
+		// 	Self::award_points_to_block_author();
+		// }
 	}
 
 	#[pallet::storage]
@@ -483,7 +483,7 @@ pub mod pallet {
 	#[pallet::getter(fn parachain_bond_info)]
 	/// Parachain bond config info { account, percent_of_inflation }
 	pub(crate) type ParachainBondInfo<T: Config> =
-		StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery>;
+	StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn round)]
@@ -505,15 +505,15 @@ pub mod pallet {
 	#[pallet::getter(fn candidate_info)]
 	/// Get collator candidate info associated with an account if account is candidate else None
 	pub(crate) type CandidateInfo<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
+	StorageMap<_, Twox64Concat, T::AccountId, CandidateMetadata<BalanceOf<T>>, OptionQuery>;
 
 	pub struct AddGet<T, R> {
 		_phantom: PhantomData<(T, R)>,
 	}
 	impl<T, R> Get<u32> for AddGet<T, R>
-	where
-		T: Get<u32>,
-		R: Get<u32>,
+		where
+			T: Get<u32>,
+			R: Get<u32>,
 	{
 		fn get() -> u32 {
 			T::get() + R::get()
@@ -574,7 +574,7 @@ pub mod pallet {
 	#[pallet::getter(fn selected_candidates)]
 	/// The collator candidates selected for the current round
 	type SelectedCandidates<T: Config> =
-		StorageValue<_, BoundedVec<T::AccountId, T::MaxCandidates>, ValueQuery>;
+	StorageValue<_, BoundedVec<T::AccountId, T::MaxCandidates>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn total)]
@@ -607,7 +607,7 @@ pub mod pallet {
 	#[pallet::getter(fn delayed_payouts)]
 	/// Delayed payouts
 	pub type DelayedPayouts<T: Config> =
-		StorageMap<_, Twox64Concat, RoundIndex, DelayedPayout<BalanceOf<T>>, OptionQuery>;
+	StorageMap<_, Twox64Concat, RoundIndex, DelayedPayout<BalanceOf<T>>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn staked)]
@@ -1007,7 +1007,7 @@ pub mod pallet {
 		/// Execute leave candidates request
 		#[pallet::call_index(9)]
 		#[pallet::weight(
-			<T as Config>::WeightInfo::execute_leave_candidates_worst_case(*candidate_delegation_count)
+		<T as Config>::WeightInfo::execute_leave_candidates_worst_case(*candidate_delegation_count)
 		)]
 		pub fn execute_leave_candidates(
 			origin: OriginFor<T>,
@@ -1124,7 +1124,7 @@ pub mod pallet {
 		/// If caller is a delegator, then makes delegation to change their delegation state
 		#[pallet::call_index(17)]
 		#[pallet::weight(
-			<T as Config>::WeightInfo::delegate_with_auto_compound_worst()
+		<T as Config>::WeightInfo::delegate_with_auto_compound_worst()
 		)]
 		pub fn delegate(
 			origin: OriginFor<T>,
@@ -1150,11 +1150,11 @@ pub mod pallet {
 		/// Sets the auto-compound config for the delegation
 		#[pallet::call_index(18)]
 		#[pallet::weight(
-			<T as Config>::WeightInfo::delegate_with_auto_compound(
-				*candidate_delegation_count,
-				*candidate_auto_compounding_delegation_count,
-				*delegation_count,
-			)
+		<T as Config>::WeightInfo::delegate_with_auto_compound(
+		*candidate_delegation_count,
+		*candidate_auto_compounding_delegation_count,
+		*delegation_count,
+		)
 		)]
 		pub fn delegate_with_auto_compound(
 			origin: OriginFor<T>,
@@ -1204,7 +1204,7 @@ pub mod pallet {
 		/// A revoke may not be performed if any other scheduled request is pending.
 		#[pallet::call_index(22)]
 		#[pallet::weight(<T as Config>::WeightInfo::schedule_revoke_delegation(
-			T::MaxTopDelegationsPerCandidate::get() + T::MaxBottomDelegationsPerCandidate::get()
+		T::MaxTopDelegationsPerCandidate::get() + T::MaxBottomDelegationsPerCandidate::get()
 		))]
 		pub fn schedule_revoke_delegation(
 			origin: OriginFor<T>,
@@ -1217,7 +1217,7 @@ pub mod pallet {
 		/// Bond more for delegators wrt a specific collator candidate.
 		#[pallet::call_index(23)]
 		#[pallet::weight(<T as Config>::WeightInfo::delegator_bond_more(
-			T::MaxTopDelegationsPerCandidate::get() + T::MaxBottomDelegationsPerCandidate::get()
+		T::MaxTopDelegationsPerCandidate::get() + T::MaxBottomDelegationsPerCandidate::get()
 		))]
 		pub fn delegator_bond_more(
 			origin: OriginFor<T>,
@@ -1245,7 +1245,7 @@ pub mod pallet {
 		/// A bond less may not be performed if any other scheduled request is pending.
 		#[pallet::call_index(24)]
 		#[pallet::weight(T::WeightInfo::schedule_delegator_bond_less(
-			T::MaxTopDelegationsPerCandidate::get() + T::MaxBottomDelegationsPerCandidate::get()
+		T::MaxTopDelegationsPerCandidate::get() + T::MaxBottomDelegationsPerCandidate::get()
 		))]
 		pub fn schedule_delegator_bond_less(
 			origin: OriginFor<T>,
@@ -1282,8 +1282,8 @@ pub mod pallet {
 		/// Sets the auto-compounding reward percentage for a delegation.
 		#[pallet::call_index(27)]
 		#[pallet::weight(<T as Config>::WeightInfo::set_auto_compound(
-			*candidate_auto_compounding_delegation_count_hint,
-			*delegation_count_hint,
+		*candidate_auto_compounding_delegation_count_hint,
+		*delegation_count_hint,
 		))]
 		pub fn set_auto_compound(
 			origin: OriginFor<T>,
@@ -1305,7 +1305,7 @@ pub mod pallet {
 		/// Hotfix to remove existing empty entries for candidates that have left.
 		#[pallet::call_index(28)]
 		#[pallet::weight(
-			T::DbWeight::get().reads_writes(2 * candidates.len() as u64, candidates.len() as u64)
+		T::DbWeight::get().reads_writes(2 * candidates.len() as u64, candidates.len() as u64)
 		)]
 		pub fn hotfix_remove_delegation_requests_exited_candidates(
 			origin: OriginFor<T>,
@@ -1401,8 +1401,8 @@ pub mod pallet {
 		/// Enable/Disable marking offline feature
 		#[pallet::call_index(30)]
 		#[pallet::weight(
-			Weight::from_parts(3_000_000u64, 4_000u64)
-				.saturating_add(T::DbWeight::get().writes(1u64))
+		Weight::from_parts(3_000_000u64, 4_000u64)
+		.saturating_add(T::DbWeight::get().writes(1u64))
 		)]
 		pub fn enable_marking_offline(origin: OriginFor<T>, value: bool) -> DispatchResult {
 			ensure_root(origin)?;
@@ -1558,8 +1558,8 @@ pub mod pallet {
 			let return_stake = |bond: Bond<T::AccountId, BalanceOf<T>>| {
 				// remove delegation from delegator state
 				let mut delegator = DelegatorState::<T>::get(&bond.owner).expect(
-					"Collator state and delegator state are consistent. 
-						Collator state has a record of this delegation. Therefore, 
+					"Collator state and delegator state are consistent.
+						Collator state has a record of this delegation. Therefore,
 						Delegator state also has a record. qed.",
 				);
 
@@ -2157,25 +2157,85 @@ pub mod pallet {
 
 	/// Add reward points to block authors:
 	/// * 20 points to the block producer for producing a block in the chain
-	impl<T: Config> Pallet<T> {
-		fn award_points_to_block_author() {
-			let author = T::BlockAuthor::get();
+	impl<T: Config> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T> {
+		fn note_author(author: T::AccountId) {
+			// let author = T::BlockAuthor::get();
 			let now = <Round<T>>::get().current;
-			let score_plus_20 = <AwardedPts<T>>::get(now, &author).saturating_add(20);
-			<AwardedPts<T>>::insert(now, author, score_plus_20);
-			<Points<T>>::mutate(now, |x| *x = x.saturating_add(20));
+			let score_plus_20 = <AwardedPts<T>>::get(now, &author).saturating_add(1000);
+			<AwardedPts<T>>::insert(now, author.clone(), score_plus_20);
+
+			<Points<T>>::mutate(now, |x| *x = x.saturating_add(1000));
 		}
 	}
 
-	impl<T: Config> nimbus_primitives::CanAuthor<T::AccountId> for Pallet<T> {
-		fn can_author(account: &T::AccountId, _slot: &u32) -> bool {
-			Self::is_selected_candidate(account)
+	impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
+		fn new_session(new_index: sp_staking::SessionIndex) -> Option<Vec<T::AccountId>> {
+			log::debug!(
+				"assembling new collators for new session {} at #{:?}",
+				new_index,
+				<frame_system::Pallet<T>>::block_number(),
+			);
+
+			let collators = Pallet::<T>::selected_candidates().to_vec();
+			if collators.is_empty() {
+				// We never want to pass an empty set of collators. This would brick the chain.
+				// Sessions 0, 1 are configured on genesis and use SessionConfig keys
+				if new_index > 1 {
+					log::error!("💥 keeping old session because of empty collator set!");
+				}
+				None
+			} else {
+				Some(collators)
+			}
+		}
+
+		fn end_session(_end_index: sp_staking::SessionIndex) {}
+
+		fn start_session(_start_index: sp_staking::SessionIndex) {}
+	}
+
+	impl<T: Config> pallet_session::ShouldEndSession<BlockNumberFor<T>> for Pallet<T> {
+		fn should_end_session(now: BlockNumberFor<T>) -> bool {
+			let round = <Round<T>>::get();
+			return round.should_update(now);
 		}
 	}
 
 	impl<T: Config> Get<Vec<T::AccountId>> for Pallet<T> {
 		fn get() -> Vec<T::AccountId> {
 			Self::selected_candidates().into_inner()
+		}
+	}
+
+	impl<T: Config> frame_support::traits::EstimateNextSessionRotation<BlockNumberFor<T>> for Pallet<T> {
+		fn average_session_length() -> BlockNumberFor<T> {
+			BlockNumberFor::<T>::from(<Round<T>>::get().length)
+		}
+
+		fn estimate_current_session_progress(now: BlockNumberFor<T>) -> (Option<Permill>, Weight) {
+			let round = <Round<T>>::get();
+			let passed_blocks = now.saturating_sub(round.first);
+
+			(
+				Some(Permill::from_rational(
+					passed_blocks,
+					BlockNumberFor::<T>::from(round.length),
+				)),
+				// One read for the round info, blocknumber is read free
+				T::DbWeight::get().reads(1),
+			)
+		}
+
+		fn estimate_next_session_rotation(
+			_now: BlockNumberFor<T>,
+		) -> (Option<BlockNumberFor<T>>, Weight) {
+			let round = <Round<T>>::get();
+
+			(
+				Some(round.first + round.length.into()),
+				// One read for the round info, blocknumber is read free
+				T::DbWeight::get().reads(1),
+			)
 		}
 	}
 }

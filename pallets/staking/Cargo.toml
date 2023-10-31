@@ -8,6 +8,10 @@ version = "1.0.0"
 [dependencies]
 log = { version = "0.4" }
 serde = { version = "1.0.132", default-features = false }
+pallet-authorship = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
+pallet-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
+sp-staking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
+
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, optional = true, branch = "release-polkadot-v1.1.0" }
@@ -41,8 +45,11 @@ std = [
 	"frame-system/std",
 	"nimbus-primitives/std",
 	"parity-scale-codec/std",
+	"pallet-authorship/std",
+	"pallet-session/std",
 	"scale-info/std",
 	"sp-runtime/std",
+	"sp-staking/std",
 	"sp-std/std",
 ]
 runtime-benchmarks = [ "frame-benchmarking" ]
