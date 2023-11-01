@@ -19,7 +19,7 @@
 //! of the calls in the `lib.rs`.
 //! 1. Root
 //! 2. Monetary Governance
-//! 3. Public (Collator, Nominator)
+//! 3. Public (validator, Nominator)
 //! 4. Miscellaneous Property-Based Tests
 
 use crate::auto_compound::{AutoCompoundConfig, AutoCompoundDelegations};
@@ -30,7 +30,7 @@ use crate::mock::{
 };
 use crate::{
 	assert_events_emitted, assert_events_emitted_match, assert_events_eq, assert_no_events,
-	AtStake, Bond, CollatorStatus, DelegationScheduledRequests, DelegatorAdded,
+	AtStake, Bond, ValidatorStatus, DelegationScheduledRequests, DelegatorAdded,
 	EnableMarkingOffline, Error, Event, Range, DELEGATOR_LOCK_ID,
 };
 use frame_support::{assert_err, assert_noop, assert_ok, pallet_prelude::*, BoundedVec};
@@ -46,7 +46,7 @@ fn invalid_root_origin_fails() {
 			sp_runtime::DispatchError::BadOrigin
 		);
 		assert_noop!(
-			ParachainStaking::set_collator_commission(
+			ParachainStaking::set_validator_commission(
 				RuntimeOrigin::signed(45),
 				Perbill::from_percent(5)
 			),
@@ -78,7 +78,7 @@ fn set_total_selected_fails_if_above_blocks_per_round() {
 		assert_eq!(ParachainStaking::round().length, 5); // test relies on this
 		assert_noop!(
 			ParachainStaking::set_total_selected(RuntimeOrigin::root(), 6u32),
-			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedCollators,
+			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedvalidators,
 		);
 	});
 }
@@ -100,7 +100,7 @@ fn set_total_selected_fails_if_equal_to_blocks_per_round() {
 		assert_ok!(ParachainStaking::set_blocks_per_round(RuntimeOrigin::root(), 10u32));
 		assert_noop!(
 			ParachainStaking::set_total_selected(RuntimeOrigin::root(), 10u32),
-			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedCollators,
+			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedvalidators,
 		);
 	});
 }
@@ -120,7 +120,7 @@ fn set_blocks_per_round_fails_if_below_total_selected() {
 		assert_ok!(ParachainStaking::set_total_selected(RuntimeOrigin::root(), 10u32));
 		assert_noop!(
 			ParachainStaking::set_blocks_per_round(RuntimeOrigin::root(), 9u32),
-			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedCollators,
+			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedvalidators,
 		);
 	});
 }
@@ -132,7 +132,7 @@ fn set_blocks_per_round_fails_if_equal_to_total_selected() {
 		assert_ok!(ParachainStaking::set_total_selected(RuntimeOrigin::root(), 9u32));
 		assert_noop!(
 			ParachainStaking::set_blocks_per_round(RuntimeOrigin::root(), 9u32),
-			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedCollators,
+			Error::<Test>::RoundLengthMustBeGreaterThanTotalSelectedvalidators,
 		);
 	});
 }
@@ -177,16 +177,16 @@ fn cannot_set_total_selected_below_module_min() {
 	});
 }
 
-// SET COLLATOR COMMISSION
+// SET validator COMMISSION
 
 #[test]
-fn set_collator_commission_event_emits_correctly() {
+fn set_validator_commission_event_emits_correctly() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(ParachainStaking::set_collator_commission(
+		assert_ok!(ParachainStaking::set_validator_commission(
 			RuntimeOrigin::root(),
 			Perbill::from_percent(5)
 		));
-		assert_events_eq!(Event::CollatorCommissionSet {
+		assert_events_eq!(Event::ValidatorCommissionSet {
 			old: Perbill::from_percent(20),
 			new: Perbill::from_percent(5),
 		});
@@ -194,22 +194,22 @@ fn set_collator_commission_event_emits_correctly() {
 }
 
 #[test]
-fn set_collator_commission_storage_updates_correctly() {
+fn set_validator_commission_storage_updates_correctly() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(ParachainStaking::collator_commission(), Perbill::from_percent(20));
-		assert_ok!(ParachainStaking::set_collator_commission(
+		assert_eq!(ParachainStaking::validator_commission(), Perbill::from_percent(20));
+		assert_ok!(ParachainStaking::set_validator_commission(
 			RuntimeOrigin::root(),
 			Perbill::from_percent(5)
 		));
-		assert_eq!(ParachainStaking::collator_commission(), Perbill::from_percent(5));
+		assert_eq!(ParachainStaking::validator_commission(), Perbill::from_percent(5));
 	});
 }
 
 #[test]
-fn cannot_set_collator_commission_to_current_collator_commission() {
+fn cannot_set_validator_commission_to_current_validator_commission() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			ParachainStaking::set_collator_commission(
+			ParachainStaking::set_validator_commission(
 				RuntimeOrigin::root(),
 				Perbill::from_percent(20)
 			),
@@ -272,8 +272,8 @@ fn round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round() {
 		.with_candidates(vec![(1, 20)])
 		.build()
 		.execute_with(|| {
-			// we can't lower the blocks per round because it must be above the number of collators,
-			// and we can't lower the number of collators because it must be above
+			// we can't lower the blocks per round because it must be above the number of validators,
+			// and we can't lower the number of validators because it must be above
 			// MinSelectedCandidates. so we first raise blocks per round, then lower it.
 			assert_ok!(ParachainStaking::set_blocks_per_round(RuntimeOrigin::root(), 10u32));
 
@@ -281,7 +281,7 @@ fn round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round() {
 			assert_events_emitted!(Event::NewRound {
 				starting_block: 10,
 				round: 2,
-				selected_collators_number: 1,
+				selected_validators_number: 1,
 				total_balance: 20
 			},);
 			roll_to(17);
@@ -290,7 +290,7 @@ fn round_immediately_jumps_if_current_duration_exceeds_new_blocks_per_round() {
 			assert_events_emitted!(Event::NewRound {
 				starting_block: 18,
 				round: 3,
-				selected_collators_number: 1,
+				selected_validators_number: 1,
 				total_balance: 20
 			});
 		});
@@ -574,7 +574,7 @@ fn join_candidates_event_emits_correctly() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(ParachainStaking::join_candidates(RuntimeOrigin::signed(1), 10u128, 0u32));
-			assert_events_eq!(Event::JoinedCollatorCandidates {
+			assert_events_eq!(Event::JoinedValidatorCandidates {
 				account: 1,
 				amount_locked: 10u128,
 				new_total_amt_locked: 10u128,
@@ -588,9 +588,9 @@ fn join_candidates_reserves_balance() {
 		.with_balances(vec![(1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 10);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 10);
 			assert_ok!(ParachainStaking::join_candidates(RuntimeOrigin::signed(1), 10u128, 0u32));
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 0);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 0);
 		});
 }
 
@@ -862,7 +862,7 @@ fn enable_marking_offline_fails_bad_origin() {
 }
 
 #[test]
-fn notify_inactive_collator_works() {
+fn notify_inactive_validator_works() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)])
@@ -888,23 +888,23 @@ fn notify_inactive_collator_works() {
 			roll_to_round_begin(4);
 			roll_blocks(1);
 
-			// Round 6 - notify the collator as inactive
+			// Round 6 - notify the validator as inactive
 			roll_to_round_begin(6);
 			roll_blocks(1);
 
 			assert_eq!(<Test as crate::Config>::MaxOfflineRounds::get(), 1);
 			assert_eq!(<Test as crate::Config>::RewardPaymentDelay::get(), 2);
 
-			// Call 'notify_inactive_collator' extrinsic
-			assert_ok!(ParachainStaking::notify_inactive_collator(RuntimeOrigin::signed(1), 1));
+			// Call 'notify_inactive_validator' extrinsic
+			assert_ok!(ParachainStaking::notify_inactive_validator(RuntimeOrigin::signed(1), 1));
 
-			// Check the collator was marked as offline as it hasn't produced blocks
+			// Check the validator was marked as offline as it hasn't produced blocks
 			assert_events_eq!(Event::CandidateWentOffline { candidate: 1 },);
 		});
 }
 
 #[test]
-fn notify_inactive_collator_fails_too_low_collator_count() {
+fn notify_inactive_validator_fails_too_low_validator_count() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20), (3, 20)])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20)])
@@ -917,16 +917,16 @@ fn notify_inactive_collator_fails_too_low_collator_count() {
 			roll_to_round_begin(4);
 			roll_blocks(1);
 
-			// Call 'notify_inactive_collator' extrinsic
+			// Call 'notify_inactive_validator' extrinsic
 			assert_noop!(
-				ParachainStaking::notify_inactive_collator(RuntimeOrigin::signed(1), 1),
-				Error::<Test>::TooLowCollatorCountToNotifyAsInactive
+				ParachainStaking::notify_inactive_validator(RuntimeOrigin::signed(1), 1),
+				Error::<Test>::TooLowvalidatorCountToNotifyAsInactive
 			);
 		});
 }
 
 #[test]
-fn notify_inactive_collator_fails_candidate_is_not_collator() {
+fn notify_inactive_validator_fails_candidate_is_not_validator() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 80), (2, 80), (3, 80), (4, 80), (5, 80), (6, 20)])
 		.with_candidates(vec![(1, 80), (2, 80), (3, 80), (4, 80), (5, 80)])
@@ -939,15 +939,15 @@ fn notify_inactive_collator_fails_candidate_is_not_collator() {
 
 			roll_to_round_begin(2);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 5, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 4, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 5, total_exposed_amount: 80 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 400,
 				},
 			);
@@ -958,15 +958,15 @@ fn notify_inactive_collator_fails_candidate_is_not_collator() {
 			// Round 6
 			roll_to_round_begin(6);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 6, collator_account: 1, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 2, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 4, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 5, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 1, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 2, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 4, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 5, total_exposed_amount: 80 },
 				Event::NewRound {
 					starting_block: 25,
 					round: 6,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 400,
 				},
 			);
@@ -975,14 +975,14 @@ fn notify_inactive_collator_fails_candidate_is_not_collator() {
 			// A candidate cannot be notified as inactive if it hasn't been selected
 			// to produce blocks
 			assert_noop!(
-				ParachainStaking::notify_inactive_collator(RuntimeOrigin::signed(1), 6),
+				ParachainStaking::notify_inactive_validator(RuntimeOrigin::signed(1), 6),
 				Error::<Test>::CannotBeNotifiedAsInactive
 			);
 		});
 }
 
 #[test]
-fn notify_inactive_collator_fails_cannot_be_notified_as_inactive() {
+fn notify_inactive_validator_fails_cannot_be_notified_as_inactive() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)])
@@ -1011,16 +1011,16 @@ fn notify_inactive_collator_fails_cannot_be_notified_as_inactive() {
 			roll_to_round_begin(4);
 			roll_blocks(1);
 
-			// Call 'notify_inactive_collator' extrinsic
+			// Call 'notify_inactive_validator' extrinsic
 			assert_noop!(
-				ParachainStaking::notify_inactive_collator(RuntimeOrigin::signed(1), 1),
+				ParachainStaking::notify_inactive_validator(RuntimeOrigin::signed(1), 1),
 				Error::<Test>::CannotBeNotifiedAsInactive
 			);
 		});
 }
 
 #[test]
-fn notify_inactive_collator_fails_round_too_low() {
+fn notify_inactive_validator_fails_round_too_low() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)])
 		.with_candidates(vec![(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)])
@@ -1033,9 +1033,9 @@ fn notify_inactive_collator_fails_round_too_low() {
 			roll_to_round_begin(1);
 			roll_blocks(1);
 
-			// Call 'notify_inactive_collator' extrinsic
+			// Call 'notify_inactive_validator' extrinsic
 			assert_noop!(
-				ParachainStaking::notify_inactive_collator(RuntimeOrigin::signed(1), 1),
+				ParachainStaking::notify_inactive_validator(RuntimeOrigin::signed(1), 1),
 				Error::<Test>::CurrentRoundTooLow
 			);
 		});
@@ -1119,11 +1119,11 @@ fn execute_leave_candidates_unreserves_balance() {
 		.with_candidates(vec![(1, 10)])
 		.build()
 		.execute_with(|| {
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 0);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 0);
 			assert_ok!(ParachainStaking::schedule_leave_candidates(RuntimeOrigin::signed(1), 1u32));
 			roll_to(10);
 			assert_ok!(ParachainStaking::execute_leave_candidates(RuntimeOrigin::signed(1), 1, 0));
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 10);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 10);
 		});
 }
 
@@ -1306,11 +1306,11 @@ fn go_offline_updates_candidate_state_to_idle() {
 		.build()
 		.execute_with(|| {
 			let candidate_state = ParachainStaking::candidate_info(1).expect("is active candidate");
-			assert_eq!(candidate_state.status, CollatorStatus::Active);
+			assert_eq!(candidate_state.status, ValidatorStatus::Active);
 			assert_ok!(ParachainStaking::go_offline(RuntimeOrigin::signed(1)));
 			let candidate_state =
 				ParachainStaking::candidate_info(1).expect("is candidate, just offline");
-			assert_eq!(candidate_state.status, CollatorStatus::Idle);
+			assert_eq!(candidate_state.status, ValidatorStatus::Idle);
 		});
 }
 
@@ -1380,10 +1380,10 @@ fn go_online_storage_updates_candidate_state() {
 			assert_ok!(ParachainStaking::go_offline(RuntimeOrigin::signed(1)));
 			let candidate_state =
 				ParachainStaking::candidate_info(1).expect("offline still exists");
-			assert_eq!(candidate_state.status, CollatorStatus::Idle);
+			assert_eq!(candidate_state.status, ValidatorStatus::Idle);
 			assert_ok!(ParachainStaking::go_online(RuntimeOrigin::signed(1)));
 			let candidate_state = ParachainStaking::candidate_info(1).expect("online so exists");
-			assert_eq!(candidate_state.status, CollatorStatus::Active);
+			assert_eq!(candidate_state.status, ValidatorStatus::Active);
 		});
 }
 
@@ -1451,9 +1451,9 @@ fn candidate_bond_more_reserves_balance() {
 		.with_candidates(vec![(1, 20)])
 		.build()
 		.execute_with(|| {
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 30);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 30);
 			assert_ok!(ParachainStaking::candidate_bond_more(RuntimeOrigin::signed(1), 30));
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 0);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 0);
 		});
 }
 
@@ -1624,14 +1624,14 @@ fn execute_candidate_bond_less_unreserves_balance() {
 		.with_candidates(vec![(1, 30)])
 		.build()
 		.execute_with(|| {
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 0);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 0);
 			assert_ok!(ParachainStaking::schedule_candidate_bond_less(
 				RuntimeOrigin::signed(1),
 				10
 			));
 			roll_to(10);
 			assert_ok!(ParachainStaking::execute_candidate_bond_less(RuntimeOrigin::signed(1), 1));
-			assert_eq!(ParachainStaking::get_collator_stakable_free_balance(&1), 10);
+			assert_eq!(ParachainStaking::get_validator_stakable_free_balance(&1), 10);
 		});
 }
 
@@ -1804,7 +1804,7 @@ fn delegate_updates_delegator_state() {
 }
 
 #[test]
-fn delegate_updates_collator_state() {
+fn delegate_updates_validator_state() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 30), (2, 10)])
 		.with_candidates(vec![(1, 30)])
@@ -3136,7 +3136,7 @@ fn cancel_revoke_delegation_emits_correct_event() {
 			assert_ok!(ParachainStaking::cancel_delegation_request(RuntimeOrigin::signed(2), 1));
 			assert_events_emitted!(Event::CancelledDelegationRequest {
 				delegator: 2,
-				collator: 1,
+				validator: 1,
 				cancelled_request: CancelledScheduledRequest {
 					when_executable: 3,
 					action: DelegationAction::Revoke(10),
@@ -3200,7 +3200,7 @@ fn cancel_delegator_bond_less_correct_event() {
 			assert_ok!(ParachainStaking::cancel_delegation_request(RuntimeOrigin::signed(2), 1));
 			assert_events_emitted!(Event::CancelledDelegationRequest {
 				delegator: 2,
-				collator: 1,
+				validator: 1,
 				cancelled_request: CancelledScheduledRequest {
 					when_executable: 3,
 					action: DelegationAction::Decrease(5),
@@ -3343,15 +3343,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			roll_to_round_begin(2);
 			// chooses top TotalSelectedCandidates (5), in order
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 			);
@@ -3359,7 +3359,7 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// ~ set block author as 1 for all blocks this round
 			set_author(2, 1, 100);
 			roll_to_round_begin(4);
-			// distribute total issuance to collator 1 and its delegators 6, 7, 19
+			// distribute total issuance to validator 1 and its delegators 6, 7, 19
 			assert_eq!(Balances::free_balance(&11), 16);
 			// ~ set block author as 1 for all blocks this round
 			set_author(3, 1, 100);
@@ -3373,15 +3373,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			assert_ok!(ParachainStaking::schedule_revoke_delegation(RuntimeOrigin::signed(6), 1,));
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 15 },
-				Event::CollatorChosen { round: 4, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 4, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 4, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 4, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 4, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 4, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 4, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 4, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 4, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 15,
 					round: 4,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 				Event::DelegatorExitScheduled { round: 4, delegator: 6, scheduled_exit: 6 },
@@ -3397,15 +3397,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			roll_to_round_begin(5);
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 16 },
-				Event::CollatorChosen { round: 5, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 5, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 5, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 5, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 5, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 5, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 5, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 5, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 5, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 5, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 20,
 					round: 5,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 			);
@@ -3424,15 +3424,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			));
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 16 },
-				Event::CollatorChosen { round: 6, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 6, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 6, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 6, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 6, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 6, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 6, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 6, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 6, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 6, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 25,
 					round: 6,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 				Event::DelegatorLeftCandidate {
@@ -3453,15 +3453,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			roll_to_round_begin(7);
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 17 },
-				Event::CollatorChosen { round: 7, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 7, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 7, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 7, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 7, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 7, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 7, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 7, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 7, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 7, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 30,
 					round: 7,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 130,
 				},
 			);
@@ -3487,15 +3487,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// keep paying 6
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 30 },
-				Event::CollatorChosen { round: 8, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 8, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 8, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 8, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 8, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 8, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 8, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 8, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 8, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 8, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 35,
 					round: 8,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 130,
 				},
 			);
@@ -3511,15 +3511,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// no more paying 6
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 32 },
-				Event::CollatorChosen { round: 9, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 9, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 9, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 9, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 9, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 9, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 9, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 9, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 9, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 9, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 40,
 					round: 9,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 130,
 				},
 			);
@@ -3544,15 +3544,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// new delegation is not rewarded yet
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 33 },
-				Event::CollatorChosen { round: 10, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 10, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 10, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 10, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 10, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 10, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 10, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 10, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 10, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 10, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 45,
 					round: 10,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 			);
@@ -3569,15 +3569,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// new delegation is still not rewarded yet
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 35 },
-				Event::CollatorChosen { round: 11, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 11, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 11, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 11, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 11, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 11, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 11, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 11, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 11, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 11, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 50,
 					round: 11,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 			);
@@ -3592,15 +3592,15 @@ fn parachain_bond_inflation_reserve_matches_config() {
 			// new delegation is rewarded, 2 rounds after joining (`RewardPaymentDelay` is 2)
 			assert_events_eq!(
 				Event::ReservedForParachainBond { account: 11, value: 37 },
-				Event::CollatorChosen { round: 12, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 12, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 12, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 12, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 12, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 12, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 12, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 12, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 12, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 12, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 55,
 					round: 12,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 			);
@@ -3616,7 +3616,7 @@ fn parachain_bond_inflation_reserve_matches_config() {
 }
 
 #[test]
-fn paid_collator_commission_matches_config() {
+fn paid_validator_commission_matches_config() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 100), (2, 100), (3, 100), (4, 100), (5, 100), (6, 100)])
 		.with_candidates(vec![(1, 20)])
@@ -3626,14 +3626,14 @@ fn paid_collator_commission_matches_config() {
 			roll_to_round_begin(2);
 			assert_ok!(ParachainStaking::join_candidates(RuntimeOrigin::signed(4), 20u128, 100u32));
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 40 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 1,
+					selected_validators_number: 1,
 					total_balance: 40,
 				},
-				Event::JoinedCollatorCandidates {
+				Event::JoinedValidatorCandidates {
 					account: 4,
 					amount_locked: 20,
 					new_total_amt_locked: 60,
@@ -3662,12 +3662,12 @@ fn paid_collator_commission_matches_config() {
 
 			roll_to_round_begin(3);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 3, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 3, collator_account: 4, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 3, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 3, validator_account: 4, total_exposed_amount: 40 },
 				Event::NewRound {
 					starting_block: 10,
 					round: 3,
-					selected_collators_number: 2,
+					selected_validators_number: 2,
 					total_balance: 80,
 				},
 			);
@@ -3677,12 +3677,12 @@ fn paid_collator_commission_matches_config() {
 			// 20% of 10 is commission + due_portion (0) = 2 + 4 = 6
 			// all delegator payouts are 10-2 = 8 * stake_pct
 			assert_events_eq!(
-				Event::CollatorChosen { round: 5, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 5, collator_account: 4, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 5, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 5, validator_account: 4, total_exposed_amount: 40 },
 				Event::NewRound {
 					starting_block: 20,
 					round: 5,
-					selected_collators_number: 2,
+					selected_validators_number: 2,
 					total_balance: 80,
 				},
 			);
@@ -3697,7 +3697,7 @@ fn paid_collator_commission_matches_config() {
 }
 
 #[test]
-fn collator_exit_executes_after_delay() {
+fn validator_exit_executes_after_delay() {
 	ExtBuilder::default()
 		.with_balances(vec![
 			(1, 1000),
@@ -3722,10 +3722,10 @@ fn collator_exit_executes_after_delay() {
 				scheduled_exit: 5,
 			});
 			let info = ParachainStaking::candidate_info(&2).unwrap();
-			assert_eq!(info.status, CollatorStatus::Leaving(5));
+			assert_eq!(info.status, ValidatorStatus::Leaving(5));
 			roll_to(21);
 			assert_ok!(ParachainStaking::execute_leave_candidates(RuntimeOrigin::signed(2), 2, 2));
-			// we must exclude leaving collators from rewards while
+			// we must exclude leaving validators from rewards while
 			// holding them retroactively accountable for previous faults
 			// (within the last T::SlashingWindow blocks)
 			assert_events_eq!(Event::CandidateLeft {
@@ -3737,7 +3737,7 @@ fn collator_exit_executes_after_delay() {
 }
 
 #[test]
-fn collator_selection_chooses_top_candidates() {
+fn validator_selection_chooses_top_candidates() {
 	ExtBuilder::default()
 		.with_balances(vec![
 			(1, 1000),
@@ -3757,15 +3757,15 @@ fn collator_selection_chooses_top_candidates() {
 			assert_ok!(ParachainStaking::schedule_leave_candidates(RuntimeOrigin::signed(6), 6));
 			// should choose top TotalSelectedCandidates (5), in order
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 70 },
-				Event::CollatorChosen { round: 2, collator_account: 5, total_exposed_amount: 60 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 100 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 90 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 4, total_exposed_amount: 70 },
+				Event::ValidatorChosen { round: 2, validator_account: 5, total_exposed_amount: 60 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 400,
 				},
 				Event::CandidateScheduledExit {
@@ -3784,7 +3784,7 @@ fn collator_selection_chooses_top_candidates() {
 					unlocked_amount: 50,
 					new_total_amt_locked: 400,
 				},
-				Event::JoinedCollatorCandidates {
+				Event::JoinedValidatorCandidates {
 					account: 6,
 					amount_locked: 69u128,
 					new_total_amt_locked: 469u128,
@@ -3793,15 +3793,15 @@ fn collator_selection_chooses_top_candidates() {
 			roll_to_round_begin(6);
 			// should choose top TotalSelectedCandidates (5), in order
 			assert_events_eq!(
-				Event::CollatorChosen { round: 6, collator_account: 1, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 6, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 6, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 4, total_exposed_amount: 70 },
-				Event::CollatorChosen { round: 6, collator_account: 6, total_exposed_amount: 69 },
+				Event::ValidatorChosen { round: 6, validator_account: 1, total_exposed_amount: 100 },
+				Event::ValidatorChosen { round: 6, validator_account: 2, total_exposed_amount: 90 },
+				Event::ValidatorChosen { round: 6, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 4, total_exposed_amount: 70 },
+				Event::ValidatorChosen { round: 6, validator_account: 6, total_exposed_amount: 69 },
 				Event::NewRound {
 					starting_block: 25,
 					round: 6,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 409,
 				},
 			);
@@ -3809,7 +3809,7 @@ fn collator_selection_chooses_top_candidates() {
 }
 
 #[test]
-fn payout_distribution_to_solo_collators() {
+fn payout_distribution_to_solo_validators() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 1000), (2, 1000), (3, 1000), (4, 1000), (7, 33), (8, 33), (9, 33)])
 		.with_candidates(vec![(1, 100), (2, 90), (3, 80), (4, 70)])
@@ -3818,14 +3818,14 @@ fn payout_distribution_to_solo_collators() {
 			roll_to_round_begin(2);
 			// should choose top TotalCandidatesSelected (5), in order
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 70 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 100 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 90 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 2, validator_account: 4, total_exposed_amount: 70 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 340,
 				},
 			);
@@ -3833,14 +3833,14 @@ fn payout_distribution_to_solo_collators() {
 			set_author(2, 1, 100);
 			roll_to_round_begin(4);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 4, collator_account: 1, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 4, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 4, collator_account: 4, total_exposed_amount: 70 },
+				Event::ValidatorChosen { round: 4, validator_account: 1, total_exposed_amount: 100 },
+				Event::ValidatorChosen { round: 4, validator_account: 2, total_exposed_amount: 90 },
+				Event::ValidatorChosen { round: 4, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 4, validator_account: 4, total_exposed_amount: 70 },
 				Event::NewRound {
 					starting_block: 15,
 					round: 4,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 340,
 				},
 			);
@@ -3854,14 +3854,14 @@ fn payout_distribution_to_solo_collators() {
 			roll_to_round_begin(6);
 			// pay 60% total issuance to 1 and 40% total issuance to 2
 			assert_events_eq!(
-				Event::CollatorChosen { round: 6, collator_account: 1, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 6, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 6, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 6, collator_account: 4, total_exposed_amount: 70 },
+				Event::ValidatorChosen { round: 6, validator_account: 1, total_exposed_amount: 100 },
+				Event::ValidatorChosen { round: 6, validator_account: 2, total_exposed_amount: 90 },
+				Event::ValidatorChosen { round: 6, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 6, validator_account: 4, total_exposed_amount: 70 },
 				Event::NewRound {
 					starting_block: 25,
 					round: 6,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 340,
 				},
 			);
@@ -3869,22 +3869,22 @@ fn payout_distribution_to_solo_collators() {
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 129 });
 			roll_blocks(1);
 			assert_events_eq!(Event::Rewarded { account: 2, rewards: 86 },);
-			// ~ each collator produces 1 block this round
+			// ~ each validator produces 1 block this round
 			set_author(6, 1, 20);
 			set_author(6, 2, 20);
 			set_author(6, 3, 20);
 			set_author(6, 4, 20);
 			roll_to_round_begin(8);
-			// pay 20% issuance for all collators
+			// pay 20% issuance for all validators
 			assert_events_eq!(
-				Event::CollatorChosen { round: 8, collator_account: 1, total_exposed_amount: 100 },
-				Event::CollatorChosen { round: 8, collator_account: 2, total_exposed_amount: 90 },
-				Event::CollatorChosen { round: 8, collator_account: 3, total_exposed_amount: 80 },
-				Event::CollatorChosen { round: 8, collator_account: 4, total_exposed_amount: 70 },
+				Event::ValidatorChosen { round: 8, validator_account: 1, total_exposed_amount: 100 },
+				Event::ValidatorChosen { round: 8, validator_account: 2, total_exposed_amount: 90 },
+				Event::ValidatorChosen { round: 8, validator_account: 3, total_exposed_amount: 80 },
+				Event::ValidatorChosen { round: 8, validator_account: 4, total_exposed_amount: 70 },
 				Event::NewRound {
 					starting_block: 35,
 					round: 8,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 340,
 				},
 			);
@@ -3929,15 +3929,15 @@ fn multiple_delegations() {
 			roll_to_round_begin(2);
 			// chooses top TotalSelectedCandidates (5), in order
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 5,
+					selected_validators_number: 5,
 					total_balance: 140,
 				},
 			);
@@ -3996,18 +3996,18 @@ fn multiple_delegations() {
 			);
 			roll_to_round_begin(7);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 7, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 7, collator_account: 3, total_exposed_amount: 30 },
-				Event::CollatorChosen { round: 7, collator_account: 4, total_exposed_amount: 30 },
-				Event::CollatorChosen { round: 7, collator_account: 5, total_exposed_amount: 10 },
+				Event::ValidatorChosen { round: 7, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 7, validator_account: 3, total_exposed_amount: 30 },
+				Event::ValidatorChosen { round: 7, validator_account: 4, total_exposed_amount: 30 },
+				Event::ValidatorChosen { round: 7, validator_account: 5, total_exposed_amount: 10 },
 				Event::NewRound {
 					starting_block: 30,
 					round: 7,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 120,
 				},
 			);
-			// verify that delegations are removed after collator leaves, not before
+			// verify that delegations are removed after validator leaves, not before
 			assert_eq!(ParachainStaking::delegator_state(7).unwrap().total(), 90);
 			assert_eq!(
 				ParachainStaking::delegator_state(7)
@@ -4113,30 +4113,30 @@ fn payouts_follow_delegation_changes() {
 			roll_to_round_begin(2);
 			// chooses top TotalSelectedCandidates (5), in order
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 			);
 			// ~ set block author as 1 for all blocks this round
 			set_author(2, 1, 100);
 			roll_to_round_begin(4);
-			// distribute total issuance to collator 1 and its delegators 6, 7, 19
+			// distribute total issuance to validator 1 and its delegators 6, 7, 19
 			assert_events_eq!(
-				Event::CollatorChosen { round: 4, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 4, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 4, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 4, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 4, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 4, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 4, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 15,
 					round: 4,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 			);
@@ -4169,14 +4169,14 @@ fn payouts_follow_delegation_changes() {
 			// fast forward to block in which delegator 6 exit executes
 			roll_to_round_begin(5);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 5, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 5, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 5, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 5, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 5, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 5, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 5, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 5, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 20,
 					round: 5,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 			);
@@ -4195,14 +4195,14 @@ fn payouts_follow_delegation_changes() {
 				1,
 			));
 			assert_events_eq!(
-				Event::CollatorChosen { round: 6, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 6, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 6, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 6, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 6, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 6, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 6, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 6, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 25,
 					round: 6,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 				Event::DelegatorLeftCandidate {
@@ -4226,14 +4226,14 @@ fn payouts_follow_delegation_changes() {
 			roll_to_round_begin(7);
 			// keep paying 6
 			assert_events_eq!(
-				Event::CollatorChosen { round: 7, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 7, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 7, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 7, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 7, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 7, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 7, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 7, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 30,
 					round: 7,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 120,
 				},
 			);
@@ -4245,14 +4245,14 @@ fn payouts_follow_delegation_changes() {
 			);
 			roll_to_round_begin(8);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 8, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 8, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 8, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 8, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 8, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 8, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 8, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 8, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 35,
 					round: 8,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 120,
 				},
 			);
@@ -4266,14 +4266,14 @@ fn payouts_follow_delegation_changes() {
 			roll_to_round_begin(9);
 			// no more paying 6
 			assert_events_eq!(
-				Event::CollatorChosen { round: 9, collator_account: 1, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 9, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 9, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 9, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 9, validator_account: 1, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 9, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 9, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 9, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 40,
 					round: 9,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 120,
 				},
 			);
@@ -4297,14 +4297,14 @@ fn payouts_follow_delegation_changes() {
 			roll_to_round_begin(10);
 			// new delegation is not rewarded yet
 			assert_events_eq!(
-				Event::CollatorChosen { round: 10, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 10, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 10, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 10, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 10, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 10, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 10, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 10, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 45,
 					round: 10,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 			);
@@ -4318,14 +4318,14 @@ fn payouts_follow_delegation_changes() {
 			roll_to_round_begin(11);
 			// new delegation not rewarded yet
 			assert_events_eq!(
-				Event::CollatorChosen { round: 11, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 11, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 11, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 11, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 11, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 11, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 11, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 11, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 50,
 					round: 11,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 			);
@@ -4339,14 +4339,14 @@ fn payouts_follow_delegation_changes() {
 			// new delegation is rewarded for first time
 			// 2 rounds after joining (`RewardPaymentDelay` = 2)
 			assert_events_eq!(
-				Event::CollatorChosen { round: 12, collator_account: 1, total_exposed_amount: 50 },
-				Event::CollatorChosen { round: 12, collator_account: 2, total_exposed_amount: 40 },
-				Event::CollatorChosen { round: 12, collator_account: 3, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 12, collator_account: 4, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 12, validator_account: 1, total_exposed_amount: 50 },
+				Event::ValidatorChosen { round: 12, validator_account: 2, total_exposed_amount: 40 },
+				Event::ValidatorChosen { round: 12, validator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 12, validator_account: 4, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 55,
 					round: 12,
-					selected_collators_number: 4,
+					selected_validators_number: 4,
 					total_balance: 130,
 				},
 			);
@@ -4479,7 +4479,7 @@ fn candidate_pool_updates_when_total_counted_changes() {
 }
 
 #[test]
-fn only_top_collators_are_counted() {
+fn only_top_validators_are_counted() {
 	ExtBuilder::default()
 		.with_balances(vec![
 			(1, 20),
@@ -4509,9 +4509,9 @@ fn only_top_collators_are_counted() {
 			for i in 3..11 {
 				assert!(ParachainStaking::is_delegator(&i));
 			}
-			let collator_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator_state = ParachainStaking::candidate_info(1).unwrap();
 			// 15 + 16 + 17 + 18 + 20 = 86 (top 4 + self bond)
-			assert_eq!(collator_state.total_counted, 86);
+			assert_eq!(validator_state.total_counted, 86);
 			// bump bottom to the top
 			assert_ok!(ParachainStaking::delegator_bond_more(RuntimeOrigin::signed(3), 1, 8));
 			assert_events_emitted!(Event::DelegationIncreased {
@@ -4520,9 +4520,9 @@ fn only_top_collators_are_counted() {
 				amount: 8,
 				in_top: true,
 			});
-			let collator_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator_state = ParachainStaking::candidate_info(1).unwrap();
 			// 16 + 17 + 18 + 19 + 20 = 90 (top 4 + self bond)
-			assert_eq!(collator_state.total_counted, 90);
+			assert_eq!(validator_state.total_counted, 90);
 			// bump bottom to the top
 			assert_ok!(ParachainStaking::delegator_bond_more(RuntimeOrigin::signed(4), 1, 8));
 			assert_events_emitted!(Event::DelegationIncreased {
@@ -4531,9 +4531,9 @@ fn only_top_collators_are_counted() {
 				amount: 8,
 				in_top: true,
 			});
-			let collator_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator_state = ParachainStaking::candidate_info(1).unwrap();
 			// 17 + 18 + 19 + 20 + 20 = 94 (top 4 + self bond)
-			assert_eq!(collator_state.total_counted, 94);
+			assert_eq!(validator_state.total_counted, 94);
 			// bump bottom to the top
 			assert_ok!(ParachainStaking::delegator_bond_more(RuntimeOrigin::signed(5), 1, 8));
 			assert_events_emitted!(Event::DelegationIncreased {
@@ -4542,9 +4542,9 @@ fn only_top_collators_are_counted() {
 				amount: 8,
 				in_top: true,
 			});
-			let collator_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator_state = ParachainStaking::candidate_info(1).unwrap();
 			// 18 + 19 + 20 + 21 + 20 = 98 (top 4 + self bond)
-			assert_eq!(collator_state.total_counted, 98);
+			assert_eq!(validator_state.total_counted, 98);
 			// bump bottom to the top
 			assert_ok!(ParachainStaking::delegator_bond_more(RuntimeOrigin::signed(6), 1, 8));
 			assert_events_emitted!(Event::DelegationIncreased {
@@ -4553,9 +4553,9 @@ fn only_top_collators_are_counted() {
 				amount: 8,
 				in_top: true,
 			});
-			let collator_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator_state = ParachainStaking::candidate_info(1).unwrap();
 			// 19 + 20 + 21 + 22 + 20 = 102 (top 4 + self bond)
-			assert_eq!(collator_state.total_counted, 102);
+			assert_eq!(validator_state.total_counted, 102);
 		});
 }
 
@@ -4578,9 +4578,9 @@ fn delegation_events_convey_correct_position() {
 		.with_delegations(vec![(3, 1, 11), (4, 1, 12), (5, 1, 13), (6, 1, 14)])
 		.build()
 		.execute_with(|| {
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 11 + 12 + 13 + 14 + 20 = 70 (top 4 + self bond)
-			assert_eq!(collator1_state.total_counted, 70);
+			assert_eq!(validator1_state.total_counted, 70);
 			// Top delegations are full, new highest delegation is made
 			assert_ok!(ParachainStaking::delegate(RuntimeOrigin::signed(7), 1, 15, 10, 10));
 			assert_events_emitted!(Event::Delegation {
@@ -4590,9 +4590,9 @@ fn delegation_events_convey_correct_position() {
 				delegator_position: DelegatorAdded::AddedToTop { new_total: 74 },
 				auto_compound: Percent::zero(),
 			});
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 12 + 13 + 14 + 15 + 20 = 70 (top 4 + self bond)
-			assert_eq!(collator1_state.total_counted, 74);
+			assert_eq!(validator1_state.total_counted, 74);
 			// New delegation is added to the bottom
 			assert_ok!(ParachainStaking::delegate(RuntimeOrigin::signed(8), 1, 10, 10, 10));
 			assert_events_emitted!(Event::Delegation {
@@ -4602,9 +4602,9 @@ fn delegation_events_convey_correct_position() {
 				delegator_position: DelegatorAdded::AddedToBottom,
 				auto_compound: Percent::zero(),
 			});
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 12 + 13 + 14 + 15 + 20 = 70 (top 4 + self bond)
-			assert_eq!(collator1_state.total_counted, 74);
+			assert_eq!(validator1_state.total_counted, 74);
 			// 8 increases delegation to the top
 			assert_ok!(ParachainStaking::delegator_bond_more(RuntimeOrigin::signed(8), 1, 3));
 			assert_events_emitted!(Event::DelegationIncreased {
@@ -4613,9 +4613,9 @@ fn delegation_events_convey_correct_position() {
 				amount: 3,
 				in_top: true,
 			});
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 13 + 13 + 14 + 15 + 20 = 75 (top 4 + self bond)
-			assert_eq!(collator1_state.total_counted, 75);
+			assert_eq!(validator1_state.total_counted, 75);
 			// 3 increases delegation but stays in bottom
 			assert_ok!(ParachainStaking::delegator_bond_more(RuntimeOrigin::signed(3), 1, 1));
 			assert_events_emitted!(Event::DelegationIncreased {
@@ -4624,9 +4624,9 @@ fn delegation_events_convey_correct_position() {
 				amount: 1,
 				in_top: false,
 			});
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 13 + 13 + 14 + 15 + 20 = 75 (top 4 + self bond)
-			assert_eq!(collator1_state.total_counted, 75);
+			assert_eq!(validator1_state.total_counted, 75);
 			// 6 decreases delegation but stays in top
 			assert_ok!(ParachainStaking::schedule_delegator_bond_less(
 				RuntimeOrigin::signed(6),
@@ -4651,9 +4651,9 @@ fn delegation_events_convey_correct_position() {
 				amount: 2,
 				in_top: true,
 			});
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 12 + 13 + 13 + 15 + 20 = 73 (top 4 + self bond)ƒ
-			assert_eq!(collator1_state.total_counted, 73);
+			assert_eq!(validator1_state.total_counted, 73);
 			// 6 decreases delegation and is bumped to bottom
 			assert_ok!(ParachainStaking::schedule_delegator_bond_less(
 				RuntimeOrigin::signed(6),
@@ -4678,9 +4678,9 @@ fn delegation_events_convey_correct_position() {
 				amount: 1,
 				in_top: false,
 			});
-			let collator1_state = ParachainStaking::candidate_info(1).unwrap();
+			let validator1_state = ParachainStaking::candidate_info(1).unwrap();
 			// 12 + 13 + 13 + 15 + 20 = 73 (top 4 + self bond)
-			assert_eq!(collator1_state.total_counted, 73);
+			assert_eq!(validator1_state.total_counted, 73);
 		});
 }
 
@@ -4699,26 +4699,26 @@ fn no_rewards_paid_until_after_reward_payment_delay() {
 			set_author(1, 3, 1);
 			set_author(1, 3, 1);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 3, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 3,
+					selected_validators_number: 3,
 					total_balance: 60,
 				},
 			);
 
 			roll_to_round_begin(3);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 3, collator_account: 1, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 3, collator_account: 2, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 3, collator_account: 3, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 3, validator_account: 1, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 3, validator_account: 2, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 3, validator_account: 3, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 10,
 					round: 3,
-					selected_collators_number: 3,
+					selected_validators_number: 3,
 					total_balance: 60,
 				},
 			);
@@ -4743,7 +4743,7 @@ fn no_rewards_paid_until_after_reward_payment_delay() {
 fn deferred_payment_storage_items_are_cleaned_up() {
 	use crate::*;
 
-	// this test sets up two collators, gives them points in round one, and focuses on the
+	// this test sets up two validators, gives them points in round one, and focuses on the
 	// storage over the next several blocks to show that it is properly cleaned up
 
 	ExtBuilder::default()
@@ -4760,12 +4760,12 @@ fn deferred_payment_storage_items_are_cleaned_up() {
 
 			roll_to_round_begin(2);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 2, collator_account: 1, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 2, collator_account: 2, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 1, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 2, validator_account: 2, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 5,
 					round: 2,
-					selected_collators_number: 2,
+					selected_validators_number: 2,
 					total_balance: 40,
 				},
 			);
@@ -4802,12 +4802,12 @@ fn deferred_payment_storage_items_are_cleaned_up() {
 			// first payout occurs in round 3
 			roll_to_round_begin(3);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 3, collator_account: 1, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 3, collator_account: 2, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 3, validator_account: 1, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 3, validator_account: 2, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 10,
 					round: 3,
-					selected_collators_number: 2,
+					selected_validators_number: 2,
 					total_balance: 40,
 				},
 			);
@@ -4839,11 +4839,11 @@ fn deferred_payment_storage_items_are_cleaned_up() {
 			assert!(!<Points<Test>>::contains_key(3), "We never awarded points for round 3");
 			assert!(<Staked<Test>>::contains_key(3));
 
-			// collator 1 has been paid in this last block and associated storage cleaned up
+			// validator 1 has been paid in this last block and associated storage cleaned up
 			assert!(!<AtStake<Test>>::contains_key(1, 1));
 			assert!(!<AwardedPts<Test>>::contains_key(1, 1));
 
-			// but collator 2 hasn't been paid
+			// but validator 2 hasn't been paid
 			assert!(<AtStake<Test>>::contains_key(1, 2));
 			assert!(<AwardedPts<Test>>::contains_key(1, 2));
 
@@ -4853,17 +4853,17 @@ fn deferred_payment_storage_items_are_cleaned_up() {
 
 			roll_to_round_begin(4);
 			assert_events_eq!(
-				Event::CollatorChosen { round: 4, collator_account: 1, total_exposed_amount: 20 },
-				Event::CollatorChosen { round: 4, collator_account: 2, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 4, validator_account: 1, total_exposed_amount: 20 },
+				Event::ValidatorChosen { round: 4, validator_account: 2, total_exposed_amount: 20 },
 				Event::NewRound {
 					starting_block: 15,
 					round: 4,
-					selected_collators_number: 2,
+					selected_validators_number: 2,
 					total_balance: 40,
 				},
 			);
 
-			// collators have both been paid and storage fully cleaned up for round 1
+			// validators have both been paid and storage fully cleaned up for round 1
 			assert!(!<AtStake<Test>>::contains_key(1, 2));
 			assert!(!<AwardedPts<Test>>::contains_key(1, 2));
 			assert!(!<Staked<Test>>::contains_key(1));
@@ -4930,7 +4930,7 @@ fn deferred_payment_steady_state_event_flow() {
 
 	ExtBuilder::default()
 		.with_balances(vec![
-			// collators
+			// validators
 			(1, 200),
 			(2, 200),
 			(3, 200),
@@ -5005,30 +5005,30 @@ fn deferred_payment_steady_state_event_flow() {
 				assert!(num_rounds_rolled <= 1, "expected to be at round begin already");
 
 				assert_events_eq!(
-					Event::CollatorChosen {
+					Event::ValidatorChosen {
 						round: round as u32,
-						collator_account: 1,
+						validator_account: 1,
 						total_exposed_amount: 400,
 					},
-					Event::CollatorChosen {
+					Event::ValidatorChosen {
 						round: round as u32,
-						collator_account: 2,
+						validator_account: 2,
 						total_exposed_amount: 400,
 					},
-					Event::CollatorChosen {
+					Event::ValidatorChosen {
 						round: round as u32,
-						collator_account: 3,
+						validator_account: 3,
 						total_exposed_amount: 400,
 					},
-					Event::CollatorChosen {
+					Event::ValidatorChosen {
 						round: round as u32,
-						collator_account: 4,
+						validator_account: 4,
 						total_exposed_amount: 400,
 					},
 					Event::NewRound {
 						starting_block: (round - 1) * 5,
 						round: round as u32,
-						selected_collators_number: 4,
+						selected_validators_number: 4,
 						total_balance: 1600,
 					},
 				);
@@ -5065,7 +5065,7 @@ fn deferred_payment_steady_state_event_flow() {
 
 				roll_blocks(1);
 				// Since we defer first deferred staking payout, this test have the maximum amout of
-				// supported collators. This eman that the next round is trigerred one block after
+				// supported validators. This eman that the next round is trigerred one block after
 				// the last reward.
 				//assert_no_events!();
 
@@ -5132,7 +5132,7 @@ fn delegation_kicked_from_bottom_removes_pending_request() {
 }
 
 #[test]
-fn no_selected_candidates_defaults_to_last_round_collators() {
+fn no_selected_candidates_defaults_to_last_round_validators() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 30), (2, 30), (3, 30), (4, 30), (5, 30)])
 		.with_candidates(vec![(1, 30), (2, 30), (3, 30), (4, 30), (5, 30)])
@@ -5193,12 +5193,12 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_for_previous_rounds_but_not_f
 				candidate: 1,
 				scheduled_exit: 3,
 			});
-			let collator = ParachainStaking::candidate_info(1).expect("candidate must exist");
+			let validator = ParachainStaking::candidate_info(1).expect("candidate must exist");
 			assert_eq!(
-				1, collator.delegation_count,
-				"collator's delegator count was reduced unexpectedly"
+				1, validator.delegation_count,
+				"validator's delegator count was reduced unexpectedly"
 			);
-			assert_eq!(30, collator.total_counted, "collator's total was reduced unexpectedly");
+			assert_eq!(30, validator.total_counted, "validator's total was reduced unexpectedly");
 
 			roll_to_round_begin(3);
 			assert_events_emitted_match!(Event::NewRound { round: 3, .. });
@@ -5212,17 +5212,17 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_for_previous_rounds_but_not_f
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
-			let collator_snapshot =
+			let validator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
 			assert_eq!(
 				1,
-				collator_snapshot.delegations.len(),
-				"collator snapshot's delegator count was reduced unexpectedly"
+				validator_snapshot.delegations.len(),
+				"validator snapshot's delegator count was reduced unexpectedly"
 			);
 			assert_eq!(
-				20, collator_snapshot.total,
-				"collator snapshot's total was reduced unexpectedly",
+				20, validator_snapshot.total,
+				"validator snapshot's total was reduced unexpectedly",
 			);
 		});
 }
@@ -5245,12 +5245,12 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 				candidate: 1,
 				scheduled_exit: 3,
 			});
-			let collator = ParachainStaking::candidate_info(1).expect("candidate must exist");
+			let validator = ParachainStaking::candidate_info(1).expect("candidate must exist");
 			assert_eq!(
-				1, collator.delegation_count,
-				"collator's delegator count was reduced unexpectedly"
+				1, validator.delegation_count,
+				"validator's delegator count was reduced unexpectedly"
 			);
-			assert_eq!(30, collator.total_counted, "collator's total was reduced unexpectedly");
+			assert_eq!(30, validator.total_counted, "validator's total was reduced unexpectedly");
 
 			roll_to_round_begin(2);
 			assert_ok!(ParachainStaking::cancel_delegation_request(RuntimeOrigin::signed(2), 1));
@@ -5259,17 +5259,17 @@ fn test_delegator_scheduled_for_revoke_is_rewarded_when_request_cancelled() {
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
-			let collator_snapshot =
+			let validator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
 			assert_eq!(
 				1,
-				collator_snapshot.delegations.len(),
-				"collator snapshot's delegator count was reduced unexpectedly"
+				validator_snapshot.delegations.len(),
+				"validator snapshot's delegator count was reduced unexpectedly"
 			);
 			assert_eq!(
-				30, collator_snapshot.total,
-				"collator snapshot's total was reduced unexpectedly",
+				30, validator_snapshot.total,
+				"validator snapshot's total was reduced unexpectedly",
 			);
 
 			roll_to_round_begin(5);
@@ -5305,12 +5305,12 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_for_previous_rounds_bu
 				candidate: 1,
 				amount_to_decrease: 10,
 			});
-			let collator = ParachainStaking::candidate_info(1).expect("candidate must exist");
+			let validator = ParachainStaking::candidate_info(1).expect("candidate must exist");
 			assert_eq!(
-				1, collator.delegation_count,
-				"collator's delegator count was reduced unexpectedly"
+				1, validator.delegation_count,
+				"validator's delegator count was reduced unexpectedly"
 			);
-			assert_eq!(40, collator.total_counted, "collator's total was reduced unexpectedly");
+			assert_eq!(40, validator.total_counted, "validator's total was reduced unexpectedly");
 
 			roll_to_round_begin(3);
 			assert_events_emitted_match!(Event::NewRound { round: 3, .. });
@@ -5327,17 +5327,17 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_for_previous_rounds_bu
 				Event::Rewarded { account: 1, rewards: 4 },
 				Event::Rewarded { account: 2, rewards: 1 },
 			);
-			let collator_snapshot =
+			let validator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
 			assert_eq!(
 				1,
-				collator_snapshot.delegations.len(),
-				"collator snapshot's delegator count was reduced unexpectedly"
+				validator_snapshot.delegations.len(),
+				"validator snapshot's delegator count was reduced unexpectedly"
 			);
 			assert_eq!(
-				30, collator_snapshot.total,
-				"collator snapshot's total was reduced unexpectedly",
+				30, validator_snapshot.total,
+				"validator snapshot's total was reduced unexpectedly",
 			);
 		});
 }
@@ -5364,12 +5364,12 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_when_request_cancelled
 				candidate: 1,
 				amount_to_decrease: 10,
 			});
-			let collator = ParachainStaking::candidate_info(1).expect("candidate must exist");
+			let validator = ParachainStaking::candidate_info(1).expect("candidate must exist");
 			assert_eq!(
-				1, collator.delegation_count,
-				"collator's delegator count was reduced unexpectedly"
+				1, validator.delegation_count,
+				"validator's delegator count was reduced unexpectedly"
 			);
-			assert_eq!(40, collator.total_counted, "collator's total was reduced unexpectedly");
+			assert_eq!(40, validator.total_counted, "validator's total was reduced unexpectedly");
 
 			roll_to_round_begin(2);
 			assert_ok!(ParachainStaking::cancel_delegation_request(RuntimeOrigin::signed(2), 1));
@@ -5381,17 +5381,17 @@ fn test_delegator_scheduled_for_bond_decrease_is_rewarded_when_request_cancelled
 				Event::Rewarded { account: 1, rewards: 4 },
 				Event::Rewarded { account: 2, rewards: 1 },
 			);
-			let collator_snapshot =
+			let validator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
 			assert_eq!(
 				1,
-				collator_snapshot.delegations.len(),
-				"collator snapshot's delegator count was reduced unexpectedly"
+				validator_snapshot.delegations.len(),
+				"validator snapshot's delegator count was reduced unexpectedly"
 			);
 			assert_eq!(
-				40, collator_snapshot.total,
-				"collator snapshot's total was reduced unexpectedly",
+				40, validator_snapshot.total,
+				"validator snapshot's total was reduced unexpectedly",
 			);
 
 			roll_to_round_begin(5);
@@ -5431,12 +5431,12 @@ fn test_delegator_scheduled_for_leave_is_rewarded_for_previous_rounds_but_not_fo
 					scheduled_exit: 3,
 				},
 			);
-			let collator = ParachainStaking::candidate_info(1).expect("candidate must exist");
+			let validator = ParachainStaking::candidate_info(1).expect("candidate must exist");
 			assert_eq!(
-				1, collator.delegation_count,
-				"collator's delegator count was reduced unexpectedly"
+				1, validator.delegation_count,
+				"validator's delegator count was reduced unexpectedly"
 			);
-			assert_eq!(30, collator.total_counted, "collator's total was reduced unexpectedly");
+			assert_eq!(30, validator.total_counted, "validator's total was reduced unexpectedly");
 
 			roll_to_round_begin(3);
 			assert_events_emitted_match!(Event::NewRound { round: 3, .. });
@@ -5450,17 +5450,17 @@ fn test_delegator_scheduled_for_leave_is_rewarded_for_previous_rounds_but_not_fo
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
-			let collator_snapshot =
+			let validator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
 			assert_eq!(
 				1,
-				collator_snapshot.delegations.len(),
-				"collator snapshot's delegator count was reduced unexpectedly"
+				validator_snapshot.delegations.len(),
+				"validator snapshot's delegator count was reduced unexpectedly"
 			);
 			assert_eq!(
-				20, collator_snapshot.total,
-				"collator snapshot's total was reduced unexpectedly",
+				20, validator_snapshot.total,
+				"validator snapshot's total was reduced unexpectedly",
 			);
 		});
 }
@@ -5492,12 +5492,12 @@ fn test_delegator_scheduled_for_leave_is_rewarded_when_request_cancelled() {
 					scheduled_exit: 3,
 				},
 			);
-			let collator = ParachainStaking::candidate_info(1).expect("candidate must exist");
+			let validator = ParachainStaking::candidate_info(1).expect("candidate must exist");
 			assert_eq!(
-				1, collator.delegation_count,
-				"collator's delegator count was reduced unexpectedly"
+				1, validator.delegation_count,
+				"validator's delegator count was reduced unexpectedly"
 			);
-			assert_eq!(30, collator.total_counted, "collator's total was reduced unexpectedly");
+			assert_eq!(30, validator.total_counted, "validator's total was reduced unexpectedly");
 
 			roll_to_round_begin(2);
 			assert_ok!(ParachainStaking::cancel_delegation_request(RuntimeOrigin::signed(2), 1,));
@@ -5507,17 +5507,17 @@ fn test_delegator_scheduled_for_leave_is_rewarded_when_request_cancelled() {
 			assert_events_emitted_match!(Event::NewRound { round: 4, .. });
 			roll_blocks(3);
 			assert_events_eq!(Event::Rewarded { account: 1, rewards: 5 },);
-			let collator_snapshot =
+			let validator_snapshot =
 				ParachainStaking::at_stake(ParachainStaking::round().current, 1)
 					.unwrap_or_default();
 			assert_eq!(
 				1,
-				collator_snapshot.delegations.len(),
-				"collator snapshot's delegator count was reduced unexpectedly"
+				validator_snapshot.delegations.len(),
+				"validator snapshot's delegator count was reduced unexpectedly"
 			);
 			assert_eq!(
-				30, collator_snapshot.total,
-				"collator snapshot's total was reduced unexpectedly",
+				30, validator_snapshot.total,
+				"validator snapshot's total was reduced unexpectedly",
 			);
 
 			roll_to_round_begin(5);
@@ -6144,11 +6144,11 @@ fn test_rewards_do_not_auto_compound_on_payment_if_delegation_scheduled_revoke_e
 			roll_to_round_begin(4);
 
 			assert_events_eq!(
-				Event::CollatorChosen { round: 4, collator_account: 1, total_exposed_amount: 500 },
+				Event::ValidatorChosen { round: 4, validator_account: 1, total_exposed_amount: 500 },
 				Event::NewRound {
 					starting_block: 15,
 					round: 4,
-					selected_collators_number: 1,
+					selected_validators_number: 1,
 					total_balance: 500,
 				},
 			);
@@ -6198,11 +6198,11 @@ fn test_rewards_auto_compound_on_payment_as_per_auto_compound_config() {
 			roll_to_round_begin(4);
 
 			assert_events_eq!(
-				Event::CollatorChosen { round: 4, collator_account: 1, total_exposed_amount: 900 },
+				Event::ValidatorChosen { round: 4, validator_account: 1, total_exposed_amount: 900 },
 				Event::NewRound {
 					starting_block: 15,
 					round: 4,
-					selected_collators_number: 1,
+					selected_validators_number: 1,
 					total_balance: 900,
 				},
 			);
@@ -6409,7 +6409,7 @@ fn test_delegate_with_auto_compound_updates_delegator_state() {
 }
 
 #[test]
-fn test_delegate_with_auto_compound_updates_collator_state() {
+fn test_delegate_with_auto_compound_updates_validator_state() {
 	ExtBuilder::default()
 		.with_balances(vec![(1, 30), (2, 10)])
 		.with_candidates(vec![(1, 30)])
@@ -6696,13 +6696,13 @@ fn test_on_initialize_weights() {
 	let mut candidates = Vec::new();
 	let mut delegations = Vec::new();
 
-	for collator in 1..30 {
-		balances.push((collator, 100));
-		candidates.push((collator, 10));
-		let starting_delegator = collator * 1000;
+	for validator in 1..30 {
+		balances.push((validator, 100));
+		candidates.push((validator, 10));
+		let starting_delegator = validator * 1000;
 		for delegator in starting_delegator..starting_delegator + 300 {
 			balances.push((delegator, 100));
-			delegations.push((delegator, collator, 10));
+			delegations.push((delegator, validator, 10));
 		}
 	}
 

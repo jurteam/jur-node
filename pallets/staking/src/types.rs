@@ -19,7 +19,7 @@
 use crate::{
 	auto_compound::AutoCompoundDelegations, set::OrderedSet, BalanceOf, BottomDelegations,
 	CandidateInfo, Config, DelegatorState, Error, Event, Pallet, Round, RoundIndex, TopDelegations,
-	Total, COLLATOR_LOCK_ID, DELEGATOR_LOCK_ID,
+	Total, VALIDATOR_LOCK_ID, DELEGATOR_LOCK_ID,
 };
 use frame_support::{
 	pallet_prelude::*,
@@ -80,8 +80,8 @@ impl<AccountId: Ord, Balance> PartialEq for Bond<AccountId, Balance> {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-/// The activity status of the collator
-pub enum CollatorStatus {
+/// The activity status of the validator
+pub enum ValidatorStatus {
 	/// Committed to be online and producing valid blocks (not equivocating)
 	Active,
 	/// Temporarily inactive and excused for inactivity
@@ -90,9 +90,9 @@ pub enum CollatorStatus {
 	Leaving(RoundIndex),
 }
 
-impl Default for CollatorStatus {
-	fn default() -> CollatorStatus {
-		CollatorStatus::Active
+impl Default for ValidatorStatus {
+	fn default() -> ValidatorStatus {
+		ValidatorStatus::Active
 	}
 }
 
@@ -115,9 +115,9 @@ impl<A: Decode, B: Default> Default for BondWithAutoCompound<A, B> {
 }
 
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-/// Snapshot of collator state at the start of the round for which they are selected
-pub struct CollatorSnapshot<AccountId, Balance> {
-	/// The total value locked by the collator.
+/// Snapshot of validator state at the start of the round for which they are selected
+pub struct ValidatorSnapshot<AccountId, Balance> {
+	/// The total value locked by the validator.
 	pub bond: Balance,
 
 	/// The rewardable delegations. This list is a subset of total delegators, where certain
@@ -125,12 +125,12 @@ pub struct CollatorSnapshot<AccountId, Balance> {
 	/// [DelegationChange::Revoke] or [DelegationChange::Decrease] action.
 	pub delegations: Vec<BondWithAutoCompound<AccountId, Balance>>,
 
-	/// The total counted value locked for the collator, including the self bond + total staked by
+	/// The total counted value locked for the validator, including the self bond + total staked by
 	/// top delegators.
 	pub total: Balance,
 }
 
-impl<A: PartialEq, B: PartialEq> PartialEq for CollatorSnapshot<A, B> {
+impl<A: PartialEq, B: PartialEq> PartialEq for ValidatorSnapshot<A, B> {
 	fn eq(&self, other: &Self) -> bool {
 		let must_be_true = self.bond == other.bond && self.total == other.total;
 		if !must_be_true {
@@ -149,9 +149,9 @@ impl<A: PartialEq, B: PartialEq> PartialEq for CollatorSnapshot<A, B> {
 	}
 }
 
-impl<A, B: Default> Default for CollatorSnapshot<A, B> {
-	fn default() -> CollatorSnapshot<A, B> {
-		CollatorSnapshot { bond: B::default(), delegations: Vec::new(), total: B::default() }
+impl<A, B: Default> Default for ValidatorSnapshot<A, B> {
+	fn default() -> ValidatorSnapshot<A, B> {
+		ValidatorSnapshot { bond: B::default(), delegations: Vec::new(), total: B::default() }
 	}
 }
 
@@ -162,21 +162,21 @@ pub struct DelayedPayout<Balance> {
 	pub round_issuance: Balance,
 	/// The total inflation paid this round to stakers (e.g. less parachain bond fund)
 	pub total_staking_reward: Balance,
-	/// Snapshot of collator commission rate at the end of the round
-	pub collator_commission: Perbill,
+	/// Snapshot of validator commission rate at the end of the round
+	pub validator_commission: Perbill,
 }
 
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 /// DEPRECATED
-/// Collator state with commission fee, bonded stake, and delegations
-pub struct Collator2<AccountId, Balance> {
-	/// The account of this collator
+/// validator state with commission fee, bonded stake, and delegations
+pub struct Validator2<AccountId, Balance> {
+	/// The account of this validator
 	pub id: AccountId,
-	/// This collator's self stake.
+	/// This validator's self stake.
 	pub bond: Balance,
 	/// Set of all nominator AccountIds (to prevent >1 nomination per AccountId)
 	pub nominators: OrderedSet<AccountId>,
-	/// Top T::MaxDelegatorsPerCollator::get() nominators, ordered greatest to least
+	/// Top T::MaxDelegatorsPervalidator::get() nominators, ordered greatest to least
 	pub top_nominators: Vec<Bond<AccountId, Balance>>,
 	/// Bottom nominators (unbounded), ordered least to greatest
 	pub bottom_nominators: Vec<Bond<AccountId, Balance>>,
@@ -184,13 +184,13 @@ pub struct Collator2<AccountId, Balance> {
 	pub total_counted: Balance,
 	/// Sum of all delegations + self.bond = (total_counted + uncounted)
 	pub total_backing: Balance,
-	/// Current status of the collator
-	pub state: CollatorStatus,
+	/// Current status of the validator
+	pub state: ValidatorStatus,
 }
 
-impl<A, B> From<Collator2<A, B>> for CollatorCandidate<A, B> {
-	fn from(other: Collator2<A, B>) -> CollatorCandidate<A, B> {
-		CollatorCandidate {
+impl<A, B> From<Validator2<A, B>> for ValidatorCandidate<A, B> {
+	fn from(other: Validator2<A, B>) -> ValidatorCandidate<A, B> {
+		ValidatorCandidate {
 			id: other.id,
 			bond: other.bond,
 			delegators: other.nominators,
@@ -205,7 +205,7 @@ impl<A, B> From<Collator2<A, B>> for CollatorCandidate<A, B> {
 }
 
 #[derive(PartialEq, Clone, Copy, Encode, Decode, RuntimeDebug, TypeInfo)]
-/// Request scheduled to change the collator candidate self-bond
+/// Request scheduled to change the validator candidate self-bond
 pub struct CandidateBondLessRequest<Balance> {
 	pub amount: Balance,
 	pub when_executable: RoundIndex,
@@ -213,15 +213,15 @@ pub struct CandidateBondLessRequest<Balance> {
 
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 /// DEPRECATED, replaced by `CandidateMetadata` and two storage instances of `Delegations`
-/// Collator candidate state with self bond + delegations
-pub struct CollatorCandidate<AccountId, Balance> {
-	/// The account of this collator
+/// validator candidate state with self bond + delegations
+pub struct ValidatorCandidate<AccountId, Balance> {
+	/// The account of this validator
 	pub id: AccountId,
-	/// This collator's self stake.
+	/// This validator's self stake.
 	pub bond: Balance,
 	/// Set of all delegator AccountIds (to prevent >1 delegation per AccountId)
 	pub delegators: OrderedSet<AccountId>,
-	/// Top T::MaxDelegatorsPerCollator::get() delegations, ordered greatest to least
+	/// Top T::MaxDelegatorsPervalidator::get() delegations, ordered greatest to least
 	pub top_delegations: Vec<Bond<AccountId, Balance>>,
 	/// Bottom delegations (unbounded), ordered least to greatest
 	pub bottom_delegations: Vec<Bond<AccountId, Balance>>,
@@ -231,8 +231,8 @@ pub struct CollatorCandidate<AccountId, Balance> {
 	pub total_backing: Balance,
 	/// Maximum 1 pending request to decrease candidate self bond at any given time
 	pub request: Option<CandidateBondLessRequest<Balance>>,
-	/// Current status of the collator
-	pub state: CollatorStatus,
+	/// Current status of the validator
+	pub state: ValidatorStatus,
 }
 
 #[derive(Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
@@ -356,8 +356,8 @@ pub struct CandidateMetadata<Balance> {
 	pub bottom_capacity: CapacityStatus,
 	/// Maximum 1 pending request to decrease candidate self bond at any given time
 	pub request: Option<CandidateBondLessRequest<Balance>>,
-	/// Current status of the collator
-	pub status: CollatorStatus,
+	/// Current status of the validator
+	pub status: ValidatorStatus,
 }
 
 impl<
@@ -382,24 +382,24 @@ impl<
 			top_capacity: CapacityStatus::Empty,
 			bottom_capacity: CapacityStatus::Empty,
 			request: None,
-			status: CollatorStatus::Active,
+			status: ValidatorStatus::Active,
 		}
 	}
 	pub fn is_active(&self) -> bool {
-		matches!(self.status, CollatorStatus::Active)
+		matches!(self.status, ValidatorStatus::Active)
 	}
 	pub fn is_leaving(&self) -> bool {
-		matches!(self.status, CollatorStatus::Leaving(_))
+		matches!(self.status, ValidatorStatus::Leaving(_))
 	}
 	pub fn schedule_leave<T: Config>(&mut self) -> Result<(RoundIndex, RoundIndex), DispatchError> {
 		ensure!(!self.is_leaving(), Error::<T>::CandidateAlreadyLeaving);
 		let now = <Round<T>>::get().current;
 		let when = now + T::LeaveCandidatesDelay::get();
-		self.status = CollatorStatus::Leaving(when);
+		self.status = ValidatorStatus::Leaving(when);
 		Ok((now, when))
 	}
 	pub fn can_leave<T: Config>(&self) -> DispatchResult {
-		if let CollatorStatus::Leaving(when) = self.status {
+		if let ValidatorStatus::Leaving(when) = self.status {
 			ensure!(<Round<T>>::get().current >= when, Error::<T>::CandidateCannotLeaveYet);
 			Ok(())
 		} else {
@@ -407,24 +407,24 @@ impl<
 		}
 	}
 	pub fn go_offline(&mut self) {
-		self.status = CollatorStatus::Idle;
+		self.status = ValidatorStatus::Idle;
 	}
 	pub fn go_online(&mut self) {
-		self.status = CollatorStatus::Active;
+		self.status = ValidatorStatus::Active;
 	}
 	pub fn bond_more<T: Config>(&mut self, who: T::AccountId, more: Balance) -> DispatchResult
 	where
 		BalanceOf<T>: From<Balance>,
 	{
 		ensure!(
-			<Pallet<T>>::get_collator_stakable_free_balance(&who) >= more.into(),
+			<Pallet<T>>::get_validator_stakable_free_balance(&who) >= more.into(),
 			Error::<T>::InsufficientBalance
 		);
 		let new_total = <Total<T>>::get().saturating_add(more.into());
 		<Total<T>>::put(new_total);
 		self.bond = self.bond.saturating_add(more);
 		T::Currency::set_lock(
-			COLLATOR_LOCK_ID,
+			VALIDATOR_LOCK_ID,
 			&who.clone(),
 			self.bond.into(),
 			WithdrawReasons::all(),
@@ -437,8 +437,8 @@ impl<
 		});
 		Ok(())
 	}
-	/// Schedule executable decrease of collator candidate self bond
-	/// Returns the round at which the collator can execute the pending request
+	/// Schedule executable decrease of validator candidate self bond
+	/// Returns the round at which the validator can execute the pending request
 	pub fn schedule_bond_less<T: Config>(
 		&mut self,
 		less: Balance,
@@ -458,7 +458,7 @@ impl<
 		self.request = Some(CandidateBondLessRequest { amount: less, when_executable });
 		Ok(when_executable)
 	}
-	/// Execute pending request to decrease the collator self bond
+	/// Execute pending request to decrease the validator self bond
 	/// Returns the event to be emitted
 	pub fn execute_bond_less<T: Config>(&mut self, who: T::AccountId) -> DispatchResult
 	where
@@ -473,11 +473,11 @@ impl<
 		);
 		let new_total_staked = <Total<T>>::get().saturating_sub(request.amount.into());
 		<Total<T>>::put(new_total_staked);
-		// Arithmetic assumptions are self.bond > less && self.bond - less > CollatorMinBond
+		// Arithmetic assumptions are self.bond > less && self.bond - less > validatorMinBond
 		// (assumptions enforced by `schedule_bond_less`; if storage corrupts, must re-verify)
 		self.bond = self.bond.saturating_sub(request.amount);
 		T::Currency::set_lock(
-			COLLATOR_LOCK_ID,
+			VALIDATOR_LOCK_ID,
 			&who.clone(),
 			self.bond.into(),
 			WithdrawReasons::all(),
@@ -1107,7 +1107,7 @@ impl<
 }
 
 // Temporary manual implementation for migration testing purposes
-impl<A: PartialEq, B: PartialEq> PartialEq for CollatorCandidate<A, B> {
+impl<A: PartialEq, B: PartialEq> PartialEq for ValidatorCandidate<A, B> {
 	fn eq(&self, other: &Self) -> bool {
 		let must_be_true = self.id == other.id
 			&& self.bond == other.bond
@@ -1161,16 +1161,16 @@ impl<
 			+ sp_std::ops::AddAssign
 			+ sp_std::ops::SubAssign
 			+ sp_std::fmt::Debug,
-	> CollatorCandidate<A, B>
+	> ValidatorCandidate<A, B>
 {
 	pub fn is_active(&self) -> bool {
-		self.state == CollatorStatus::Active
+		self.state == ValidatorStatus::Active
 	}
 }
 
-impl<A: Clone, B: Copy> From<CollatorCandidate<A, B>> for CollatorSnapshot<A, B> {
-	fn from(other: CollatorCandidate<A, B>) -> CollatorSnapshot<A, B> {
-		CollatorSnapshot {
+impl<A: Clone, B: Copy> From<ValidatorCandidate<A, B>> for ValidatorSnapshot<A, B> {
+	fn from(other: ValidatorCandidate<A, B>) -> ValidatorSnapshot<A, B> {
+		ValidatorSnapshot {
 			bond: other.bond,
 			delegations: other
 				.top_delegations
@@ -1245,10 +1245,10 @@ impl<
 			+ Saturating,
 	> Delegator<AccountId, Balance>
 {
-	pub fn new(id: AccountId, collator: AccountId, amount: Balance) -> Self {
+	pub fn new(id: AccountId, validator: AccountId, amount: Balance) -> Self {
 		Delegator {
 			id,
-			delegations: OrderedSet::from(vec![Bond { owner: collator, amount }]),
+			delegations: OrderedSet::from(vec![Bond { owner: validator, amount }]),
 			total: amount,
 			less_total: Balance::zero(),
 			status: DelegatorStatus::Active,
@@ -1320,7 +1320,7 @@ impl<
 	}
 	// Return Some(remaining balance), must be more than MinDelegation
 	// Return None if delegation not found
-	pub fn rm_delegation<T: Config>(&mut self, collator: &AccountId) -> Option<Balance>
+	pub fn rm_delegation<T: Config>(&mut self, validator: &AccountId) -> Option<Balance>
 	where
 		BalanceOf<T>: From<Balance>,
 		T::AccountId: From<AccountId>,
@@ -1331,7 +1331,7 @@ impl<
 			.0
 			.iter()
 			.filter_map(|x| {
-				if &x.owner == collator {
+				if &x.owner == validator {
 					amt = Some(x.amount);
 					None
 				} else {
@@ -1372,21 +1372,21 @@ impl<
 				self.total = self.total.saturating_add(amount);
 				self.adjust_bond_lock::<T>(BondAdjust::Increase(amount))?;
 
-				// update collator state delegation
-				let mut collator_state =
+				// update validator state delegation
+				let mut validator_state =
 					<CandidateInfo<T>>::get(&candidate_id).ok_or(Error::<T>::CandidateDNE)?;
-				let before = collator_state.total_counted;
-				let in_top = collator_state.increase_delegation::<T>(
+				let before = validator_state.total_counted;
+				let in_top = validator_state.increase_delegation::<T>(
 					&candidate_id,
 					delegator_id.clone(),
 					before_amount,
 					balance_amt,
 				)?;
-				let after = collator_state.total_counted;
-				if collator_state.is_active() && (before != after) {
+				let after = validator_state.total_counted;
+				if validator_state.is_active() && (before != after) {
 					Pallet::<T>::update_active(candidate_id.clone(), after);
 				}
-				<CandidateInfo<T>>::insert(&candidate_id, collator_state);
+				<CandidateInfo<T>>::insert(&candidate_id, validator_state);
 				let new_total_staked = <Total<T>>::get().saturating_add(balance_amt);
 				<Total<T>>::put(new_total_staked);
 				let nom_st: Delegator<T::AccountId, BalanceOf<T>> = self.clone().into();
@@ -1443,13 +1443,13 @@ impl<
 		Ok(())
 	}
 
-	/// Retrieves the bond amount that a delegator has provided towards a collator.
+	/// Retrieves the bond amount that a delegator has provided towards a validator.
 	/// Returns `None` if missing.
-	pub fn get_bond_amount(&self, collator: &AccountId) -> Option<Balance> {
+	pub fn get_bond_amount(&self, validator: &AccountId) -> Option<Balance> {
 		self.delegations
 			.0
 			.iter()
-			.find(|b| &b.owner == collator)
+			.find(|b| &b.owner == validator)
 			.map(|b| b.amount)
 	}
 }
@@ -1471,7 +1471,7 @@ pub mod deprecated {
 	#[deprecated(note = "use ScheduledRequest")]
 	#[derive(Clone, Eq, PartialEq, Encode, Decode, RuntimeDebug, TypeInfo)]
 	pub struct DelegationRequest<AccountId, Balance> {
-		pub collator: AccountId,
+		pub validator: AccountId,
 		pub amount: Balance,
 		pub when_executable: RoundIndex,
 		pub action: DelegationChange,
@@ -1483,7 +1483,7 @@ pub mod deprecated {
 	pub struct PendingDelegationRequests<AccountId, Balance> {
 		/// Number of pending revocations (necessary for determining whether revoke is exit)
 		pub revocations_count: u32,
-		/// Map from collator -> Request (enforces at most 1 pending request per delegation)
+		/// Map from validator -> Request (enforces at most 1 pending request per delegation)
 		pub requests: BTreeMap<AccountId, DelegationRequest<AccountId, Balance>>,
 		/// Sum of pending revocation amounts + bond less amounts
 		pub less_total: Balance,
@@ -1534,13 +1534,13 @@ pub mod deprecated {
 		pub status: DelegatorStatus,
 	}
 
-	// CollatorSnapshot
+	// ValidatorSnapshot
 
-	#[deprecated(note = "use CollatorSnapshot with BondWithAutoCompound delegations")]
+	#[deprecated(note = "use ValidatorSnapshot with BondWithAutoCompound delegations")]
 	#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-	/// Snapshot of collator state at the start of the round for which they are selected
-	pub struct CollatorSnapshot<AccountId, Balance> {
-		/// The total value locked by the collator.
+	/// Snapshot of validator state at the start of the round for which they are selected
+	pub struct ValidatorSnapshot<AccountId, Balance> {
+		/// The total value locked by the validator.
 		pub bond: Balance,
 
 		/// The rewardable delegations. This list is a subset of total delegators, where certain
@@ -1548,12 +1548,12 @@ pub mod deprecated {
 		/// [DelegationChange::Revoke] or [DelegationChange::Decrease] action.
 		pub delegations: Vec<Bond<AccountId, Balance>>,
 
-		/// The total counted value locked for the collator, including the self bond + total staked by
+		/// The total counted value locked for the validator, including the self bond + total staked by
 		/// top delegators.
 		pub total: Balance,
 	}
 
-	impl<A: PartialEq, B: PartialEq> PartialEq for CollatorSnapshot<A, B> {
+	impl<A: PartialEq, B: PartialEq> PartialEq for ValidatorSnapshot<A, B> {
 		fn eq(&self, other: &Self) -> bool {
 			let must_be_true = self.bond == other.bond && self.total == other.total;
 			if !must_be_true {
@@ -1570,9 +1570,9 @@ pub mod deprecated {
 		}
 	}
 
-	impl<A, B: Default> Default for CollatorSnapshot<A, B> {
-		fn default() -> CollatorSnapshot<A, B> {
-			CollatorSnapshot { bond: B::default(), delegations: Vec::new(), total: B::default() }
+	impl<A, B: Default> Default for ValidatorSnapshot<A, B> {
+		fn default() -> ValidatorSnapshot<A, B> {
+			ValidatorSnapshot { bond: B::default(), delegations: Vec::new(), total: B::default() }
 		}
 	}
 }

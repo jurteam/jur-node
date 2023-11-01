@@ -57,7 +57,7 @@ pub trait WeightInfo {
 	fn set_parachain_bond_account() -> Weight;
 	fn set_parachain_bond_reserve_percent() -> Weight;
 	fn set_total_selected() -> Weight;
-	fn set_collator_commission() -> Weight;
+	fn set_validator_commission() -> Weight;
 	fn set_blocks_per_round() -> Weight;
 	fn join_candidates(x: u32, ) -> Weight;
 	fn schedule_leave_candidates(x: u32, ) -> Weight;
@@ -81,14 +81,14 @@ pub trait WeightInfo {
 	fn prepare_staking_payouts() -> Weight;
 	fn get_rewardable_delegators(y: u32, ) -> Weight;
 	fn select_top_candidates(x: u32, y: u32, ) -> Weight;
-	fn pay_one_collator_reward_best(x: u32, y: u32, z: u32, ) -> Weight;
-	fn pay_one_collator_reward(y: u32, ) -> Weight;
+	fn pay_one_validator_reward_best(x: u32, y: u32, z: u32, ) -> Weight;
+	fn pay_one_validator_reward(y: u32, ) -> Weight;
 	fn base_on_initialize() -> Weight;
 	fn set_auto_compound(x: u32, y: u32, ) -> Weight;
 	fn delegate_with_auto_compound(x: u32, y: u32, z: u32, ) -> Weight;
 	fn delegate_with_auto_compound_worst() -> Weight;
-	fn mint_collator_reward() -> Weight;
-	fn notify_inactive_collator() -> Weight;
+	fn mint_validator_reward() -> Weight;
+	fn notify_inactive_validator() -> Weight;
 }
 
 /// Weights for pallet_parachain_staking using the Substrate node and recommended hardware.
@@ -149,9 +149,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(1_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
-	/// Storage: ParachainStaking CollatorCommission (r:1 w:1)
-	/// Proof Skipped: ParachainStaking CollatorCommission (max_values: Some(1), max_size: None, mode: Measured)
-	fn set_collator_commission() -> Weight {
+	/// Storage: ParachainStaking ValidatorCommission (r:1 w:1)
+	/// Proof Skipped: ParachainStaking ValidatorCommission (max_values: Some(1), max_size: None, mode: Measured)
+	fn set_validator_commission() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `27`
 		//  Estimated: `1512`
@@ -629,8 +629,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof Skipped: ParachainStaking ParachainBondInfo (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: System Account (r:1 w:1)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
-	/// Storage: ParachainStaking CollatorCommission (r:1 w:0)
-	/// Proof Skipped: ParachainStaking CollatorCommission (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: ParachainStaking ValidatorCommission (r:1 w:0)
+	/// Proof Skipped: ParachainStaking ValidatorCommission (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: ParachainStaking DelayedPayouts (r:0 w:1)
 	/// Proof Skipped: ParachainStaking DelayedPayouts (max_values: None, max_size: None, mode: Measured)
 	fn prepare_staking_payouts() -> Weight {
@@ -716,7 +716,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// The range of component `x` is `[0, 349]`.
 	/// The range of component `y` is `[0, 349]`.
 	/// The range of component `z` is `[0, 349]`.
-	fn pay_one_collator_reward_best(x: u32, y: u32, z: u32, ) -> Weight {
+	fn pay_one_validator_reward_best(x: u32, y: u32, z: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0 + x * (395 ±0) + y * (156 ±0) + z * (41 ±0)`
 		//  Estimated: `125757 + x * (2591 ±19) + y * (2234 ±19) + z * (28 ±0)`
@@ -749,7 +749,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Storage: System Account (r:301 w:301)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
 	/// The range of component `y` is `[0, 300]`.
-	fn pay_one_collator_reward(y: u32, ) -> Weight {
+	fn pay_one_validator_reward(y: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `1208 + y * (160 ±0)`
 		//  Estimated: `6978 + y * (2591 ±0)`
@@ -863,7 +863,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	}
 	/// Storage: System Account (r:1 w:1)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
-	fn mint_collator_reward() -> Weight {
+	fn mint_validator_reward() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `128`
 		//  Estimated: `3581`
@@ -888,7 +888,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof Skipped: ParachainStaking CandidateInfo (max_values: None, max_size: None, mode: Measured)
 	/// Storage: ParachainStaking CandidatePool (r:1 w:1)
 	/// Proof Skipped: ParachainStaking CandidatePool (max_values: Some(1), max_size: None, mode: Measured)
-	fn notify_inactive_collator() -> Weight {
+	fn notify_inactive_validator() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `11494`
 		//  Estimated: `17434`
@@ -957,9 +957,9 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(1_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
-	/// Storage: ParachainStaking CollatorCommission (r:1 w:1)
-	/// Proof Skipped: ParachainStaking CollatorCommission (max_values: Some(1), max_size: None, mode: Measured)
-	fn set_collator_commission() -> Weight {
+	/// Storage: ParachainStaking ValidatorCommission (r:1 w:1)
+	/// Proof Skipped: ParachainStaking ValidatorCommission (max_values: Some(1), max_size: None, mode: Measured)
+	fn set_validator_commission() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `27`
 		//  Estimated: `1512`
@@ -1437,8 +1437,8 @@ impl WeightInfo for () {
 	/// Proof Skipped: ParachainStaking ParachainBondInfo (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: System Account (r:1 w:1)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
-	/// Storage: ParachainStaking CollatorCommission (r:1 w:0)
-	/// Proof Skipped: ParachainStaking CollatorCommission (max_values: Some(1), max_size: None, mode: Measured)
+	/// Storage: ParachainStaking ValidatorCommission (r:1 w:0)
+	/// Proof Skipped: ParachainStaking ValidatorCommission (max_values: Some(1), max_size: None, mode: Measured)
 	/// Storage: ParachainStaking DelayedPayouts (r:0 w:1)
 	/// Proof Skipped: ParachainStaking DelayedPayouts (max_values: None, max_size: None, mode: Measured)
 	fn prepare_staking_payouts() -> Weight {
@@ -1524,7 +1524,7 @@ impl WeightInfo for () {
 	/// The range of component `x` is `[0, 349]`.
 	/// The range of component `y` is `[0, 349]`.
 	/// The range of component `z` is `[0, 349]`.
-	fn pay_one_collator_reward_best(x: u32, y: u32, z: u32, ) -> Weight {
+	fn pay_one_validator_reward_best(x: u32, y: u32, z: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0 + x * (395 ±0) + y * (156 ±0) + z * (41 ±0)`
 		//  Estimated: `125757 + x * (2591 ±19) + y * (2234 ±19) + z * (28 ±0)`
@@ -1557,7 +1557,7 @@ impl WeightInfo for () {
 	/// Storage: System Account (r:301 w:301)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
 	/// The range of component `y` is `[0, 300]`.
-	fn pay_one_collator_reward(y: u32, ) -> Weight {
+	fn pay_one_validator_reward(y: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `1208 + y * (160 ±0)`
 		//  Estimated: `6978 + y * (2591 ±0)`
@@ -1671,7 +1671,7 @@ impl WeightInfo for () {
 	}
 	/// Storage: System Account (r:1 w:1)
 	/// Proof: System Account (max_values: None, max_size: Some(116), added: 2591, mode: MaxEncodedLen)
-	fn mint_collator_reward() -> Weight {
+	fn mint_validator_reward() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `128`
 		//  Estimated: `3581`
@@ -1696,7 +1696,7 @@ impl WeightInfo for () {
 	/// Proof Skipped: ParachainStaking CandidateInfo (max_values: None, max_size: None, mode: Measured)
 	/// Storage: ParachainStaking CandidatePool (r:1 w:1)
 	/// Proof Skipped: ParachainStaking CandidatePool (max_values: Some(1), max_size: None, mode: Measured)
-	fn notify_inactive_collator() -> Weight {
+	fn notify_inactive_validator() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `11494`
 		//  Estimated: `17434`

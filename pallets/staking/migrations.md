@@ -31,7 +31,7 @@
 - [Migration PR `#610`](https://github.com/moonbeam-foundation/moonbeam/pull/610)
 - [Migration Removal PR `#662`](https://github.com/moonbeam-foundation/moonbeam/pull/662)
 
-## Patch nomination DOS attack vector by changing CollatorState
+## Patch nomination DOS attack vector by changing validatorState
 
 - [Migration PR `#505`](https://github.com/moonbeam-foundation/moonbeam/pull/505)
 - [Migration Removal PR `#553`](https://github.com/moonbeam-foundation/moonbeam/pull/553)

@@ -1,7 +1,7 @@
 [package]
 name = "pallet-staking"
 authors = ["Jur Team <https://github.com/jurteam>"]
-description = "staking pallet for collator selection and reward distribution"
+description = "staking pallet for validator selection and reward distribution"
 edition = "2021"
 version = "1.0.0"
 

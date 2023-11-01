@@ -124,7 +124,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 113,
+	spec_version: 124,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -479,11 +479,11 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 			hex!["a6466db43c1b7fde023144197c2b6f9e92001493fc5b4a135372f6631c4f1675"].into();
 
 		if let Some(fees) = fees_then_tips.next() {
-			// for fees, 40% to fee_split, which will further split into collator and burn fees.
+			// for fees, 40% to fee_split, which will further split into validator and burn fees.
 			// for fee, 60% goes to pool_split, which will further split into society and ecosystem pool.
 			let split = fees.ration(40, 60);
 
-			// Fee split contains collator fees and burn fees.
+			// Fee split contains validator fees and burn fees.
 			let fee_split = split.0.ration(50, 50);
 
 			// Pool split contains society and ecosystem pool.
@@ -570,9 +570,9 @@ impl pallet_staking::Config for Runtime {
 	type MonetaryGovernanceOrigin = EnsureRoot<AccountId>;
 	/// Minimum round length is 2 minutes (10 * 12 second block times)
 	type MinBlocksPerRound = ConstU32<10>;
-	/// If a collator doesn't produce any block on this number of rounds, it is notified as inactive
+	/// If a validator doesn't produce any block on this number of rounds, it is notified as inactive
 	type MaxOfflineRounds = ConstU32<1>;
-	/// Rounds before the collator leaving the candidates request can be executed
+	/// Rounds before the validator leaving the candidates request can be executed
 	type LeaveCandidatesDelay = ConstU32<{ 4 * 7 }>;
 	/// Rounds before the candidate bond increase/decrease can be executed
 	type CandidateBondLessDelay = ConstU32<{ 4 * 7 }>;
@@ -584,7 +584,7 @@ impl pallet_staking::Config for Runtime {
 	type DelegationBondLessDelay = ConstU32<{ 4 * 7 }>;
 	/// Rounds before the reward is paid
 	type RewardPaymentDelay = ConstU32<2>;
-	/// Minimum collators selected per round, default at genesis and minimum forever after
+	/// Minimum validators selected per round, default at genesis and minimum forever after
 	type MinSelectedCandidates = ConstU32<2>; // changed
 	/// Maximum top delegations per candidate
 	type MaxTopDelegationsPerCandidate = ConstU32<300>;
@@ -596,9 +596,9 @@ impl pallet_staking::Config for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	/// Minimum stake required to be reserved to be a delegator
 	type MinDelegation = ConstU128<{ 5 * DOLLARS }>;
-	type OnCollatorPayout = ();
-	type PayoutCollatorReward = ();
-	type OnInactiveCollator = ();
+	type OnvalidatorPayout = ();
+	type PayoutvalidatorReward = ();
+	type OnInactivevalidator = ();
 	type OnNewRound = ();
 	type WeightInfo = ();
 	type MaxCandidates = ConstU32<200>;
