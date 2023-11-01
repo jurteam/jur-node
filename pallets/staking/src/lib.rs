@@ -170,14 +170,14 @@ pub mod pallet {
 		// type BlockAuthor: Get<Self::AccountId>;
 		/// Handler to notify the runtime when a validator is paid.
 		/// If you don't need it, you can specify the type `()`.
-		type OnvalidatorPayout: OnvalidatorPayout<Self::AccountId, BalanceOf<Self>>;
+		type OnValidatorPayout: OnValidatorPayout<Self::AccountId, BalanceOf<Self>>;
 		/// Handler to distribute a validator's reward.
 		/// To use the default implementation of minting rewards, specify the type `()`.
-		type PayoutvalidatorReward: PayoutvalidatorReward<Self>;
+		type PayoutValidatorReward: PayoutValidatorReward<Self>;
 		/// Handler to notify the runtime when a validator is inactive.
 		/// The default behavior is to mark the validator as offline.
 		/// If you need to use the default implementation, specify the type `()`.
-		type OnInactivevalidator: OnInactivevalidator<Self>;
+		type OnInactiveValidator: OnInactiveValidator<Self>;
 		/// Handler to notify the runtime when a new round begin.
 		/// If you don't need it, you can specify the type `()`.
 		type OnNewRound: OnNewRound;
@@ -1387,7 +1387,7 @@ pub mod pallet {
 			}
 
 			if inactive_counter == max_offline_rounds {
-				let _ = T::OnInactivevalidator::on_inactive_validator(
+				let _ = T::OnInactiveValidator::on_inactive_validator(
 					validator.clone(),
 					round_info.current.saturating_sub(1),
 				);
@@ -1817,12 +1817,12 @@ pub mod pallet {
 				if state.delegations.is_empty() {
 					// solo validator with no delegators
 					extra_weight = extra_weight
-						.saturating_add(T::PayoutvalidatorReward::payout_validator_reward(
+						.saturating_add(T::PayoutValidatorReward::payout_validator_reward(
 							paid_for_round,
 							validator.clone(),
 							amt_due,
 						))
-						.saturating_add(T::OnvalidatorPayout::on_validator_payout(
+						.saturating_add(T::OnValidatorPayout::on_validator_payout(
 							paid_for_round,
 							validator.clone(),
 							amt_due,
@@ -1834,12 +1834,12 @@ pub mod pallet {
 					amt_due = amt_due.saturating_sub(commission);
 					let validator_reward = (validator_pct * amt_due).saturating_add(commission);
 					extra_weight = extra_weight
-						.saturating_add(T::PayoutvalidatorReward::payout_validator_reward(
+						.saturating_add(T::PayoutValidatorReward::payout_validator_reward(
 							paid_for_round,
 							validator.clone(),
 							validator_reward,
 						))
-						.saturating_add(T::OnvalidatorPayout::on_validator_payout(
+						.saturating_add(T::OnValidatorPayout::on_validator_payout(
 							paid_for_round,
 							validator.clone(),
 							validator_reward,

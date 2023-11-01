@@ -104,7 +104,7 @@ impl pallet_balances::Config for Test {
 }
 impl block_author::Config for Test {}
 const GENESIS_BLOCKS_PER_ROUND: BlockNumber = 5;
-const GENESIS_validator_COMMISSION: Perbill = Perbill::from_percent(20);
+const GENESIS_VALIDATOR_COMMISSION: Perbill = Perbill::from_percent(20);
 const GENESIS_PARACHAIN_BOND_RESERVE_PERCENT: Percent = Percent::from_percent(30);
 const GENESIS_NUM_SELECTED_CANDIDATES: u32 = 5;
 parameter_types! {
@@ -143,9 +143,9 @@ impl Config for Test {
 	type MinCandidateStk = MinCandidateStk;
 	type MinDelegation = MinDelegation;
 	// type BlockAuthor = BlockAuthor;
-	type OnvalidatorPayout = ();
-	type PayoutvalidatorReward = ();
-	type OnInactivevalidator = ();
+	type OnValidatorPayout = ();
+	type PayoutValidatorReward = ();
+	type OnInactiveValidator = ();
 	type OnNewRound = ();
 	type WeightInfo = ();
 	type MaxCandidates = MaxCandidates;
@@ -235,7 +235,7 @@ impl ExtBuilder {
 			candidates: self.validators,
 			delegations: self.delegations,
 			inflation_config: self.inflation,
-			validator_commission: GENESIS_validator_COMMISSION,
+			validator_commission: GENESIS_VALIDATOR_COMMISSION,
 			parachain_bond_reserve_percent: GENESIS_PARACHAIN_BOND_RESERVE_PERCENT,
 			blocks_per_round: GENESIS_BLOCKS_PER_ROUND,
 			num_selected_candidates: GENESIS_NUM_SELECTED_CANDIDATES,

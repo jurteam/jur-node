@@ -596,9 +596,9 @@ impl pallet_staking::Config for Runtime {
 	type MinCandidateStk = MinCandidateStk;
 	/// Minimum stake required to be reserved to be a delegator
 	type MinDelegation = ConstU128<{ 5 * DOLLARS }>;
-	type OnvalidatorPayout = ();
-	type PayoutvalidatorReward = ();
-	type OnInactivevalidator = ();
+	type OnValidatorPayout = ();
+	type PayoutValidatorReward = ();
+	type OnInactiveValidator = ();
 	type OnNewRound = ();
 	type WeightInfo = ();
 	type MaxCandidates = ConstU32<200>;

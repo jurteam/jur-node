@@ -20,14 +20,14 @@ use crate::weights::WeightInfo;
 use frame_support::{dispatch::PostDispatchInfo, pallet_prelude::Weight};
 use sp_runtime::DispatchErrorWithPostInfo;
 
-pub trait OnvalidatorPayout<AccountId, Balance> {
+pub trait OnValidatorPayout<AccountId, Balance> {
 	fn on_validator_payout(
 		for_round: crate::RoundIndex,
 		validator_id: AccountId,
 		amount: Balance,
 	) -> Weight;
 }
-impl<AccountId, Balance> OnvalidatorPayout<AccountId, Balance> for () {
+impl<AccountId, Balance> OnValidatorPayout<AccountId, Balance> for () {
 	fn on_validator_payout(
 		_for_round: crate::RoundIndex,
 		_validator_id: AccountId,
@@ -47,7 +47,7 @@ impl OnNewRound for () {
 }
 
 /// Defines the behavior to payout the validator's reward.
-pub trait PayoutvalidatorReward<Runtime: crate::Config> {
+pub trait PayoutValidatorReward<Runtime: crate::Config> {
 	fn payout_validator_reward(
 		round_index: crate::RoundIndex,
 		validator_id: Runtime::AccountId,
@@ -57,7 +57,7 @@ pub trait PayoutvalidatorReward<Runtime: crate::Config> {
 
 /// Defines the default behavior for paying out the validator's reward. The amount is directly
 /// deposited into the validator's account.
-impl<Runtime: crate::Config> PayoutvalidatorReward<Runtime> for () {
+impl<Runtime: crate::Config> PayoutValidatorReward<Runtime> for () {
 	fn payout_validator_reward(
 		for_round: crate::RoundIndex,
 		validator_id: Runtime::AccountId,
@@ -67,14 +67,14 @@ impl<Runtime: crate::Config> PayoutvalidatorReward<Runtime> for () {
 	}
 }
 
-pub trait OnInactivevalidator<Runtime: crate::Config> {
+pub trait OnInactiveValidator<Runtime: crate::Config> {
 	fn on_inactive_validator(
 		validator_id: Runtime::AccountId,
 		round: crate::RoundIndex,
 	) -> Result<Weight, DispatchErrorWithPostInfo<PostDispatchInfo>>;
 }
 
-impl<Runtime: crate::Config> OnInactivevalidator<Runtime> for () {
+impl<Runtime: crate::Config> OnInactiveValidator<Runtime> for () {
 	fn on_inactive_validator(
 		validator_id: <Runtime>::AccountId,
 		_round: crate::RoundIndex,
