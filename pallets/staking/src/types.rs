@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moonbeam.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Types for parachain-staking
+//! Types for chain-staking
 
 use crate::{
 	auto_compound::AutoCompoundDelegations, set::OrderedSet, BalanceOf, BottomDelegations,
 	CandidateInfo, Config, DelegatorState, Error, Event, Pallet, Round, RoundIndex, TopDelegations,
-	Total, VALIDATOR_LOCK_ID, DELEGATOR_LOCK_ID,
+	Total, DELEGATOR_LOCK_ID, VALIDATOR_LOCK_ID,
 };
 use frame_support::{
 	pallet_prelude::*,
@@ -160,7 +160,7 @@ impl<A, B: Default> Default for ValidatorSnapshot<A, B> {
 pub struct DelayedPayout<Balance> {
 	/// Total round reward (result of compute_issuance() at round end)
 	pub round_issuance: Balance,
-	/// The total inflation paid this round to stakers (e.g. less parachain bond fund)
+	/// The total inflation paid this round to stakers (e.g. less chain bond fund)
 	pub total_staking_reward: Balance,
 	/// Snapshot of validator commission rate at the end of the round
 	pub validator_commission: Perbill,
@@ -1647,15 +1647,15 @@ impl<
 
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 /// Reserve information { account, percent_of_inflation }
-pub struct ParachainBondConfig<AccountId> {
-	/// Account which receives funds intended for parachain bond
+pub struct ChainBondConfig<AccountId> {
+	/// Account which receives funds intended for chain bond
 	pub account: AccountId,
-	/// Percent of inflation set aside for parachain bond account
+	/// Percent of inflation set aside for chain bond account
 	pub percent: Percent,
 }
-impl<A: Decode> Default for ParachainBondConfig<A> {
-	fn default() -> ParachainBondConfig<A> {
-		ParachainBondConfig {
+impl<A: Decode> Default for ChainBondConfig<A> {
+	fn default() -> ChainBondConfig<A> {
+		ChainBondConfig {
 			account: A::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes())
 				.expect("infinite length input; no invalid inputs for type; qed"),
 			percent: Percent::zero(),

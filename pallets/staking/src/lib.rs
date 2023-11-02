@@ -384,12 +384,12 @@ pub mod pallet {
 		},
 		/// Paid the account (delegator or validator) the balance as liquid rewards.
 		Rewarded { account: T::AccountId, rewards: BalanceOf<T> },
-		/// Transferred to account which holds funds reserved for parachain bond.
-		ReservedForParachainBond { account: T::AccountId, value: BalanceOf<T> },
-		/// Account (re)set for parachain bond treasury.
-		ParachainBondAccountSet { old: T::AccountId, new: T::AccountId },
-		/// Percent of inflation reserved for parachain bond (re)set.
-		ParachainBondReservePercentSet { old: Percent, new: Percent },
+		/// Transferred to account which holds funds reserved for chain bond.
+		ReservedForchainBond { account: T::AccountId, value: BalanceOf<T> },
+		/// Account (re)set for chain bond treasury.
+		ChainBondAccountSet { old: T::AccountId, new: T::AccountId },
+		/// Percent of inflation reserved for chain bond (re)set.
+		ChainBondReservePercentSet { old: Percent, new: Percent },
 		/// Annual inflation input (first 3) was used to derive new per-round inflation (last 3)
 		InflationSet {
 			annual_min: Perbill,
@@ -480,10 +480,10 @@ pub mod pallet {
 	pub(crate) type TotalSelected<T: Config> = StorageValue<_, u32, ValueQuery>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn parachain_bond_info)]
-	/// Parachain bond config info { account, percent_of_inflation }
-	pub(crate) type ParachainBondInfo<T: Config> =
-		StorageValue<_, ParachainBondConfig<T::AccountId>, ValueQuery>;
+	#[pallet::getter(fn chain_bond_info)]
+	/// chain bond config info { account, percent_of_inflation }
+	pub(crate) type ChainBondInfo<T: Config> =
+		StorageValue<_, ChainBondConfig<T::AccountId>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn round)]
@@ -653,8 +653,8 @@ pub mod pallet {
 		pub inflation_config: InflationInfo<BalanceOf<T>>,
 		/// Default fixed percent a validator takes off the top of due rewards
 		pub validator_commission: Perbill,
-		/// Default percent of inflation set aside for parachain bond every round
-		pub parachain_bond_reserve_percent: Percent,
+		/// Default percent of inflation set aside for chain bond every round
+		pub chain_bond_reserve_percent: Percent,
 		/// Default number of blocks in a round
 		pub blocks_per_round: u32,
 		/// Number of selected candidates every round. Cannot be lower than MinSelectedCandidates
@@ -668,7 +668,7 @@ pub mod pallet {
 				delegations: vec![],
 				inflation_config: Default::default(),
 				validator_commission: Default::default(),
-				parachain_bond_reserve_percent: Default::default(),
+				chain_bond_reserve_percent: Default::default(),
 				blocks_per_round: 1u32,
 				num_selected_candidates: T::MinSelectedCandidates::get(),
 			}
@@ -747,12 +747,12 @@ pub mod pallet {
 			}
 			// Set validator commission to default config
 			<ValidatorCommission<T>>::put(self.validator_commission);
-			// Set parachain bond config to default config
-			<ParachainBondInfo<T>>::put(ParachainBondConfig {
+			// Set chain bond config to default config
+			<ChainBondInfo<T>>::put(ChainBondConfig {
 				// must be set soon; if not => due inflation will be sent to validators/delegators
 				account: T::AccountId::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes())
 					.expect("infinite length input; no invalid inputs for type; qed"),
-				percent: self.parachain_bond_reserve_percent,
+				percent: self.chain_bond_reserve_percent,
 			});
 			// Set total selected candidates to value from config
 			assert!(
@@ -832,33 +832,33 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		/// Set the account that will hold funds set aside for parachain bond
+		/// Set the account that will hold funds set aside for chain bond
 		#[pallet::call_index(2)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_parachain_bond_account())]
-		pub fn set_parachain_bond_account(
+		#[pallet::weight(<T as Config>::WeightInfo::set_chain_bond_account())]
+		pub fn set_chain_bond_account(
 			origin: OriginFor<T>,
 			new: T::AccountId,
 		) -> DispatchResultWithPostInfo {
 			T::MonetaryGovernanceOrigin::ensure_origin(origin)?;
-			let ParachainBondConfig { account: old, percent } = <ParachainBondInfo<T>>::get();
+			let ChainBondConfig { account: old, percent } = <ChainBondInfo<T>>::get();
 			ensure!(old != new, Error::<T>::NoWritingSameValue);
-			<ParachainBondInfo<T>>::put(ParachainBondConfig { account: new.clone(), percent });
-			Self::deposit_event(Event::ParachainBondAccountSet { old, new });
+			<ChainBondInfo<T>>::put(ChainBondConfig { account: new.clone(), percent });
+			Self::deposit_event(Event::ChainBondAccountSet { old, new });
 			Ok(().into())
 		}
 
-		/// Set the percent of inflation set aside for parachain bond
+		/// Set the percent of inflation set aside for chain bond
 		#[pallet::call_index(3)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_parachain_bond_reserve_percent())]
-		pub fn set_parachain_bond_reserve_percent(
+		#[pallet::weight(<T as Config>::WeightInfo::set_chain_bond_reserve_percent())]
+		pub fn set_chain_bond_reserve_percent(
 			origin: OriginFor<T>,
 			new: Percent,
 		) -> DispatchResultWithPostInfo {
 			T::MonetaryGovernanceOrigin::ensure_origin(origin)?;
-			let ParachainBondConfig { account, percent: old } = <ParachainBondInfo<T>>::get();
+			let ChainBondConfig { account, percent: old } = <ChainBondInfo<T>>::get();
 			ensure!(old != new, Error::<T>::NoWritingSameValue);
-			<ParachainBondInfo<T>>::put(ParachainBondConfig { account, percent: new });
-			Self::deposit_event(Event::ParachainBondReservePercentSet { old, new });
+			<ChainBondInfo<T>>::put(ChainBondConfig { account, percent: new });
+			Self::deposit_event(Event::ChainBondReservePercentSet { old, new });
 			Ok(().into())
 		}
 
@@ -1707,15 +1707,15 @@ pub mod pallet {
 			let total_staked = <Staked<T>>::take(round_to_payout);
 			let total_issuance = Self::compute_issuance(total_staked);
 			let mut left_issuance = total_issuance;
-			// reserve portion of issuance for parachain bond account
-			let bond_config = <ParachainBondInfo<T>>::get();
-			let parachain_bond_reserve = bond_config.percent * total_issuance;
+			// reserve portion of issuance for chain bond account
+			let bond_config = <ChainBondInfo<T>>::get();
+			let chain_bond_reserve = bond_config.percent * total_issuance;
 			if let Ok(imb) =
-				T::Currency::deposit_into_existing(&bond_config.account, parachain_bond_reserve)
+				T::Currency::deposit_into_existing(&bond_config.account, chain_bond_reserve)
 			{
 				// update round issuance iff transfer succeeds
 				left_issuance = left_issuance.saturating_sub(imb.peek());
-				Self::deposit_event(Event::ReservedForParachainBond {
+				Self::deposit_event(Event::ReservedForchainBond {
 					account: bond_config.account,
 					value: imb.peek(),
 				});

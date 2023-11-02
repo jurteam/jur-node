@@ -459,7 +459,7 @@ fn testnet_genesis(
 			inflation_config: inflation_config(70, 5),
 			blocks_per_round: 5,
 			validator_commission: Perbill::from_percent(70),
-			parachain_bond_reserve_percent: Percent::from_percent(30),
+			chain_bond_reserve_percent: Percent::from_percent(30),
 			num_selected_candidates: NUM_SELECTED_CANDIDATES,
 		},
 		session: jur_node_runtime::SessionConfig {

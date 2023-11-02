@@ -18,9 +18,9 @@
 
 //! Benchmarking
 use crate::{
-	AwardedPts, BalanceOf, BottomDelegations, Call, CandidateBondLessRequest, Config,
-	DelegationAction, EnableMarkingOffline, Pallet, ParachainBondConfig, ParachainBondInfo, Points,
-	Range, RewardPayment, Round, ScheduledRequest, Staked, TopDelegations,
+	AwardedPts, BalanceOf, BottomDelegations, Call, CandidateBondLessRequest, ChainBondConfig,
+	ChainBondInfo, Config, DelegationAction, EnableMarkingOffline, Pallet, Points, Range,
+	RewardPayment, Round, ScheduledRequest, Staked, TopDelegations,
 };
 use frame_benchmarking::{account, benchmarks, impl_benchmark_test_suite};
 use frame_support::traits::{Currency, Get, OnFinalize, OnInitialize};
@@ -178,7 +178,7 @@ fn create_funded_validator<T: Config>(
 }
 
 // Simulate staking on finalize by manually setting points
-fn parachain_staking_on_finalize<T: Config>(author: T::AccountId) {
+fn chain_staking_on_finalize<T: Config>(author: T::AccountId) {
 	let now = <Round<T>>::get().current;
 	let score_plus_20 = <AwardedPts<T>>::get(now, &author).saturating_add(20);
 	<AwardedPts<T>>::insert(now, author, score_plus_20);
@@ -192,7 +192,7 @@ fn roll_to_and_author<T: Config>(round_delay: u32, author: T::AccountId) {
 	let mut now = <frame_system::Pallet<T>>::block_number() + 1u32.into();
 	let end = Pallet::<T>::round().first + (round_length * total_rounds.into());
 	while now < end {
-		parachain_staking_on_finalize::<T>(author.clone());
+		chain_staking_on_finalize::<T>(author.clone());
 		<frame_system::Pallet<T>>::on_finalize(<frame_system::Pallet<T>>::block_number());
 		<frame_system::Pallet<T>>::set_block_number(
 			<frame_system::Pallet<T>>::block_number() + 1u32.into(),
@@ -260,17 +260,17 @@ benchmarks! {
 		assert_eq!(Pallet::<T>::inflation_config().annual, inflation_range);
 	}
 
-	set_parachain_bond_account {
-		let parachain_bond_account: T::AccountId = account("TEST", 0u32, USER_SEED);
-	}: _(RawOrigin::Root, parachain_bond_account.clone())
+	set_chain_bond_account {
+		let chain_bond_account: T::AccountId = account("TEST", 0u32, USER_SEED);
+	}: _(RawOrigin::Root, chain_bond_account.clone())
 	verify {
-		assert_eq!(Pallet::<T>::parachain_bond_info().account, parachain_bond_account);
+		assert_eq!(Pallet::<T>::chain_bond_info().account, chain_bond_account);
 	}
 
-	set_parachain_bond_reserve_percent {
+	set_chain_bond_reserve_percent {
 	}: _(RawOrigin::Root, Percent::from_percent(33))
 	verify {
-		assert_eq!(Pallet::<T>::parachain_bond_info().percent, Percent::from_percent(33));
+		assert_eq!(Pallet::<T>::chain_bond_info().percent, Percent::from_percent(33));
 	}
 
 	// ROOT DISPATCHABLES
@@ -1495,18 +1495,18 @@ benchmarks! {
 		// may need:
 		//  <Points<T>>
 		//  <Staked<T>>
-		//  <ParachainBondInfo<T>>
-		//  ensure parachain bond account exists so that deposit_into_existing succeeds
+		//  <ChainBondInfo<T>>
+		//  ensure chain bond account exists so that deposit_into_existing succeeds
 		<Points<T>>::insert(payout_round, 100);
 		<Staked<T>>::insert(payout_round, min_candidate_stk::<T>());
 
 		// set an account in the bond config so that we will measure the payout to it
 		let account = create_funded_user::<T>(
-			"parachain_bond",
+			"chain_bond",
 			0,
 			min_candidate_stk::<T>(),
 		).0;
-		<ParachainBondInfo<T>>::put(ParachainBondConfig {
+		<ChainBondInfo<T>>::put(ChainBondConfig {
 			account,
 			percent: Percent::from_percent(50),
 		});
@@ -1815,7 +1815,7 @@ benchmarks! {
 			1u32
 		)?;
 		let start = <frame_system::Pallet<T>>::block_number();
-		parachain_staking_on_finalize::<T>(validator.clone());
+		chain_staking_on_finalize::<T>(validator.clone());
 		<frame_system::Pallet<T>>::on_finalize(start);
 		<frame_system::Pallet<T>>::set_block_number(
 			start + 1u32.into()
@@ -2274,16 +2274,16 @@ mod tests {
 	}
 
 	#[test]
-	fn bench_set_parachain_bond_account() {
+	fn bench_set_chain_bond_account() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(Pallet::<Test>::test_benchmark_set_parachain_bond_account());
+			assert_ok!(Pallet::<Test>::test_benchmark_set_chain_bond_account());
 		});
 	}
 
 	#[test]
-	fn bench_set_parachain_bond_reserve_percent() {
+	fn bench_set_chain_bond_reserve_percent() {
 		new_test_ext().execute_with(|| {
-			assert_ok!(Pallet::<Test>::test_benchmark_set_parachain_bond_reserve_percent());
+			assert_ok!(Pallet::<Test>::test_benchmark_set_chain_bond_reserve_percent());
 		});
 	}
 
