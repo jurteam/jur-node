@@ -155,7 +155,8 @@ pub mod pallet {
 	/// Stores the `ProposalId` that is going to be used for the next proposal.
 	/// This gets incremented whenever a new proposal is created.
 	#[pallet::storage]
-	pub(super) type NextProposalId<T: Config> = StorageValue<_, T::ProposalId, OptionQuery>;
+	pub type NextProposalId<T: Config> =
+		StorageMap<_, Twox64Concat, T::CommunityId, T::ProposalId, OptionQuery>;
 
 	/// Stores the `ChoiceId` that is going to be used for the next choice.
 	/// This gets incremented whenever a new choice is created.
@@ -438,7 +439,7 @@ impl<T: Config> Pallet<T> {
 			voter_accounts: bounded_account.clone(),
 		};
 
-		let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
+		let proposal_id = NextProposalId::<T>::get(community_id).unwrap_or(T::ProposalId::initial_value());
 
 		let new_choices: Vec<Choice<T::ChoiceId, <T as Config>::LabelLimit>> = choices
 			.clone()
@@ -472,7 +473,7 @@ impl<T: Config> Pallet<T> {
 		ProposalExpireTime::<T>::insert(expire_block, (proposal_id, community_id));
 
 		let next_proposal_id = proposal_id.increment();
-		NextProposalId::<T>::set(Some(next_proposal_id));
+		NextProposalId::<T>::insert(community_id, next_proposal_id);
 
 		// Storing choices
 		if !choices.is_empty() {
