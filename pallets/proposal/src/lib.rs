@@ -42,7 +42,11 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 pub mod weights;
+pub mod migration;
+
 pub use weights::WeightInfo;
+
+const LOG_TARGET: &str = "runtime::proposal";
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -103,8 +107,12 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 	}
 
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// Store new proposal with a unique proposal id for a particular community
