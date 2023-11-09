@@ -613,9 +613,7 @@ pub type Executive = frame_executive::Executive<
 	Migrations,
 >;
 
-type Migrations = (
-	pallet_proposal::migration::v1::MigrateToV1<Runtime>,
-);
+type Migrations = (pallet_proposal::migration::v1::MigrateToV1<Runtime>,);
 
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]

@@ -41,8 +41,8 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
 pub mod migration;
+pub mod weights;
 
 pub use weights::WeightInfo;
 
@@ -447,7 +447,8 @@ impl<T: Config> Pallet<T> {
 			voter_accounts: bounded_account.clone(),
 		};
 
-		let proposal_id = NextProposalId::<T>::get(community_id).unwrap_or(T::ProposalId::initial_value());
+		let proposal_id =
+			NextProposalId::<T>::get(community_id).unwrap_or(T::ProposalId::initial_value());
 
 		let new_choices: Vec<Choice<T::ChoiceId, <T as Config>::LabelLimit>> = choices
 			.clone()

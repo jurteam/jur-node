@@ -4,9 +4,9 @@ use frame_support::{storage_alias, traits::OnRuntimeUpgrade};
 use log;
 
 pub mod v0 {
+	use super::*;
 	use codec::{Decode, Encode};
 	use frame_support::pallet_prelude::*;
-	use super::*;
 
 	#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo, Default)]
 	#[scale_info(skip_type_params(DescriptionLimit, NameLimit, AccountLimit))]
@@ -56,7 +56,8 @@ pub mod v1 {
 
 				for (community_id, _, old_proposal) in proposals {
 					translated.saturating_inc();
-					let proposal_id = NextProposalId::<T>::get(community_id).unwrap_or(T::ProposalId::initial_value());
+					let proposal_id = NextProposalId::<T>::get(community_id)
+						.unwrap_or(T::ProposalId::initial_value());
 
 					let new_proposal = Proposal {
 						proposer: old_proposal.proposer,
