@@ -99,11 +99,10 @@ fn create_community<T: Config>(caller: T::AccountId) -> T::CommunityId {
 }
 
 fn add_proposal<T: Config>(caller: T::AccountId) -> (T::CommunityId, T::ProposalId, T::ChoiceId) {
+	let proposal_id = NextProposalId::<T>::get().unwrap_or(T::ProposalId::initial_value());
+
 	add_founder::<T>(caller.clone());
 	let community_id = create_community::<T>(caller.clone());
-
-	let proposal_id =
-		NextProposalId::<T>::get(community_id).unwrap_or(T::ProposalId::initial_value());
 
 	let proposal_name: Vec<u8> = "Jur community Language proposal".into();
 	let bounded_proposal_name: BoundedVec<u8, <T as pallet::Config>::NameLimit> =

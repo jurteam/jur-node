@@ -19,12 +19,12 @@ primitives = { package = 'jur-primitives', path = '../../primitives', default-fe
 scale-info = { version = "2.9.0", default-features = false, features = ["derive"] }
 
 # Substrate
-frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, optional = true, branch = "release-polkadot-v1.1.0" }
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
+frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, optional = true, branch = "release-polkadot-v1.2.0" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
 
-sp-std = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
-sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
+sp-std = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
 
 # Jur custom pallets
 pallet-community = { package = 'pallet-community', path = '../community', default-features = false }
@@ -34,9 +34,9 @@ pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', defaul
 serde = { version = "1.0.132" }
 
 # Substrate
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
-sp-io = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.1.0" }
-pallet-insecure-randomness-collective-flip = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.1.0" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+pallet-insecure-randomness-collective-flip = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 
 [features]
 default = ["std"]
