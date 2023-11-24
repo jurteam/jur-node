@@ -7,9 +7,9 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use frame_support::{
+	genesis_builder_helper::{build_config, create_default_config},
 	pallet_prelude::DispatchClass,
 	traits::{AsEnsureOriginWithArg, LockIdentifier},
-	genesis_builder_helper::{build_config, create_default_config},
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
