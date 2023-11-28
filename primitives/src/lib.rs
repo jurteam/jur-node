@@ -23,6 +23,8 @@ pub type PassportId = u32;
 
 pub type ProposalId = u32;
 
+pub type BountyId = u32;
+
 pub type ChoiceId = u32;
 
 pub type VechainHash = [u8; 32];
@@ -33,6 +35,8 @@ pub const JUR: CurrencyId = 0;
 /// Number Constants
 
 pub const PROPOSAL_DURATION_LIMIT: u32 = 30;
+
+pub const BOUNTY_DURATION_LIMIT: u32 = 30;
 
 pub const INITIAL_INDEX: usize = 0;
 

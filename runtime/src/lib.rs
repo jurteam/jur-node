@@ -58,7 +58,7 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
 use primitives::{
-	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR,
+	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR, BountyId,
 };
 
 /// An index to a block.
@@ -455,6 +455,16 @@ impl pallet_whitelist::Config for Runtime {
 	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_bounties::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type BountyId = BountyId;
+	type NameLimit = ConstU32<512>;
+	type DescriptionLimit = ConstU32<8192>;
+	type CategoryLimit = ConstU32<20>;
+	type AccountLimit = ConstU32<500>;
+	// type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -573,6 +583,7 @@ construct_runtime!(
 		Passport: pallet_passport,
 		User: pallet_user,
 		Whitelist: pallet_whitelist,
+		Bounties: pallet_bounties,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 		Utility: pallet_utility,
