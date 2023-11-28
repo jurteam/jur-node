@@ -2,6 +2,7 @@ use codec::{Decode, Encode};
 use frame_support::{pallet_prelude::Get, BoundedVec};
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
+use crate::Vec;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(NameLimit, CategoryLimit, DescriptionLimit, AccountLimit))]
@@ -18,7 +19,7 @@ pub struct Bounty<
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub status: BountyStatus,
 	pub participants: BoundedVec<AccountId, AccountLimit>,
-	pub contributors: BoundedVec<AccountId, AccountLimit>,
+	pub contributors: Vec<AccountId>,
 	pub duration: u32,
 }
 

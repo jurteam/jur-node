@@ -21,6 +21,7 @@ use crate::types::{Bounty, BountyStatus};
 use frame_support::{dispatch::DispatchResultWithPostInfo, BoundedVec};
 use primitives::{Incrementable, BLOCKS_PER_DAY, BOUNTY_DURATION_LIMIT};
 use sp_std::vec::Vec;
+use pallet_passport::Passports;
 
 // #[cfg(test)]
 // mod mock;
@@ -42,7 +43,7 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_community::Config {
+	pub trait Config: frame_system::Config + pallet_community::Config + pallet_passport::Config {
 		/// Because this pallet emits events, it depends on the runtime's
 		/// definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -124,6 +125,12 @@ pub mod pallet {
 		AccountLimitReached,
 		/// Invalid bounty duration.
 		InvalidBountyDuration,
+		/// Passport not available given user.
+		PassportNotAvailable,
+		/// Bounty not available on the chain.
+		BountyNotAvailable,
+		/// contributor not participated in bounty.
+		ParticipantNotAvailable,
 	}
 
 	#[pallet::hooks]
@@ -179,6 +186,94 @@ pub mod pallet {
 				duration,
 			)
 		}
+
+		#[pallet::call_index(1)]
+		#[pallet::weight(1000000)]
+		pub fn update_bounty(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+			bounty_id: T::BountyId,
+			participants: BoundedVec<T::AccountId, <T as pallet::Config>::AccountLimit>,
+		) -> DispatchResult {
+			let origin = ensure_signed(origin)?;
+			let community = pallet_community::Communities::<T>::get(community_id)
+				.ok_or(Error::<T>::CommunityDoesNotExist)?;
+
+			ensure!(origin == community.founder, Error::<T>::NotAllowed);
+
+			// Ensuring the members should have the passport.
+			ensure!(
+				!participants
+					.iter()
+					.any(|participant| <Passports<T>>::get(community_id, participant).is_none()),
+				Error::<T>::PassportNotAvailable
+			);
+
+			Bounties::<T>::try_mutate(community_id, &bounty_id, |bounty_details| {
+				let bounty = bounty_details
+					.as_mut()
+					.ok_or(Error::<T>::BountyNotAvailable)?;
+
+				bounty.participants = participants;
+				bounty.status = BountyStatus::WorkInProgress;
+
+				Self::deposit_event(Event::UpdatedBounty(bounty_id));
+				Ok(())
+			})
+		}
+
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(1000000)]
+		pub fn add_contributors(
+			origin: OriginFor<T>,
+			community_id: T::CommunityId,
+			bounty_id: T::BountyId,
+			contributors: Vec<T::AccountId>,
+		) -> DispatchResult {
+			let origin = ensure_signed(origin)?;
+			let community = pallet_community::Communities::<T>::get(community_id)
+				.ok_or(Error::<T>::CommunityDoesNotExist)?;
+
+			ensure!(origin == community.founder, Error::<T>::NotAllowed);
+
+			// Ensuring the members should have the passport.
+			ensure!(
+				!contributors
+					.iter()
+					.any(|contributor| <Passports<T>>::get(community_id, contributor).is_none()),
+				Error::<T>::PassportNotAvailable
+			);
+
+			Bounties::<T>::try_mutate(community_id, &bounty_id, |bounty_details| {
+				let bounty = bounty_details
+					.as_mut()
+					.ok_or(Error::<T>::BountyNotAvailable)?;
+
+				// Ensuring that the contributor should participated in the bounty.
+				ensure!(
+					contributors
+					.iter().
+					any(|contributor| bounty.participants.contains(contributor)),
+				Error::<T>::ParticipantNotAvailable
+				);
+
+				// Adding the new contributors in bounty contributors.
+				let mut bounty_contributors = bounty.contributors.clone();
+
+				for new_contributor in contributors.clone() {
+					// checking if contributor is already present as bounty contributor.
+					if !bounty_contributors.contains(&new_contributor) {
+						bounty_contributors.push(new_contributor.clone());
+					}
+				}
+				bounty.contributors = bounty_contributors;
+
+
+				Self::deposit_event(Event::UpdatedBounty(bounty_id));
+				Ok(())
+			})
+		}
 	}
 }
 
@@ -203,7 +298,7 @@ impl<T: Config> Pallet<T> {
 			description,
 			status: BountyStatus::Ongoing,
 			participants: bounded_account.clone(),
-			contributors: bounded_account.clone(),
+			contributors: Vec::new(),
 			duration,
 		};
 
