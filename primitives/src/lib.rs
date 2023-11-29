@@ -36,7 +36,7 @@ pub const JUR: CurrencyId = 0;
 
 pub const PROPOSAL_DURATION_LIMIT: u32 = 30;
 
-pub const BOUNTY_DURATION_LIMIT: u32 = 30;
+pub const BOUNTY_DURATION_LIMIT: u32 = 365;
 
 pub const INITIAL_INDEX: usize = 0;
 

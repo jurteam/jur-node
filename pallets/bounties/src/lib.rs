@@ -85,8 +85,9 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::BountyId,
 		Bounty<
-			<T as pallet::Config>::NameLimit,
-			<T as pallet::Config>::CategoryLimit,
+			<T as Config>::NameLimit,
+			<T as Config>::CategoryLimit,
+			T::BadgeNameLimit,
 			<T as Config>::DescriptionLimit,
 			T::AccountId,
 			T::AccountLimit,
@@ -131,6 +132,10 @@ pub mod pallet {
 		BountyNotAvailable,
 		/// contributor not participated in bounty.
 		ParticipantNotAvailable,
+		/// Bounty badge not exist.
+		BadgeNotExist,
+		/// Bounty is closed as its deadline is exceed.
+		BountyClosed,
 	}
 
 	#[pallet::hooks]
@@ -163,6 +168,7 @@ pub mod pallet {
 			community_id: T::CommunityId,
 			name: BoundedVec<u8, <T as pallet::Config>::NameLimit>,
 			category: BoundedVec<u8, <T as pallet::Config>::CategoryLimit>,
+			badge: BoundedVec<u8, T::BadgeNameLimit>,
 			description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit>,
 			duration: u32,
 		) -> DispatchResultWithPostInfo {
@@ -170,8 +176,14 @@ pub mod pallet {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
+			// Ensuring the bounty creator should be founder.
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
+			// Ensuring the bounty badge should exist in the community badge directory.
+			let is_badge_exist = pallet_passport::Badges::<T>::get(community_id, &badge);
+			ensure!(is_badge_exist.is_some(), Error::<T>::BadgeNotExist);
+
+			// Ensuring the bounty duration should lies between the given limits.
 			ensure!(
 				(1..=BOUNTY_DURATION_LIMIT).contains(&duration),
 				Error::<T>::InvalidBountyDuration
@@ -182,6 +194,7 @@ pub mod pallet {
 				community_id,
 				name,
 				category,
+				badge,
 				description,
 				duration,
 			)
@@ -199,6 +212,7 @@ pub mod pallet {
 			let community = pallet_community::Communities::<T>::get(community_id)
 				.ok_or(Error::<T>::CommunityDoesNotExist)?;
 
+			// Ensuring the origin should be founder.
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
 			// Ensuring the members should have the passport.
@@ -214,6 +228,8 @@ pub mod pallet {
 					.as_mut()
 					.ok_or(Error::<T>::BountyNotAvailable)?;
 
+				ensure!((bounty.status == BountyStatus::Ongoing) || (bounty.status == BountyStatus::WorkInProgress), Error::<T>::BountyClosed);
+
 				bounty.participants = participants;
 				bounty.status = BountyStatus::WorkInProgress;
 
@@ -225,7 +241,7 @@ pub mod pallet {
 
 		#[pallet::call_index(2)]
 		#[pallet::weight(1000000)]
-		pub fn add_contributors(
+		pub fn complete_bounty(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
 			bounty_id: T::BountyId,
@@ -245,10 +261,39 @@ pub mod pallet {
 				Error::<T>::PassportNotAvailable
 			);
 
+
+			let bounty_details = <Bounties<T>>::get(community_id, bounty_id).ok_or(Error::<T>::BountyNotAvailable)?;
+			let bounty_reward = bounty_details.badge;
+
+			// Issuing the badge to the members
+			for member in &contributors {
+				Passports::<T>::try_mutate(
+					community_id,
+					member,
+					|passport_details| -> DispatchResult {
+						let passport = passport_details
+							.as_mut()
+							.ok_or(Error::<T>::PassportNotAvailable)?;
+
+						let mut badges = passport.badges.clone();
+
+						if !badges.contains(&bounty_reward) {
+							badges.push(bounty_reward.clone());
+							passport.badges = badges;
+						}
+
+						Ok(())
+					},
+				)?;
+			}
+
+
 			Bounties::<T>::try_mutate(community_id, &bounty_id, |bounty_details| {
 				let bounty = bounty_details
 					.as_mut()
 					.ok_or(Error::<T>::BountyNotAvailable)?;
+
+				ensure!(bounty.status == BountyStatus::WorkInProgress, Error::<T>::BountyClosed);
 
 				// Ensuring that the contributor should participated in the bounty.
 				ensure!(
@@ -283,6 +328,7 @@ impl<T: Config> Pallet<T> {
 		community_id: T::CommunityId,
 		name: BoundedVec<u8, <T as pallet::Config>::NameLimit>,
 		category: BoundedVec<u8, <T as pallet::Config>::CategoryLimit>,
+		badge: BoundedVec<u8, T::BadgeNameLimit>,
 		description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit>,
 		duration: u32,
 	) -> DispatchResultWithPostInfo {
@@ -295,6 +341,7 @@ impl<T: Config> Pallet<T> {
 			creator,
 			name,
 			category,
+			badge,
 			description,
 			status: BountyStatus::Ongoing,
 			participants: bounded_account.clone(),

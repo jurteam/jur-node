@@ -5,10 +5,11 @@ use sp_runtime::RuntimeDebug;
 use crate::Vec;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[scale_info(skip_type_params(NameLimit, CategoryLimit, DescriptionLimit, AccountLimit))]
+#[scale_info(skip_type_params(NameLimit, CategoryLimit, BadgeNameLimit, DescriptionLimit, AccountLimit))]
 pub struct Bounty<
 	NameLimit: Get<u32>,
 	CategoryLimit: Get<u32>,
+	BadgeNameLimit: Get<u32>,
 	DescriptionLimit: Get<u32>,
 	AccountId,
 	AccountLimit: Get<u32>,
@@ -16,6 +17,7 @@ pub struct Bounty<
 	pub creator: AccountId,
 	pub name: BoundedVec<u8, NameLimit>,
 	pub category: BoundedVec<u8, CategoryLimit>,
+	pub badge: BoundedVec<u8, BadgeNameLimit>,
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub status: BountyStatus,
 	pub participants: BoundedVec<AccountId, AccountLimit>,
