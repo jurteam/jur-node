@@ -1,11 +1,17 @@
+use crate::Vec;
 use codec::{Decode, Encode};
 use frame_support::{pallet_prelude::Get, BoundedVec};
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
-use crate::Vec;
 
 #[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
-#[scale_info(skip_type_params(NameLimit, CategoryLimit, BadgeNameLimit, DescriptionLimit, AccountLimit))]
+#[scale_info(skip_type_params(
+	NameLimit,
+	CategoryLimit,
+	BadgeNameLimit,
+	DescriptionLimit,
+	AccountLimit
+))]
 pub struct Bounty<
 	NameLimit: Get<u32>,
 	CategoryLimit: Get<u32>,

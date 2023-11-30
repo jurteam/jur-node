@@ -19,9 +19,9 @@ pub use pallet::*;
 mod types;
 use crate::types::{Bounty, BountyStatus};
 use frame_support::{dispatch::DispatchResultWithPostInfo, BoundedVec};
+use pallet_passport::Passports;
 use primitives::{Incrementable, BLOCKS_PER_DAY, BOUNTY_DURATION_LIMIT};
 use sp_std::vec::Vec;
-use pallet_passport::Passports;
 
 // #[cfg(test)]
 // mod mock;
@@ -43,7 +43,9 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_community::Config + pallet_passport::Config {
+	pub trait Config:
+		frame_system::Config + pallet_community::Config + pallet_passport::Config
+	{
 		/// Because this pallet emits events, it depends on the runtime's
 		/// definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -100,12 +102,12 @@ pub mod pallet {
 	/// This gets incremented whenever a new bounty is created.
 	#[pallet::storage]
 	pub type NextBountyId<T: Config> =
-	StorageMap<_, Twox64Concat, T::CommunityId, T::BountyId, OptionQuery>;
+		StorageMap<_, Twox64Concat, T::CommunityId, T::BountyId, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn bounty_expire)]
 	pub type BountyExpireTime<T: Config> =
-	StorageMap<_, Identity, BlockNumberFor<T>, (T::CommunityId, T::BountyId), OptionQuery>;
+		StorageMap<_, Identity, BlockNumberFor<T>, (T::CommunityId, T::BountyId), OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -149,24 +151,31 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(block_number: BlockNumberFor<T>) -> Weight {
-
 			let option_bounty_expire = BountyExpireTime::<T>::get(block_number);
 
-			if let Some((community_id, bounty_id )) = option_bounty_expire {
+			if let Some((community_id, bounty_id)) = option_bounty_expire {
+				Bounties::<T>::try_mutate(
+					community_id,
+					&bounty_id,
+					|bounty_details| -> DispatchResult {
+						let bounty = bounty_details
+							.as_mut()
+							.ok_or(Error::<T>::BountyNotAvailable)?;
 
-				Bounties::<T>::try_mutate(community_id, &bounty_id, |bounty_details| -> DispatchResult{
-					let bounty = bounty_details
-						.as_mut()
-						.ok_or(Error::<T>::BountyNotAvailable)?;
+						ensure!(
+							(bounty.status == BountyStatus::Ongoing)
+								|| (bounty.status == BountyStatus::WorkInProgress),
+							Error::<T>::BountyClosed
+						);
 
-					ensure!((bounty.status == BountyStatus::Ongoing) || (bounty.status == BountyStatus::WorkInProgress), Error::<T>::BountyClosed);
+						bounty.status = BountyStatus::Completed;
 
-					bounty.status = BountyStatus::Completed;
+						Self::deposit_event(Event::ClosedBounty(bounty_id));
 
-					Self::deposit_event(Event::ClosedBounty(bounty_id));
-
-					Ok(())
-				}).expect("Bounty not found");
+						Ok(())
+					},
+				)
+				.expect("Bounty not found");
 			};
 
 			Weight::zero()
@@ -243,13 +252,15 @@ pub mod pallet {
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
 			// Ensuring the members should not be a founder.
-			ensure!(!participants.contains(&community.founder),Error::<T>::NotAllowed);
+			ensure!(!participants.contains(&community.founder), Error::<T>::NotAllowed);
 
 			// Ensuring the members should have the passport.
 			ensure!(
-				!participants
-					.iter()
-					.any(|participant| <Passports<T>>::get(community_id, participant).is_none()),
+				!participants.iter().any(|participant| <Passports<T>>::get(
+					community_id,
+					participant
+				)
+				.is_none()),
 				Error::<T>::PassportNotAvailable
 			);
 
@@ -258,7 +269,11 @@ pub mod pallet {
 					.as_mut()
 					.ok_or(Error::<T>::BountyNotAvailable)?;
 
-				ensure!((bounty.status == BountyStatus::Ongoing) || (bounty.status == BountyStatus::WorkInProgress), Error::<T>::BountyClosed);
+				ensure!(
+					(bounty.status == BountyStatus::Ongoing)
+						|| (bounty.status == BountyStatus::WorkInProgress),
+					Error::<T>::BountyClosed
+				);
 
 				bounty.participants = participants;
 				bounty.status = BountyStatus::WorkInProgress;
@@ -267,7 +282,6 @@ pub mod pallet {
 				Ok(())
 			})
 		}
-
 
 		#[pallet::call_index(2)]
 		#[pallet::weight(1000000)]
@@ -284,18 +298,20 @@ pub mod pallet {
 			ensure!(origin == community.founder, Error::<T>::NotAllowed);
 
 			// Ensuring the members should not be a founder.
-			ensure!(!contributors.contains(&community.founder),Error::<T>::NotAllowed);
+			ensure!(!contributors.contains(&community.founder), Error::<T>::NotAllowed);
 
 			// Ensuring the members should have the passport.
 			ensure!(
-				!contributors
-					.iter()
-					.any(|contributor| <Passports<T>>::get(community_id, contributor).is_none()),
+				!contributors.iter().any(|contributor| <Passports<T>>::get(
+					community_id,
+					contributor
+				)
+				.is_none()),
 				Error::<T>::PassportNotAvailable
 			);
 
-
-			let bounty_details = <Bounties<T>>::get(community_id, bounty_id).ok_or(Error::<T>::BountyNotAvailable)?;
+			let bounty_details = <Bounties<T>>::get(community_id, bounty_id)
+				.ok_or(Error::<T>::BountyNotAvailable)?;
 			let bounty_reward = bounty_details.badge;
 
 			// Issuing the badge to the members
@@ -320,7 +336,6 @@ pub mod pallet {
 				)?;
 			}
 
-
 			Bounties::<T>::try_mutate(community_id, &bounty_id, |bounty_details| {
 				let bounty = bounty_details
 					.as_mut()
@@ -331,9 +346,9 @@ pub mod pallet {
 				// Ensuring that the contributor should participated in the bounty.
 				ensure!(
 					contributors
-					.iter().
-					any(|contributor| bounty.participants.contains(contributor)),
-				Error::<T>::ParticipantNotAvailable
+						.iter()
+						.any(|contributor| bounty.participants.contains(contributor)),
+					Error::<T>::ParticipantNotAvailable
 				);
 
 				// Adding the new contributors in bounty contributors.
@@ -346,7 +361,6 @@ pub mod pallet {
 					}
 				}
 				bounty.contributors = bounty_contributors;
-
 
 				Self::deposit_event(Event::UpdatedBounty(bounty_id));
 				Ok(())
@@ -392,7 +406,6 @@ impl<T: Config> Pallet<T> {
 			duration,
 			deadline_block: expire_block,
 		};
-
 
 		// Storing the Bounty details
 		<Bounties<T>>::insert(community_id, bounty_id, &new_bounty);
