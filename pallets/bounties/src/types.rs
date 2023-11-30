@@ -13,6 +13,7 @@ pub struct Bounty<
 	DescriptionLimit: Get<u32>,
 	AccountId,
 	AccountLimit: Get<u32>,
+	BlockNumber,
 > {
 	pub creator: AccountId,
 	pub name: BoundedVec<u8, NameLimit>,
@@ -23,6 +24,7 @@ pub struct Bounty<
 	pub participants: BoundedVec<AccountId, AccountLimit>,
 	pub contributors: Vec<AccountId>,
 	pub duration: u32,
+	pub deadline_block: BlockNumber,
 }
 
 /// Status of bounty.
