@@ -1,5 +1,4 @@
-use pallet_passport::{Passports, types::BadgesType};
-use crate::{mock::*, Error, Bounties};
+use crate::{mock::*, Bounties, Error};
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
 use frame_support::{assert_noop, assert_ok};
@@ -7,6 +6,7 @@ use pallet_community::types::{
 	Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories,
 	Traditions, Values,
 };
+use pallet_passport::{types::BadgesType, Passports};
 
 fn get_community_metadata() -> CommunityMetaData<ConstU32<250>> {
 	let custom_one: Vec<u8> =
@@ -82,7 +82,7 @@ fn create_community() {
 		Some("#E76080".into()),
 		Some(CommunityType::Nation),
 	)
-		.unwrap();
+	.unwrap();
 }
 
 fn mint_passport() {
@@ -95,8 +95,7 @@ fn add_badge() {
 	let badge_name: Vec<u8> = "DEVBOUNTY".into();
 	let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
 
-	let badge_description: Vec<u8> =
-		"Development bounty for the jur community members".into();
+	let badge_description: Vec<u8> = "Development bounty for the jur community members".into();
 	let bounded_badge_description: BoundedVec<u8, ConstU32<250>> =
 		badge_description.try_into().unwrap();
 
@@ -112,7 +111,7 @@ fn add_badge() {
 		bounded_badge_description,
 		bounded_badge_address,
 	)
-		.unwrap();
+	.unwrap();
 }
 
 fn mint_passport_with_badge() {
@@ -123,7 +122,6 @@ fn mint_passport_with_badge() {
 }
 
 pub fn create_bounty() {
-
 	mint_passport_with_badge();
 
 	let bounty_name: Vec<u8> = "Bounty to help in dev work".into();
@@ -133,7 +131,8 @@ pub fn create_bounty() {
 	let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
 
 	let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
-	let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> = bounty_description.try_into().unwrap();
+	let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
+		bounty_description.try_into().unwrap();
 
 	let badge_name: Vec<u8> = "DEVBOUNTY".into();
 	let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
@@ -147,7 +146,7 @@ pub fn create_bounty() {
 		bounded_bounty_description,
 		2,
 	)
-		.unwrap();
+	.unwrap();
 }
 
 fn update_bounty() {
@@ -155,16 +154,10 @@ fn update_bounty() {
 	Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 	Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-	let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![3, 4]
-		.try_into().unwrap();
+	let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+		vec![3, 4].try_into().unwrap();
 
-	BountyPallet::update_bounty(
-		RuntimeOrigin::signed(1),
-		1,
-		1,
-		bounded_accounts,
-	)
-		.unwrap();
+	BountyPallet::update_bounty(RuntimeOrigin::signed(1), 1, 1, bounded_accounts).unwrap();
 }
 
 #[test]
@@ -176,10 +169,12 @@ fn create_bounty_works() {
 		let bounded_bounty_name: BoundedVec<u8, ConstU32<512>> = bounty_name.try_into().unwrap();
 
 		let bounty_category: Vec<u8> = "DEVELOPMENT".into();
-		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
+		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> =
+			bounty_category.try_into().unwrap();
 
 		let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
-		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> = bounty_description.try_into().unwrap();
+		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
+			bounty_description.try_into().unwrap();
 
 		let badge_name: Vec<u8> = "DEVBOUNTY".into();
 		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
@@ -193,10 +188,9 @@ fn create_bounty_works() {
 			bounded_bounty_description,
 			2,
 		)
-			.unwrap();
+		.unwrap();
 
-		assert!(Bounties::<Test>::get(1,1).is_some());
-
+		assert!(Bounties::<Test>::get(1, 1).is_some());
 	});
 }
 
@@ -209,27 +203,28 @@ fn create_bounty_not_works_invalid_community_id() {
 		let bounded_bounty_name: BoundedVec<u8, ConstU32<512>> = bounty_name.try_into().unwrap();
 
 		let bounty_category: Vec<u8> = "DEVELOPMENT".into();
-		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
+		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> =
+			bounty_category.try_into().unwrap();
 
 		let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
-		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> = bounty_description.try_into().unwrap();
+		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
+			bounty_description.try_into().unwrap();
 
 		let badge_name: Vec<u8> = "DEVBOUNTY".into();
 		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
 
 		assert_noop!(
 			BountyPallet::create_bounty(
-			RuntimeOrigin::signed(1),
-			5,
-			bounded_bounty_name,
-			bounded_bounty_category,
-			bounded_badge_name,
-			bounded_bounty_description,
-			2,
-		),
+				RuntimeOrigin::signed(1),
+				5,
+				bounded_bounty_name,
+				bounded_bounty_category,
+				bounded_badge_name,
+				bounded_bounty_description,
+				2,
+			),
 			Error::<Test>::CommunityDoesNotExist
 		);
-
 	});
 }
 
@@ -242,27 +237,28 @@ fn create_bounty_not_works_invalid_founder() {
 		let bounded_bounty_name: BoundedVec<u8, ConstU32<512>> = bounty_name.try_into().unwrap();
 
 		let bounty_category: Vec<u8> = "DEVELOPMENT".into();
-		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
+		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> =
+			bounty_category.try_into().unwrap();
 
 		let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
-		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> = bounty_description.try_into().unwrap();
+		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
+			bounty_description.try_into().unwrap();
 
 		let badge_name: Vec<u8> = "DEVBOUNTY".into();
 		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
 
 		assert_noop!(
 			BountyPallet::create_bounty(
-			RuntimeOrigin::signed(2),
-			1,
-			bounded_bounty_name,
-			bounded_bounty_category,
-			bounded_badge_name,
-			bounded_bounty_description,
-			2,
-		),
+				RuntimeOrigin::signed(2),
+				1,
+				bounded_bounty_name,
+				bounded_bounty_category,
+				bounded_badge_name,
+				bounded_bounty_description,
+				2,
+			),
 			Error::<Test>::NotAllowed
 		);
-
 	});
 }
 
@@ -275,27 +271,28 @@ fn create_bounty_not_works_for_invalid_badge() {
 		let bounded_bounty_name: BoundedVec<u8, ConstU32<512>> = bounty_name.try_into().unwrap();
 
 		let bounty_category: Vec<u8> = "DEVELOPMENT".into();
-		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
+		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> =
+			bounty_category.try_into().unwrap();
 
 		let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
-		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> = bounty_description.try_into().unwrap();
+		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
+			bounty_description.try_into().unwrap();
 
 		let badge_name: Vec<u8> = "DEV".into();
 		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
 
 		assert_noop!(
 			BountyPallet::create_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			bounded_bounty_name,
-			bounded_bounty_category,
-			bounded_badge_name,
-			bounded_bounty_description,
-			2,
+				RuntimeOrigin::signed(1),
+				1,
+				bounded_bounty_name,
+				bounded_bounty_category,
+				bounded_badge_name,
+				bounded_bounty_description,
+				2,
 			),
 			Error::<Test>::BadgeNotExist
 		);
-
 	});
 }
 
@@ -308,27 +305,28 @@ fn create_bounty_not_works_for_invalid_bounty_duration() {
 		let bounded_bounty_name: BoundedVec<u8, ConstU32<512>> = bounty_name.try_into().unwrap();
 
 		let bounty_category: Vec<u8> = "DEVELOPMENT".into();
-		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
+		let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> =
+			bounty_category.try_into().unwrap();
 
 		let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
-		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> = bounty_description.try_into().unwrap();
+		let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
+			bounty_description.try_into().unwrap();
 
 		let badge_name: Vec<u8> = "DEVBOUNTY".into();
 		let bounded_badge_name: BoundedVec<u8, ConstU32<20>> = badge_name.try_into().unwrap();
 
 		assert_noop!(
 			BountyPallet::create_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			bounded_bounty_name,
-			bounded_bounty_category,
-			bounded_badge_name,
-			bounded_bounty_description,
-			390,
+				RuntimeOrigin::signed(1),
+				1,
+				bounded_bounty_name,
+				bounded_bounty_category,
+				bounded_badge_name,
+				bounded_bounty_description,
+				390,
 			),
 			Error::<Test>::InvalidBountyDuration
 		);
-
 	});
 }
 
@@ -339,16 +337,10 @@ fn update_bounty_works() {
 		Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 		Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![3, 4]
-			.try_into().unwrap();
+		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+			vec![3, 4].try_into().unwrap();
 
-		BountyPallet::update_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			1,
-			bounded_accounts,
-		)
-			.unwrap();
+		BountyPallet::update_bounty(RuntimeOrigin::signed(1), 1, 1, bounded_accounts).unwrap();
 	});
 }
 
@@ -359,15 +351,11 @@ fn update_bounty_not_works_for_invalid_community_id() {
 		Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 		Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![3, 4]
-			.try_into().unwrap();
+		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+			vec![3, 4].try_into().unwrap();
 
-		assert_noop!(BountyPallet::update_bounty(
-			RuntimeOrigin::signed(1),
-			5,
-			1,
-			bounded_accounts,
-		),
+		assert_noop!(
+			BountyPallet::update_bounty(RuntimeOrigin::signed(1), 5, 1, bounded_accounts,),
 			Error::<Test>::CommunityDoesNotExist
 		);
 	});
@@ -380,15 +368,11 @@ fn update_bounty_not_works_for_invalid_bounty_id() {
 		Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 		Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![3, 4]
-			.try_into().unwrap();
+		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+			vec![3, 4].try_into().unwrap();
 
-		assert_noop!(BountyPallet::update_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			2,
-			bounded_accounts,
-		),
+		assert_noop!(
+			BountyPallet::update_bounty(RuntimeOrigin::signed(1), 1, 2, bounded_accounts,),
 			Error::<Test>::BountyNotAvailable
 		);
 	});
@@ -401,15 +385,11 @@ fn update_bounty_not_works_for_invalid_founder() {
 		Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 		Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![3, 4]
-			.try_into().unwrap();
+		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+			vec![3, 4].try_into().unwrap();
 
-		assert_noop!(BountyPallet::update_bounty(
-			RuntimeOrigin::signed(2),
-			1,
-			2,
-			bounded_accounts,
-		),
+		assert_noop!(
+			BountyPallet::update_bounty(RuntimeOrigin::signed(2), 1, 2, bounded_accounts,),
 			Error::<Test>::NotAllowed
 		);
 	});
@@ -422,15 +402,11 @@ fn update_bounty_not_works_for_founder_as_participant() {
 		Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 		Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![1, 4]
-			.try_into().unwrap();
+		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+			vec![1, 4].try_into().unwrap();
 
-		assert_noop!(BountyPallet::update_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			2,
-			bounded_accounts,
-		),
+		assert_noop!(
+			BountyPallet::update_bounty(RuntimeOrigin::signed(1), 1, 2, bounded_accounts,),
 			Error::<Test>::NotAllowed
 		);
 	});
@@ -443,18 +419,14 @@ fn update_bounty_not_works_after_deadline() {
 		Passport::mint(RuntimeOrigin::signed(3), 1).unwrap();
 		Passport::mint(RuntimeOrigin::signed(4), 1).unwrap();
 
-		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> = vec![3, 4]
-			.try_into().unwrap();
+		let bounded_accounts: BoundedVec<<Test as frame_system::Config>::AccountId, ConstU32<500>> =
+			vec![3, 4].try_into().unwrap();
 
 		run_to_block(30000);
 
-		assert_noop!(BountyPallet::update_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			1,
-			bounded_accounts,
-		),
-		Error::<Test>::BountyClosed
+		assert_noop!(
+			BountyPallet::update_bounty(RuntimeOrigin::signed(1), 1, 1, bounded_accounts,),
+			Error::<Test>::BountyClosed
 		);
 	});
 }
@@ -464,13 +436,7 @@ fn complete_bounty_works() {
 	new_test_ext().execute_with(|| {
 		update_bounty();
 
-		BountyPallet::complete_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			1,
-			vec![3],
-		)
-			.unwrap();
+		BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 1, vec![3]).unwrap();
 	});
 }
 
@@ -481,13 +447,9 @@ fn complete_bounty_not_works_invalid_community_id() {
 
 		Passport::mint(RuntimeOrigin::signed(5), 1).unwrap();
 
-		assert_noop!(BountyPallet::complete_bounty(
-			RuntimeOrigin::signed(1),
-			4,
-			1,
-			vec![3],
-		),
-		Error::<Test>::CommunityDoesNotExist
+		assert_noop!(
+			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 4, 1, vec![3],),
+			Error::<Test>::CommunityDoesNotExist
 		);
 	});
 }
@@ -499,18 +461,12 @@ fn complete_bounty_not_works_invalid_bounty_id() {
 
 		Passport::mint(RuntimeOrigin::signed(5), 1).unwrap();
 
-		assert_noop!(BountyPallet::complete_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			4,
-			vec![3],
-		),
-		Error::<Test>::BountyNotAvailable
+		assert_noop!(
+			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 4, vec![3],),
+			Error::<Test>::BountyNotAvailable
 		);
 	});
 }
-
-
 
 #[test]
 fn complete_bounty_not_works_invalid_participant() {
@@ -519,17 +475,12 @@ fn complete_bounty_not_works_invalid_participant() {
 
 		Passport::mint(RuntimeOrigin::signed(5), 1).unwrap();
 
-		assert_noop!(BountyPallet::complete_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			1,
-			vec![5],
-		),
-		Error::<Test>::ParticipantNotAvailable
+		assert_noop!(
+			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 1, vec![5],),
+			Error::<Test>::ParticipantNotAvailable
 		);
 	});
 }
-
 
 #[test]
 fn complete_bounty_not_works_founder_as_contributor() {
@@ -538,13 +489,9 @@ fn complete_bounty_not_works_founder_as_contributor() {
 
 		Passport::mint(RuntimeOrigin::signed(5), 1).unwrap();
 
-		assert_noop!(BountyPallet::complete_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			1,
-			vec![1],
-		),
-		Error::<Test>::NotAllowed
+		assert_noop!(
+			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 1, vec![1],),
+			Error::<Test>::NotAllowed
 		);
 	});
 }
@@ -558,13 +505,9 @@ fn complete_bounty_not_works_after_deadline() {
 
 		run_to_block(30000);
 
-		assert_noop!(BountyPallet::complete_bounty(
-			RuntimeOrigin::signed(1),
-			1,
-			1,
-			vec![3],
-		),
-		Error::<Test>::BountyClosed
+		assert_noop!(
+			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 1, vec![3],),
+			Error::<Test>::BountyClosed
 		);
 	});
 }

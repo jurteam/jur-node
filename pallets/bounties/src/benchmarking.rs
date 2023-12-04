@@ -2,7 +2,6 @@
 
 use super::*;
 
-use pallet_passport::types::BadgesType;
 use crate::Pallet;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::BoundedVec;
@@ -11,9 +10,10 @@ use pallet_community::types::{
 	Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories,
 	Traditions, Values,
 };
+use pallet_passport::types::BadgesType;
+use sp_runtime::traits::ConstU32;
 use sp_std::vec;
 use sp_std::vec::Vec;
-use sp_runtime::traits::ConstU32;
 const SEED: u32 = 0;
 
 fn assert_last_event<T: Config>(generic_event: <T as Config>::RuntimeEvent) {
@@ -102,16 +102,19 @@ pub fn add_founder<T: Config>(caller: T::AccountId) {
 
 fn add_badge<T: Config>(caller: T::AccountId, community_id: T::CommunityId) {
 	let badge_name: Vec<u8> = "DEVBOUNTY".into();
-	let bounded_badge_name: BoundedVec<u8, <T as pallet_passport::Config>::BadgeNameLimit> = badge_name.try_into().unwrap();
+	let bounded_badge_name: BoundedVec<u8, <T as pallet_passport::Config>::BadgeNameLimit> =
+		badge_name.try_into().unwrap();
 
-	let badge_description: Vec<u8> =
-		"Development bounty for the jur community members".into();
-	let bounded_badge_description: BoundedVec<u8, <T as pallet_passport::Config>::DescriptionLimit> =
-		badge_description.try_into().unwrap();
+	let badge_description: Vec<u8> = "Development bounty for the jur community members".into();
+	let bounded_badge_description: BoundedVec<
+		u8,
+		<T as pallet_passport::Config>::DescriptionLimit,
+	> = badge_description.try_into().unwrap();
 
 	let badge_address: Vec<u8> =
 		"abcdreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into();
-	let bounded_badge_address: BoundedVec<u8, <T as pallet_passport::Config>::AddressLimit> = badge_address.try_into().unwrap();
+	let bounded_badge_address: BoundedVec<u8, <T as pallet_passport::Config>::AddressLimit> =
+		badge_address.try_into().unwrap();
 
 	pallet_passport::Pallet::<T>::add_badge(
 		RawOrigin::Signed(caller).into(),
@@ -121,7 +124,7 @@ fn add_badge<T: Config>(caller: T::AccountId, community_id: T::CommunityId) {
 		bounded_badge_description,
 		bounded_badge_address,
 	)
-		.unwrap();
+	.unwrap();
 }
 
 benchmarks! {

@@ -52,7 +52,6 @@ pub mod pallet {
 		}
 	}
 
-
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
 	#[pallet::config]
