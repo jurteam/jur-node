@@ -463,7 +463,9 @@ impl pallet_bounties::Config for Runtime {
 	type DescriptionLimit = ConstU32<8192>;
 	type CategoryLimit = ConstU32<20>;
 	type AccountLimit = ConstU32<500>;
-	// type WeightInfo = pallet_proposal::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
 }
 
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
@@ -648,6 +650,7 @@ mod benches {
 		[pallet_passport, Passport]
 		[pallet_user, User]
 		[pallet_whitelist, Whitelist]
+		[pallet_bounties, Bounties]
 	);
 }
 

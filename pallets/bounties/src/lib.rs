@@ -23,22 +23,35 @@ use pallet_passport::Passports;
 use primitives::{Incrementable, BLOCKS_PER_DAY, BOUNTY_DURATION_LIMIT};
 use sp_std::vec::Vec;
 
-// #[cfg(test)]
-// mod mock;
-//
-// #[cfg(test)]
-// mod tests;
-//
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
-// pub mod weights;
-// pub use weights::WeightInfo;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+pub mod weights;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+
+	#[cfg(feature = "runtime-benchmarks")]
+	pub trait BenchmarkHelper<BountyId> {
+		fn bounty(i: u32) -> BountyId;
+	}
+
+	#[cfg(feature = "runtime-benchmarks")]
+	impl<BountyId: From<u32>> BenchmarkHelper<BountyId> for () {
+		fn bounty(i: u32) -> BountyId {
+			i.into()
+		}
+	}
+
 
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
@@ -69,8 +82,12 @@ pub mod pallet {
 		#[pallet::constant]
 		type AccountLimit: Get<u32>;
 
+		#[cfg(feature = "runtime-benchmarks")]
+		/// A set of helper functions for benchmarking.
+		type Helper: BenchmarkHelper<Self::BountyId>;
+
 		// Weight information
-		// type WeightInfo: WeightInfo;
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
@@ -198,7 +215,7 @@ pub mod pallet {
 		/// Emits `CreatedBounty` event when successful.
 		///
 		#[pallet::call_index(0)]
-		#[pallet::weight(1000000)]
+		#[pallet::weight(<T as Config>::WeightInfo::create_bounty())]
 		pub fn create_bounty(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -237,7 +254,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(1)]
-		#[pallet::weight(1000000)]
+		#[pallet::weight(<T as Config>::WeightInfo::update_bounty())]
 		pub fn update_bounty(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -284,7 +301,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(2)]
-		#[pallet::weight(1000000)]
+		#[pallet::weight(<T as Config>::WeightInfo::complete_bounty())]
 		pub fn complete_bounty(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -362,7 +379,7 @@ pub mod pallet {
 				}
 				bounty.contributors = bounty_contributors;
 
-				Self::deposit_event(Event::UpdatedBounty(bounty_id));
+				Self::deposit_event(Event::CompletedBounty(bounty_id));
 				Ok(())
 			})
 		}

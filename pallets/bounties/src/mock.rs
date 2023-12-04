@@ -10,7 +10,6 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,
 };
-// use crate::Bounties;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -102,7 +101,7 @@ impl pallet_bounties::Config for Test {
 	type AccountLimit = ConstU32<500>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
-	// type WeightInfo = ();
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.

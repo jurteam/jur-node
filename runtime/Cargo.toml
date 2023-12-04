@@ -127,7 +127,8 @@ runtime-benchmarks = [
 	"pallet-proposal/runtime-benchmarks",
 	"pallet-passport/runtime-benchmarks",
 	"pallet-user/runtime-benchmarks",
-	"pallet-whitelist/runtime-benchmarks"
+	"pallet-whitelist/runtime-benchmarks",
+	"pallet-bounties/runtime-benchmarks"
 ]
 try-runtime = [
 	"frame-try-runtime/try-runtime",
