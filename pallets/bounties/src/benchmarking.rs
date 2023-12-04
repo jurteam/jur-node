@@ -11,7 +11,6 @@ use pallet_community::types::{
 	Traditions, Values,
 };
 use pallet_passport::types::BadgesType;
-use sp_runtime::traits::ConstU32;
 use sp_std::vec;
 use sp_std::vec::Vec;
 const SEED: u32 = 0;
@@ -262,5 +261,5 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::CompletedBounty(<T as pallet::Config>::Helper::bounty(1)).into());
 	}
 
-	impl_benchmark_test_suite!(BountyPallet, crate::mock::new_test_ext(), crate::mock::Test);
+	impl_benchmark_test_suite!(Pallet, crate::mock::new_test_ext(), crate::mock::Test);
 }

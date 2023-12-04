@@ -1,12 +1,12 @@
 use crate::{mock::*, Bounties, Error};
+use frame_support::assert_noop;
 use frame_support::pallet_prelude::ConstU32;
 use frame_support::BoundedVec;
-use frame_support::{assert_noop, assert_ok};
 use pallet_community::types::{
 	Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories,
 	Traditions, Values,
 };
-use pallet_passport::{types::BadgesType, Passports};
+use pallet_passport::types::BadgesType;
 
 fn get_community_metadata() -> CommunityMetaData<ConstU32<250>> {
 	let custom_one: Vec<u8> =
@@ -60,10 +60,6 @@ pub fn add_founder() {
 	Whitelist::add_founder(RuntimeOrigin::root(), 1).unwrap();
 }
 
-pub fn add_admin() {
-	Whitelist::add_admin(RuntimeOrigin::root(), 2).unwrap();
-}
-
 fn create_community() {
 	Community::create_community(
 		RuntimeOrigin::signed(1),
@@ -83,12 +79,6 @@ fn create_community() {
 		Some(CommunityType::Nation),
 	)
 	.unwrap();
-}
-
-fn mint_passport() {
-	add_founder();
-	create_community();
-	Passport::mint(RuntimeOrigin::signed(2), 1).unwrap();
 }
 
 fn add_badge() {
