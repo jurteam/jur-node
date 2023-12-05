@@ -23,7 +23,7 @@ pub struct Bounty<
 > {
 	pub creator: AccountId,
 	pub name: BoundedVec<u8, NameLimit>,
-	pub category: BoundedVec<u8, CategoryLimit>,
+	pub category: Vec<BoundedVec<u8, CategoryLimit>>,
 	pub badge: BoundedVec<u8, BadgeNameLimit>,
 	pub description: BoundedVec<u8, DescriptionLimit>,
 	pub status: BountyStatus,

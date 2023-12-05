@@ -120,6 +120,10 @@ pub fn create_bounty() {
 	let bounty_category: Vec<u8> = "DEVELOPMENT".into();
 	let bounded_bounty_category: BoundedVec<u8, ConstU32<20>> = bounty_category.try_into().unwrap();
 
+	let bounty_category: Vec<u8> = "DESIGN".into();
+	let bounded_bounty_category2: BoundedVec<u8, ConstU32<20>> =
+		bounty_category.try_into().unwrap();
+
 	let bounty_description: Vec<u8> = "Development bounty for the jur community members".into();
 	let bounded_bounty_description: BoundedVec<u8, ConstU32<8192>> =
 		bounty_description.try_into().unwrap();
@@ -131,7 +135,7 @@ pub fn create_bounty() {
 		RuntimeOrigin::signed(1),
 		1,
 		bounded_bounty_name,
-		bounded_bounty_category,
+		vec![bounded_bounty_category, bounded_bounty_category2],
 		bounded_badge_name,
 		bounded_bounty_description,
 		2,
@@ -173,7 +177,7 @@ fn create_bounty_works() {
 			RuntimeOrigin::signed(1),
 			1,
 			bounded_bounty_name,
-			bounded_bounty_category,
+			vec![bounded_bounty_category],
 			bounded_badge_name,
 			bounded_bounty_description,
 			2,
@@ -208,7 +212,7 @@ fn create_bounty_not_works_invalid_community_id() {
 				RuntimeOrigin::signed(1),
 				5,
 				bounded_bounty_name,
-				bounded_bounty_category,
+				vec![bounded_bounty_category],
 				bounded_badge_name,
 				bounded_bounty_description,
 				2,
@@ -242,7 +246,7 @@ fn create_bounty_not_works_invalid_founder() {
 				RuntimeOrigin::signed(2),
 				1,
 				bounded_bounty_name,
-				bounded_bounty_category,
+				vec![bounded_bounty_category],
 				bounded_badge_name,
 				bounded_bounty_description,
 				2,
@@ -276,7 +280,7 @@ fn create_bounty_not_works_for_invalid_badge() {
 				RuntimeOrigin::signed(1),
 				1,
 				bounded_bounty_name,
-				bounded_bounty_category,
+				vec![bounded_bounty_category],
 				bounded_badge_name,
 				bounded_bounty_description,
 				2,
@@ -310,7 +314,7 @@ fn create_bounty_not_works_for_invalid_bounty_duration() {
 				RuntimeOrigin::signed(1),
 				1,
 				bounded_bounty_name,
-				bounded_bounty_category,
+				vec![bounded_bounty_category],
 				bounded_badge_name,
 				bounded_bounty_description,
 				390,
@@ -482,22 +486,6 @@ fn complete_bounty_not_works_founder_as_contributor() {
 		assert_noop!(
 			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 1, vec![1],),
 			Error::<Test>::NotAllowed
-		);
-	});
-}
-
-#[test]
-fn complete_bounty_not_works_after_deadline() {
-	new_test_ext().execute_with(|| {
-		update_bounty();
-
-		Passport::mint(RuntimeOrigin::signed(5), 1).unwrap();
-
-		run_to_block(30000);
-
-		assert_noop!(
-			BountyPallet::complete_bounty(RuntimeOrigin::signed(1), 1, 1, vec![3],),
-			Error::<Test>::BountyClosed
 		);
 	});
 }

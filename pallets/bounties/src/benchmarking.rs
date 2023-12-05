@@ -151,7 +151,7 @@ benchmarks! {
 		RawOrigin::Signed(caller.clone()),
 		community_id,
 		bounded_bounty_name,
-		bounded_bounty_category,
+		vec![bounded_bounty_category],
 		bounded_badge_name,
 		bounded_bounty_description,
 		2
@@ -191,7 +191,7 @@ benchmarks! {
 			RawOrigin::Signed(caller.clone()).into(),
 			community_id,
 			bounded_bounty_name,
-			bounded_bounty_category,
+			vec![bounded_bounty_category],
 			bounded_badge_name,
 			bounded_bounty_description,
 			2
@@ -238,7 +238,7 @@ benchmarks! {
 			RawOrigin::Signed(caller.clone()).into(),
 			community_id,
 			bounded_bounty_name,
-			bounded_bounty_category,
+			vec![bounded_bounty_category],
 			bounded_badge_name,
 			bounded_bounty_description,
 			2

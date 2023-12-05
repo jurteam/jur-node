@@ -219,7 +219,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
 			name: BoundedVec<u8, <T as pallet::Config>::NameLimit>,
-			category: BoundedVec<u8, <T as pallet::Config>::CategoryLimit>,
+			category: Vec<BoundedVec<u8, <T as pallet::Config>::CategoryLimit>>,
 			badge: BoundedVec<u8, T::BadgeNameLimit>,
 			description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit>,
 			duration: u32,
@@ -357,8 +357,6 @@ pub mod pallet {
 					.as_mut()
 					.ok_or(Error::<T>::BountyNotAvailable)?;
 
-				ensure!(bounty.status == BountyStatus::WorkInProgress, Error::<T>::BountyClosed);
-
 				// Ensuring that the contributor should participated in the bounty.
 				ensure!(
 					contributors
@@ -390,7 +388,7 @@ impl<T: Config> Pallet<T> {
 		creator: T::AccountId,
 		community_id: T::CommunityId,
 		name: BoundedVec<u8, <T as pallet::Config>::NameLimit>,
-		category: BoundedVec<u8, <T as pallet::Config>::CategoryLimit>,
+		category: Vec<BoundedVec<u8, <T as pallet::Config>::CategoryLimit>>,
 		badge: BoundedVec<u8, T::BadgeNameLimit>,
 		description: BoundedVec<u8, <T as pallet::Config>::DescriptionLimit>,
 		duration: u32,
