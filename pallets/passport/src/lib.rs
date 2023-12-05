@@ -23,7 +23,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
-mod types;
+pub mod types;
 use crate::types::{BadgeDetails, BadgesType, PassportDetails};
 use primitives::Incrementable;
 use sp_std::vec;
