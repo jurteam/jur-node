@@ -1,0 +1,57 @@
+[package]
+name = "pallet-bounties"
+version = "1.0.0"
+description = "Jur Bounties Pallet"
+authors = ["Jur Team <https://github.com/jurteam>"]
+homepage = "https://jur.io/"
+edition = "2021"
+license = "Unlicense"
+publish = false
+repository = "https://github.com/jurteam/jur-chain/"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive"], default-features = false }
+primitives = { package = 'jur-primitives', path = '../../primitives', default-features = false }
+scale-info = { version = "2.9.0", default-features = false, features = ["derive"] }
+
+# Substrate
+frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, optional = true, branch = "release-polkadot-v1.2.0" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+
+sp-std = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+
+# Jur custom pallets
+pallet-community = { package = 'pallet-community', path = '../community', default-features = false }
+pallet-passport = { package = 'pallet-passport', path = '../passport', default-features = false }
+pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', default-features = false }
+
+[dev-dependencies]
+serde = { version = "1.0.132" }
+
+# Substrate
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
+pallet-insecure-randomness-collective-flip = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+
+
+[features]
+default = ["std"]
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+std = [
+	"codec/std",
+	"scale-info/std",
+	"frame-benchmarking/std",
+	"frame-support/std",
+	"frame-system/std",
+	"primitives/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"pallet-community/std",
+	"pallet-passport/std",
+]
+try-runtime = [ "frame-support/try-runtime" ]

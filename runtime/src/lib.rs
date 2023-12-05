@@ -58,7 +58,8 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
 use primitives::{
-	Balance, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId, JUR,
+	Balance, BountyId, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId,
+	JUR,
 };
 
 /// An index to a block.
@@ -121,7 +122,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 124,
+	spec_version: 125,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -455,6 +456,18 @@ impl pallet_whitelist::Config for Runtime {
 	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_bounties::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type BountyId = BountyId;
+	type NameLimit = ConstU32<512>;
+	type DescriptionLimit = ConstU32<8192>;
+	type CategoryLimit = ConstU32<20>;
+	type AccountLimit = ConstU32<500>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -573,6 +586,7 @@ construct_runtime!(
 		Passport: pallet_passport,
 		User: pallet_user,
 		Whitelist: pallet_whitelist,
+		Bounties: pallet_bounties,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 		Utility: pallet_utility,
@@ -636,6 +650,7 @@ mod benches {
 		[pallet_passport, Passport]
 		[pallet_user, User]
 		[pallet_whitelist, Whitelist]
+		[pallet_bounties, Bounties]
 	);
 }
 
