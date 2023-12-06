@@ -157,7 +157,7 @@ benchmarks! {
 		2
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::CreatedBounty(<T as pallet::Config>::Helper::bounty(1)).into());
+		assert_last_event::<T>(Event::<T>::CreatedBounty(community_id, <T as pallet::Config>::Helper::bounty(1)).into());
 	}
 
 	update_bounty {
@@ -204,7 +204,7 @@ benchmarks! {
 		bounded_accounts
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::UpdatedBounty(<T as pallet::Config>::Helper::bounty(1)).into());
+		assert_last_event::<T>(Event::<T>::UpdatedBounty(community_id, <T as pallet::Config>::Helper::bounty(1)).into());
 	}
 
 	complete_bounty {
@@ -258,7 +258,7 @@ benchmarks! {
 		members
 	)
 	verify {
-		assert_last_event::<T>(Event::<T>::CompletedBounty(<T as pallet::Config>::Helper::bounty(1)).into());
+		assert_last_event::<T>(Event::<T>::CompletedBounty(community_id, <T as pallet::Config>::Helper::bounty(1)).into());
 	}
 
 	impl_benchmark_test_suite!(Pallet, crate::mock::new_test_ext(), crate::mock::Test);

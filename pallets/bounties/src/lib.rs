@@ -128,16 +128,14 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Created Bounty [Bounty Id]
-		CreatedBounty(T::BountyId),
-		/// Updated Bounty [Bounty Id]
-		UpdatedBounty(T::BountyId),
-		/// Added bounty contributor to the chain [Bounty Id]
-		AddedContributor(T::BountyId),
-		/// Completed bounty and badges assigned to the contributors [Bounty Id]
-		CompletedBounty(T::BountyId),
-		/// Bounty closed due to deadline meet.
-		ClosedBounty(T::BountyId),
+		/// Created Bounty [Community Id, Bounty Id]
+		CreatedBounty(T::CommunityId, T::BountyId),
+		/// Updated Bounty [Community Id, Bounty Id]
+		UpdatedBounty(T::CommunityId, T::BountyId),
+		/// Completed bounty and badges assigned to the contributors [Community Id, Bounty Id]
+		CompletedBounty(T::CommunityId, T::BountyId),
+		/// Bounty closed due to deadline meet [Community Id, Bounty Id]
+		ClosedBounty(T::CommunityId, T::BountyId),
 	}
 
 	#[pallet::error]
@@ -186,7 +184,7 @@ pub mod pallet {
 
 						bounty.status = BountyStatus::Completed;
 
-						Self::deposit_event(Event::ClosedBounty(bounty_id));
+						Self::deposit_event(Event::ClosedBounty(community_id, bounty_id));
 
 						Ok(())
 					},
@@ -294,7 +292,7 @@ pub mod pallet {
 				bounty.participants = participants;
 				bounty.status = BountyStatus::WorkInProgress;
 
-				Self::deposit_event(Event::UpdatedBounty(bounty_id));
+				Self::deposit_event(Event::UpdatedBounty(community_id, bounty_id));
 				Ok(())
 			})
 		}
@@ -376,7 +374,7 @@ pub mod pallet {
 				}
 				bounty.contributors = bounty_contributors;
 
-				Self::deposit_event(Event::CompletedBounty(bounty_id));
+				Self::deposit_event(Event::CompletedBounty(community_id, bounty_id));
 				Ok(())
 			})
 		}
@@ -427,7 +425,7 @@ impl<T: Config> Pallet<T> {
 		let next_id = bounty_id.increment();
 		NextBountyId::<T>::insert(community_id, next_id);
 
-		Self::deposit_event(Event::CreatedBounty(bounty_id));
+		Self::deposit_event(Event::CreatedBounty(community_id, bounty_id));
 
 		Ok(().into())
 	}
