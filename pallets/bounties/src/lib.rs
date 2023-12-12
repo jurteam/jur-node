@@ -136,6 +136,8 @@ pub mod pallet {
 		CompletedBounty(T::CommunityId, T::BountyId),
 		/// Bounty closed due to deadline meet [Community Id, Bounty Id]
 		ClosedBounty(T::CommunityId, T::BountyId),
+		/// Issued Badge
+		IssuedBadge(Vec<u8>),
 	}
 
 	#[pallet::error]
@@ -345,6 +347,7 @@ pub mod pallet {
 							passport.badges = badges;
 						}
 
+						Self::deposit_event(Event::IssuedBadge(bounty_reward.to_vec()));
 						Ok(())
 					},
 				)?;
