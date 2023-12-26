@@ -21,11 +21,11 @@ use pallet_passport::Passports;
 use primitives::Incrementable;
 use sp_std::vec::Vec;
 
-// #[cfg(test)]
-// mod mock;
-//
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
@@ -42,10 +42,7 @@ pub mod pallet {
 	/// depends.
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config
-		+ pallet_community::Config
-		+ pallet_passport::Config
-		+ pallet_timestamp::Config
+		frame_system::Config + pallet_community::Config + pallet_passport::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's
 		/// definition of an event.
@@ -132,10 +129,7 @@ pub mod pallet {
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T>
-	where
-		u64: From<<T as pallet_timestamp::Config>::Moment>,
-	{
+	impl<T: Config> Pallet<T> {
 		/// Create a new event for a particular community from a origin.
 		///
 		/// The origin must be Signed and the community founder.
@@ -248,23 +242,19 @@ pub mod pallet {
 			);
 
 			// Adding the member to the attendees list of the event.
-			Events::<T>::try_mutate(
-				community_id,
-				event_id,
-				|event_details| -> DispatchResult {
-					let event = event_details
-						.as_mut()
-						.ok_or(Error::<T>::EventDoesNotExist)?;
+			Events::<T>::try_mutate(community_id, event_id, |event_details| -> DispatchResult {
+				let event = event_details
+					.as_mut()
+					.ok_or(Error::<T>::EventDoesNotExist)?;
 
-					let mut attendees = event.attendees_list.clone();
-					attendees.push(member.clone());
-					event.attendees_list = attendees;
+				let mut attendees = event.attendees_list.clone();
+				attendees.push(member.clone());
+				event.attendees_list = attendees;
 
-					Self::deposit_event(Event::PopAdded(community_id, event_id, member.clone()));
+				Self::deposit_event(Event::PopAdded(community_id, event_id, member.clone()));
 
-					Ok(())
-				},
-			)?;
+				Ok(())
+			})?;
 
 			// Issuing the badge to the member
 			Passports::<T>::try_mutate(
