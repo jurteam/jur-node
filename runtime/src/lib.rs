@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 512.
+#![recursion_limit = "512"]
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -473,9 +473,9 @@ impl pallet_events::Config for Runtime {
 	type EventId = EventId;
 	type NameLimit = ConstU32<512>;
 	type DescriptionLimit = ConstU32<8192>;
-	// #[cfg(feature = "runtime-benchmarks")]
-	// type Helper = ();
-	// type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_events::weights::SubstrateWeight<Runtime>;
 }
 
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
@@ -662,6 +662,7 @@ mod benches {
 		[pallet_user, User]
 		[pallet_whitelist, Whitelist]
 		[pallet_bounties, Bounties]
+		[pallet_events, EventPallet]
 	);
 }
 

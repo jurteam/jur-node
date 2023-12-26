@@ -96,9 +96,9 @@ impl pallet_events::Config for Test {
 	type EventId = u32;
 	type NameLimit = ConstU32<512>;
 	type DescriptionLimit = ConstU32<8192>;
-	// #[cfg(feature = "runtime-benchmarks")]
-	// type Helper = ();
-	// type WeightInfo = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.

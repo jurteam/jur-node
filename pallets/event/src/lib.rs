@@ -27,16 +27,29 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
-// pub mod weights;
-// pub use weights::WeightInfo;
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+pub mod weights;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+
+	#[cfg(feature = "runtime-benchmarks")]
+	pub trait BenchmarkHelper<EventId> {
+		fn event(i: u32) -> EventId;
+	}
+
+	#[cfg(feature = "runtime-benchmarks")]
+	impl<EventId: From<u32>> BenchmarkHelper<EventId> for () {
+		fn event(i: u32) -> EventId {
+			i.into()
+		}
+	}
 
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
@@ -59,12 +72,12 @@ pub mod pallet {
 		#[pallet::constant]
 		type DescriptionLimit: Get<u32>;
 
-		// #[cfg(feature = "runtime-benchmarks")]
-		// /// A set of helper functions for benchmarking.
-		// type Helper: BenchmarkHelper<Self::BountyId>;
-		//
-		// // Weight information
-		// type WeightInfo: WeightInfo;
+		#[cfg(feature = "runtime-benchmarks")]
+		/// A set of helper functions for benchmarking.
+		type Helper: BenchmarkHelper<Self::EventId>;
+
+		// Weight information
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
@@ -147,7 +160,7 @@ pub mod pallet {
 		/// Emits `CreatedEvent` event when successful.
 		///
 		#[pallet::call_index(0)]
-		#[pallet::weight(1000000)]
+		#[pallet::weight(<T as Config>::WeightInfo::create_event())]
 		pub fn create_event(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
@@ -198,7 +211,7 @@ pub mod pallet {
 		/// Emits `IssuedBadge` event when successful.
 		///
 		#[pallet::call_index(1)]
-		#[pallet::weight(1000000)]
+		#[pallet::weight(<T as Config>::WeightInfo::proof_of_presence())]
 		pub fn proof_of_presence(
 			origin: OriginFor<T>,
 			community_id: T::CommunityId,
