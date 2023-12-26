@@ -3398,6 +3398,7 @@ dependencies = [
  "pallet-balances",
  "pallet-bounties",
  "pallet-community",
+ "pallet-events",
  "pallet-grandpa",
  "pallet-insecure-randomness-collective-flip",
  "pallet-multisig",
@@ -4777,6 +4778,28 @@ dependencies = [
  "frame-system",
  "jur-primitives",
  "log",
+ "pallet-whitelist",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-events"
+version = "1.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "jur-primitives",
+ "pallet-community",
+ "pallet-insecure-randomness-collective-flip",
+ "pallet-passport",
+ "pallet-timestamp",
  "pallet-whitelist",
  "parity-scale-codec",
  "scale-info",
