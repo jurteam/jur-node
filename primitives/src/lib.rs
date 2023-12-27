@@ -25,6 +25,8 @@ pub type ProposalId = u32;
 
 pub type BountyId = u32;
 
+pub type EventId = u32;
+
 pub type ChoiceId = u32;
 
 pub type VechainHash = [u8; 32];
