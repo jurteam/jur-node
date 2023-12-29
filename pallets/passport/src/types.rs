@@ -30,4 +30,6 @@ pub enum BadgesType {
 	Credentials,
 	/// Badge as rewards.
 	Rewards,
+	/// Badge For the community Events.
+	Events,
 }

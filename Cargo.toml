@@ -2,6 +2,11 @@
 resolver = "2"
 members = [
     "node",
+    "pallets/bounties",
+    "pallets/community",
+    "pallets/event",
+    "pallets/passport",
+    "pallets/proposal",
     "pallets/token-swap",
     "runtime",
 ]
