@@ -15,7 +15,7 @@ name = "jur-node"
 [dependencies]
 clap = { version = "4.4.12", features = ["derive"] }
 hex-literal = '0.4.1'
-serde = { version = "1.0.192", features = ["derive"] }
+serde = { version = "1.0.194", features = ["derive"] }
 futures = { version = "0.3.30", features = ["thread-pool"]}
 sc-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
