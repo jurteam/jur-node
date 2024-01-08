@@ -31,7 +31,7 @@ pallet-community = { package = 'pallet-community', path = '../community', defaul
 pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', default-features = false }
 
 [dev-dependencies]
-serde = { version = "1.0.194" }
+serde = { version = "1.0.195" }
 
 # Substrate
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
