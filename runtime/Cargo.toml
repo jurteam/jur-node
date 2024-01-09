@@ -43,6 +43,10 @@ sp-staking = { version = "4.0.0-dev", default-features = false, git = "https://g
 sp-consensus-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 sp-storage = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 sp-genesis-builder = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-referenda = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-conviction-voting = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-preimage = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 
 # Used for the node token-swap's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
@@ -60,6 +64,7 @@ pallet-proposal = { version = "1.0.0", default-features = false, path = "../pall
 pallet-user = { version = "1.0.0", default-features = false, path = "../pallets/user" }
 pallet-passport = { version = "1.0.0", default-features = false, path = "../pallets/passport" }
 pallet-whitelist = { version = "1.0.0", default-features = false, path = "../pallets/whitelist" }
+pallet-safelist = { version = "1.0.0", default-features = false, path = "../pallets/safelist" }
 pallet-bounties = { version = "1.0.0", default-features = false, path = "../pallets/bounties" }
 pallet-events = { version = "1.0.0", default-features = false, path = "../pallets/event" }
 
@@ -113,6 +118,11 @@ std = [
 	"sp-consensus-grandpa/std",
 	"pallet-treasury/std",
 	"pallet-authorship/std",
+	"pallet-referenda/std",
+	"pallet-conviction-voting/std",
+	"pallet-safelist/std",
+	"pallet-scheduler/std",
+	"pallet-preimage/std",
 	"pallet-insecure-randomness-collective-flip/std",
 	"sp-storage/std"
 ]
@@ -132,6 +142,12 @@ runtime-benchmarks = [
 	"pallet-whitelist/runtime-benchmarks",
 	"pallet-bounties/runtime-benchmarks",
 	"pallet-events/runtime-benchmarks",
+	# OpenGov
+	"pallet-referenda/runtime-benchmarks",
+	"pallet-conviction-voting/runtime-benchmarks",
+	"pallet-safelist/runtime-benchmarks",
+	"pallet-scheduler/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
 ]
 try-runtime = [
 	"frame-try-runtime/try-runtime",

@@ -15,6 +15,7 @@ use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSigned,
 };
+pub mod governance;
 use hex_literal::hex;
 use pallet_grandpa::AuthorityId as GrandpaId;
 use sp_api::impl_runtime_apis;
@@ -52,7 +53,7 @@ use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
-
+use governance::pallet_custom_origins;
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 
 /// Import the token-swap pallet.
@@ -578,6 +579,34 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+    pub MaximumSchedulerWeight: Weight = RuntimeBlockWeights::get().max_block;
+    pub const MaxScheduledPerBlock: u32 = 50;
+    pub const NoPreimagePostponement: Option<u32> = Some(10);
+}
+
+impl pallet_scheduler::Config for Runtime {
+	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeEvent = RuntimeEvent;
+	type PalletsOrigin = OriginCaller;
+	type RuntimeCall = RuntimeCall;
+	type MaximumWeight = MaximumSchedulerWeight;
+	// The goal of having ScheduleOrigin include AuctionAdmin is to allow the auctions track of
+	// OpenGov to schedule periodic auctions.
+	type ScheduleOrigin = EnsureRoot<AccountId>;
+	type MaxScheduledPerBlock = MaxScheduledPerBlock;
+	type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
+	type OriginPrivilegeCmp = EqualPrivilegeOnly;
+	type Preimages = Preimage;
+}
+
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = pallet_preimage::weights::SubstrateWeight<Runtime>;
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type ManagerOrigin = EnsureRoot<AccountId>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime {
@@ -604,6 +633,14 @@ construct_runtime!(
 
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
+
+		// OpenGov pallets
+        Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 97,
+        Scheduler: pallet_scheduler::{Pallet, Storage, Event<T>, Call} = 98,
+        Origins: pallet_custom_origins::{Origin} = 99,
+        ConvictionVoting: pallet_conviction_voting::{Pallet, Call, Storage, Event<T>} = 100,
+        Referenda: pallet_referenda::{Pallet, Call, Storage, Event<T>} = 101,
+        Safelist: pallet_safelist::{Pallet, Call, Storage, Event<T>} = 102,
 	}
 );
 
