@@ -4768,6 +4768,7 @@ dependencies = [
  "frame-system",
  "jur-primitives",
  "log",
+ "pallet-balances",
  "pallet-whitelist",
  "parity-scale-codec",
  "scale-info",
