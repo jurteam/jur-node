@@ -3,6 +3,7 @@ use crate::{
 	Category, CommunityMetaData, CommunityType, Customs, Languages, Religions, Territories,
 	Traditions, Values,
 };
+use frame_support::traits::fungible::Mutate;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
@@ -14,6 +15,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, Header as _, IdentityLookup},
 	BuildStorage,
 };
+use primitives::Balance;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -24,6 +26,7 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		Community: pallet_community,
 		Whitelist: pallet_whitelist,
+		Balances: pallet_balances,
 	}
 );
 
@@ -49,13 +52,18 @@ impl system::Config for Test {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<u128>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
 	type SS58Prefix = ConstU16<42>;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+}
+
+parameter_types! {
+	pub const ExistentialDeposit: Balance = 1;
+	pub const MaxLocks: u32 = 50;
 }
 
 impl pallet_community::Config for Test {
@@ -78,6 +86,22 @@ impl pallet_community::Config for Test {
 impl pallet_whitelist::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
+}
+
+impl pallet_balances::Config for Test {
+	type MaxLocks = MaxLocks;
+	type Balance = u128;
+	type RuntimeEvent = RuntimeEvent;
+	type DustRemoval = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type WeightInfo = ();
+	type FreezeIdentifier = ();
+	type MaxFreezes = ();
+	type RuntimeHoldReason = ();
+	type MaxHolds = ();
 }
 
 // Build genesis storage according to the mock runtime.
@@ -151,9 +175,6 @@ pub fn get_metadata() -> CommunityMetaData<ConstU32<250>> {
 	community_metadata
 }
 
-pub fn add_founder() {
-	Whitelist::add_founder(RuntimeOrigin::root(), 1).unwrap();
-}
 pub fn create_community() {
 	Community::create_community(
 		RuntimeOrigin::signed(1),
@@ -173,4 +194,12 @@ pub fn create_community() {
 		Some(CommunityType::Nation),
 	)
 	.unwrap();
+}
+
+pub fn set_balance( amount: u128) {
+	Balances::set_balance(&1, amount);
+}
+
+pub fn set_required_balance_to_create_community(amount: u128) {
+	Community::update_required_founder_balance(RuntimeOrigin::root(), amount).unwrap();
 }
