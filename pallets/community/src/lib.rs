@@ -268,11 +268,6 @@ pub mod pallet {
 
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
-			pallet_whitelist::Founders::<T>::get()
-				.binary_search(&founder)
-				.ok()
-				.ok_or(Error::<T>::FounderNotExist)?;
-
 			Self::do_create_community(
 				community_id,
 				founder,
