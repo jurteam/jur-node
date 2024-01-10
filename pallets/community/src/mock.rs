@@ -10,12 +10,12 @@ use frame_support::{
 };
 use frame_support_test::TestRandomness;
 use frame_system as system;
+use primitives::Balance;
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, Header as _, IdentityLookup},
 	BuildStorage,
 };
-use primitives::Balance;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -196,7 +196,7 @@ pub fn create_community() {
 	.unwrap();
 }
 
-pub fn set_balance( amount: u128) {
+pub fn set_balance(amount: u128) {
 	Balances::set_balance(&1, amount);
 }
 

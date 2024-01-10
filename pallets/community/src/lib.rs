@@ -72,7 +72,9 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_whitelist::Config + pallet_balances::Config {
+	pub trait Config:
+		frame_system::Config + pallet_whitelist::Config + pallet_balances::Config
+	{
 		/// Because this pallet emits events, it depends on the runtime's
 		/// definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -271,13 +273,10 @@ pub mod pallet {
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
 			let balance = pallet_balances::Pallet::<T>::free_balance(&founder);
-			
+
 			let required_balance = RequiredFounderBalance::<T>::get();
-			
-			ensure!(
-				balance >= required_balance,
-				Error::<T>::InsufficientBalanceToBecomeFounder
-			);
+
+			ensure!(balance >= required_balance, Error::<T>::InsufficientBalanceToBecomeFounder);
 
 			Self::do_create_community(
 				community_id,

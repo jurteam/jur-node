@@ -40,7 +40,6 @@ fn create_community_works() {
 	});
 }
 
-
 #[test]
 fn create_community_should_work_when_founder_has_morethan_required_balance() {
 	new_test_ext().execute_with(|| {
@@ -85,7 +84,6 @@ fn create_community_should_not_work_if_founder_balance_is_below_required_balance
 		setup_blocks(5);
 	});
 }
-
 
 #[test]
 fn create_community_not_works_with_duplicate_name() {
