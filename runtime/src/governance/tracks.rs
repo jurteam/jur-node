@@ -28,7 +28,7 @@ const fn permill(x: i32) -> sp_runtime::FixedI64 {
 }
 
 // use cumulus_primitives_core::relay_chain::BlockNumber;
-use pallet_timestamp;
+use primitives::BlockNumber;
 use pallet_referenda::Curve;
 // ask parity about the science behind these percentages
 

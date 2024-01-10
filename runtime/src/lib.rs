@@ -9,7 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use frame_support::{
 	genesis_builder_helper::{build_config, create_default_config},
 	pallet_prelude::DispatchClass,
-	traits::{AsEnsureOriginWithArg, LockIdentifier},
+	traits::{fungible::HoldConsideration, AsEnsureOriginWithArg, LockIdentifier, LinearStoragePrice},
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
@@ -600,11 +600,19 @@ impl pallet_scheduler::Config for Runtime {
 	type Preimages = Preimage;
 }
 
+parameter_types! {
+	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
+	pub const PreimageByteDeposit: Balance = 1 * CENTS;
+	pub const PreimageHoldReason: RuntimeHoldReason = RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
+}
+
 impl pallet_preimage::Config for Runtime {
 	type WeightInfo = pallet_preimage::weights::SubstrateWeight<Runtime>;
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
+
+	type Consideration = ();
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -635,12 +643,12 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 
 		// OpenGov pallets
-        Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>} = 97,
-        Scheduler: pallet_scheduler::{Pallet, Storage, Event<T>, Call} = 98,
+        Preimage: pallet_preimage,
+        Scheduler: pallet_scheduler,
         Origins: pallet_custom_origins::{Origin} = 99,
-        ConvictionVoting: pallet_conviction_voting::{Pallet, Call, Storage, Event<T>} = 100,
-        Referenda: pallet_referenda::{Pallet, Call, Storage, Event<T>} = 101,
-        Safelist: pallet_safelist::{Pallet, Call, Storage, Event<T>} = 102,
+        ConvictionVoting: pallet_conviction_voting,
+        Referenda: pallet_referenda,
+        Safelist: pallet_safelist,
 	}
 );
 
