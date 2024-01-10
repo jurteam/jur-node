@@ -226,6 +226,8 @@ pub mod pallet {
 		BadLogo,
 		/// Community already exist
 		CommunityAlreadyExist,
+		/// Insufficient balance to become a founder
+		InsufficientBalanceToBecomeFounder,
 	}
 
 	#[pallet::hooks]
@@ -267,6 +269,15 @@ pub mod pallet {
 				NextCommunityId::<T>::get().unwrap_or(T::CommunityId::initial_value());
 
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
+
+			let balance = pallet_balances::Pallet::<T>::free_balance(&founder);
+			
+			let required_balance = RequiredFounderBalance::<T>::get();
+			
+			ensure!(
+				balance >= required_balance,
+				Error::<T>::InsufficientBalanceToBecomeFounder
+			);
 
 			Self::do_create_community(
 				community_id,
