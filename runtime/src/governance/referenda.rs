@@ -14,13 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Polkadot. If not, see <http://www.gnu.org/licenses/>.
 
-//! New governance configurations for the Polkadot runtime.
-
 use super::*;
 use frame_support::traits::EitherOf;
-// use runtime_common::constants::currency::*;
-// use sp_core::ConstU16;
-// use sp_runtime::traits::Replace;
 
 parameter_types! {
     pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
@@ -67,7 +62,7 @@ impl pallet_referenda::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Scheduler = Scheduler;
     type Currency = Balances;
-    type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+    type SubmitOrigin = EnsureSigned<AccountId>;
     type CancelOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumCanceller>;
     type KillOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumKiller>;
     type Slash = ();

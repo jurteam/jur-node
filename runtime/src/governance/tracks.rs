@@ -18,8 +18,6 @@
 
 use super::*;
 
-// use runtime_common::constants::currency::AVT;
-
 const fn percent(x: i32) -> sp_runtime::FixedI64 {
     sp_runtime::FixedI64::from_rational(x as u128, 100)
 }
@@ -27,11 +25,10 @@ const fn permill(x: i32) -> sp_runtime::FixedI64 {
     sp_runtime::FixedI64::from_rational(x as u128, 1000)
 }
 
-// use cumulus_primitives_core::relay_chain::BlockNumber;
 use primitives::BlockNumber;
 use pallet_referenda::Curve;
-// ask parity about the science behind these percentages
 
+// ask parity about the science behind these percentages
 // TODO: adjust accordingly based on the community size
 const APP_ROOT: Curve = Curve::make_reciprocal(4, 14, percent(80), percent(50), percent(100));
 const SUP_ROOT: Curve = Curve::make_linear(14, 14, permill(5), percent(25));
@@ -56,7 +53,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 4]
     //     pallet_referenda::TrackInfo {
     //         name: "sudo",
     //         max_deciding: 1,
-    //         decision_deposit: 1000 * AVT,
+    //         decision_deposit: 1000 * DOLLARS,
     //         prepare_period: 2 * HOURS,
     //         decision_period: 14 * DAYS,
     //         confirm_period: 3 * HOURS,

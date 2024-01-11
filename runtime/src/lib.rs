@@ -612,7 +612,12 @@ impl pallet_preimage::Config for Runtime {
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
 
-	type Consideration = ();
+	type Consideration = HoldConsideration<
+		AccountId,
+		Balances,
+		(),
+		LinearStoragePrice<PreimageBaseDeposit, PreimageByteDeposit, Balance>,
+	>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -645,7 +650,7 @@ construct_runtime!(
 		// OpenGov pallets
         Preimage: pallet_preimage,
         Scheduler: pallet_scheduler,
-        Origins: pallet_custom_origins::{Origin} = 99,
+        Origins: pallet_custom_origins::{Origin},
         ConvictionVoting: pallet_conviction_voting,
         Referenda: pallet_referenda,
         Safelist: pallet_safelist,
