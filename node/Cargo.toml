@@ -1,6 +1,6 @@
 [package]
 name = "jur-node"
-version = "3.3.0"
+version = "3.4.0"
 edition = "2021"
 license = "Unlicense"
 publish = false
@@ -16,7 +16,7 @@ name = "jur-node"
 clap = { version = "4.4.11", features = ["derive"] }
 hex-literal = '0.4.1'
 serde = { version = "1.0.192", features = ["derive"] }
-futures = { version = "0.3.29", features = ["thread-pool"]}
+futures = { version = "0.3.30", features = ["thread-pool"]}
 sc-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 sc-executor = { version = "0.10.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
@@ -58,7 +58,7 @@ frame-benchmarking = {  git = "https://github.com/paritytech/polkadot-sdk", bran
 frame-benchmarking-cli = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.2.0" }
 
 # Local Dependencies
-jur-node-runtime = { version = "3.3.0", path = "../runtime" }
+jur-node-runtime = { version = "3.4.0", path = "../runtime" }
 primitives = { package = 'jur-primitives', path = '../primitives' }
 
 # CLI-specific dependencies

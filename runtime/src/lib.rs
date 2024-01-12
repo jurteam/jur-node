@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+// `construct_runtime!` does a lot of recursion and requires us to increase the limit to 512.
+#![recursion_limit = "512"]
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -58,8 +58,8 @@ use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
 use primitives::{
-	Balance, BountyId, ChoiceId, CommunityId, CurrencyId, EthereumAddress, PassportId, ProposalId,
-	JUR,
+	Balance, BountyId, ChoiceId, CommunityId, CurrencyId, EthereumAddress, EventId, PassportId,
+	ProposalId, JUR,
 };
 
 /// An index to a block.
@@ -122,7 +122,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
 	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
 	//   the compatible custom types.
-	spec_version: 127,
+	spec_version: 128,
 	impl_version: 1,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
@@ -468,6 +468,16 @@ impl pallet_bounties::Config for Runtime {
 	type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_events::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type EventId = EventId;
+	type NameLimit = ConstU32<512>;
+	type DescriptionLimit = ConstU32<8192>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type WeightInfo = pallet_events::weights::SubstrateWeight<Runtime>;
+}
+
 type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
 
 pub struct Author;
@@ -587,6 +597,7 @@ construct_runtime!(
 		User: pallet_user,
 		Whitelist: pallet_whitelist,
 		Bounties: pallet_bounties,
+		EventPallet: pallet_events,
 		Authorship: pallet_authorship,
 		Treasury: pallet_treasury,
 		Utility: pallet_utility,
@@ -651,6 +662,7 @@ mod benches {
 		[pallet_user, User]
 		[pallet_whitelist, Whitelist]
 		[pallet_bounties, Bounties]
+		[pallet_events, EventPallet]
 	);
 }
 
