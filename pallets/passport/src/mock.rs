@@ -4,12 +4,12 @@ use frame_support::{
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64},
 };
 use frame_system as system;
+use primitives::Balance;
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,
 };
-use primitives::Balance;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
