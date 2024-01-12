@@ -9,6 +9,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,
 };
+use primitives::Balance;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -21,6 +22,7 @@ frame_support::construct_runtime!(
 		Community: pallet_community,
 		Passport: pallet_passport,
 		Whitelist: pallet_whitelist,
+		Balances: pallet_balances,
 	}
 );
 
@@ -46,7 +48,7 @@ impl system::Config for Test {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<u128>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -87,6 +89,27 @@ impl pallet_passport::Config for Test {
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = ();
 	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const ExistentialDeposit: Balance = 1;
+	pub const MaxLocks: u32 = 50;
+}
+
+impl pallet_balances::Config for Test {
+	type MaxLocks = MaxLocks;
+	type Balance = u128;
+	type RuntimeEvent = RuntimeEvent;
+	type DustRemoval = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type WeightInfo = ();
+	type FreezeIdentifier = ();
+	type MaxFreezes = ();
+	type RuntimeHoldReason = ();
+	type MaxHolds = ();
 }
 
 // Build genesis storage according to the mock runtime.
