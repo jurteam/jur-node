@@ -17,6 +17,7 @@ log = { version = "0.4" }
 codec = { package = "parity-scale-codec", version = "3.6.1", features = ["derive"], default-features = false }
 primitives = { package = 'jur-primitives', path = '../../primitives', default-features = false }
 scale-info = { version = "2.9.0", default-features = false, features = ["derive"] }
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, optional = true, branch = "release-polkadot-v1.2.0" }

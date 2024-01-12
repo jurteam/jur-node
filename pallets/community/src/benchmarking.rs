@@ -335,5 +335,15 @@ benchmarks! {
 		assert_last_event::<T>(Event::<T>::UpdatedTagAndColors(T::Helper::community(1)).into());
 	}
 
+	update_required_founder_balance {
+		let required_founder_balance: T::Balance = 1000u32.into();
+	}: _(
+		RawOrigin::Root, required_founder_balance
+	)
+
+	verify {
+		assert_last_event::<T>(Event::<T>::UpdatedRequiredFounderBalance(required_founder_balance).into());
+	}
+
 	impl_benchmark_test_suite!(Community, crate::mock::new_test_ext(), crate::mock::Test);
 }

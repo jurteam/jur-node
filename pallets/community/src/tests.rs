@@ -10,7 +10,8 @@ use frame_support::{assert_noop, assert_ok};
 fn create_community_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 		setup_blocks(5);
@@ -40,10 +41,56 @@ fn create_community_works() {
 }
 
 #[test]
+fn create_community_should_work_when_founder_has_morethan_required_balance() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(1));
+		set_balance(99000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
+		create_community();
+		assert!(Communities::<Test>::contains_key(1));
+		setup_blocks(5);
+	});
+}
+
+#[test]
+fn create_community_should_not_work_if_founder_balance_is_below_required_balance() {
+	new_test_ext().execute_with(|| {
+		assert!(!Communities::<Test>::contains_key(1));
+		set_balance(1000);
+		set_required_balance_to_create_community(10000000000000000000);
+		assert_noop!(
+			Community::create_community(
+			RuntimeOrigin::signed(1),
+			// hash of IPFS path of dummy logo
+			Some("bafkreifec54rzopwm6mvqm3fknmdlsw2yefpdr7xrgtsron62on2nynegq".into()),
+			"    JUR       ".into(),
+			Some(
+				"Jur is the core community of the Jur ecosystem, which includes all the contributors."
+					.into(),
+			),
+			Some(vec![1, 2]),
+			Some(get_metadata()),
+			Category::Public,
+			Some("tag".into()),
+			Some("#222307".into()),
+			Some("#E76080".into()),
+			Some(CommunityType::Nation),
+		),
+			Error::<Test>::InsufficientBalanceToBecomeFounder
+		);
+
+		assert!(!Communities::<Test>::contains_key(1));
+
+		setup_blocks(5);
+	});
+}
+
+#[test]
 fn create_community_not_works_with_duplicate_name() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 		setup_blocks(5);
@@ -73,7 +120,8 @@ fn create_community_not_works_with_duplicate_name() {
 #[test]
 fn founder_with_more_communities_not_allowed() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		Community::create_community(
 			RuntimeOrigin::signed(1),
@@ -138,7 +186,8 @@ fn founder_with_more_communities_not_allowed() {
 fn create_community_works_only_with_name() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		Community::create_community(
 			RuntimeOrigin::signed(1),
 			// hash of IPFS path of dummy logo
@@ -162,7 +211,8 @@ fn create_community_works_only_with_name() {
 #[test]
 fn create_community_not_works_with_invalid_color() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		assert_noop!(
 			Community::create_community(
 				RuntimeOrigin::signed(1),
@@ -216,7 +266,8 @@ fn update_community_not_works_for_invalid_input() {
 			),
 			Error::<Test>::CommunityNotExist
 		);
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
@@ -235,7 +286,8 @@ fn update_community_not_works_for_invalid_input() {
 #[test]
 fn update_community_works() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
@@ -264,7 +316,8 @@ fn update_community_works() {
 fn accept_members_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		let new_members = vec![3, 4];
@@ -286,7 +339,8 @@ fn accept_members_not_works_for_invalid_input() {
 			Community::accept_members(RuntimeOrigin::signed(1), 1, new_members.clone()),
 			Error::<Test>::CommunityNotExist
 		);
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -301,7 +355,8 @@ fn accept_members_not_works_for_invalid_input() {
 #[test]
 fn update_metadata_works() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
@@ -378,7 +433,8 @@ fn update_metadata_works() {
 #[test]
 fn update_metadata_not_works_for_invalid_community_id() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
@@ -404,7 +460,8 @@ fn update_metadata_not_works_for_invalid_community_id() {
 #[test]
 fn update_metadata_not_works_for_invalid_caller() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
@@ -431,7 +488,8 @@ fn update_metadata_not_works_for_invalid_caller() {
 fn join_community_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(0));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -445,7 +503,8 @@ fn join_community_works() {
 fn join_community_not_works_for_already_joined() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -460,7 +519,8 @@ fn join_community_not_works_for_already_joined() {
 fn join_community_not_works_for_invalid_community() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -475,7 +535,8 @@ fn join_community_not_works_for_invalid_community() {
 fn leave_community_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -489,7 +550,8 @@ fn leave_community_works() {
 fn leave_community_not_work_for_member_not_part_of_community() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -505,7 +567,8 @@ fn leave_community_not_work_for_member_not_part_of_community() {
 fn leave_community_not_work_for_invalid_community() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -521,7 +584,8 @@ fn leave_community_not_work_for_invalid_community() {
 fn remove_member_works() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -535,7 +599,8 @@ fn remove_member_works() {
 fn remove_member_not_work_for_member_not_part_of_community() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -551,7 +616,8 @@ fn remove_member_not_work_for_member_not_part_of_community() {
 fn remove_member_not_work_for_invalid_community() {
 	new_test_ext().execute_with(|| {
 		assert!(!Communities::<Test>::contains_key(1));
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 
 		assert_eq!(Communities::<Test>::get(1).unwrap().members, vec![1, 2]);
@@ -566,7 +632,8 @@ fn remove_member_not_work_for_invalid_community() {
 #[test]
 fn update_community_tag_and_colors_works() {
 	new_test_ext().execute_with(|| {
-		add_founder();
+		set_balance(10000000000000000000);
+		set_required_balance_to_create_community(10000000000000000000);
 		create_community();
 		assert!(Communities::<Test>::contains_key(1));
 
