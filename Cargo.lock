@@ -4787,6 +4787,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "jur-primitives",
+ "pallet-balances",
  "pallet-community",
  "pallet-insecure-randomness-collective-flip",
  "pallet-passport",
