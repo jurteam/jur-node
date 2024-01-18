@@ -7,7 +7,7 @@ Jur is the robust foundation that fuels Startup Societies, Countries, and Networ
 
 Jur’s distinctive and powerful Layer-1 blockchain is built with Substrate, and will join the Polkadot Relay Chain as a parachain through Cumulus.
 
-## 🏆 Requirements
+# 🏆 Requirements
 
 - Prepare your development environment ([Instructions](https://docs.substrate.io/install/))
 - Clone the repository:
@@ -40,7 +40,7 @@ The following command can be used to explore all parameters and subcommands:
 ./target/release/jur-node -h
 ```
 
-## 💻 Development Ecosystem (Single Node)
+# 💻 Development Ecosystem (Single Node)
 
 The provided `cargo run` command will launch a temporary node and its state will be discarded after you terminate the process. Use the following command to build the node without launching it:
 
@@ -76,7 +76,7 @@ $ mkdir data
 $ ./target/release/jur-node --dev --base-path ./data
 ```
 
-## 💡 Testnet Ecosystem (Multi-Node)
+# 💡 Testnet Ecosystem (Multi-Node)
 
 The multi-node testnet environment provides a playground for developers to experiment with Jur chain features in a real scenario.
 
@@ -181,7 +181,7 @@ We need to specify an additional bootnode parameter on second and third nodes:
 
 You can get bootnode id from log of your first node.
 
-## 🚀 Mainnet Ecosystem
+# 🚀 Mainnet Ecosystem
 
 To become part of the mainnet ecosystem, you can choose between two options:
 
