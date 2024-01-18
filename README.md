@@ -6,3 +6,7 @@
 Jur is the robust foundation that fuels Startup Societies, Countries, and Network States across the entire globe. We are breaking the mould of tired, outdated governance systems and ushering in the new: fair, just, collaborative, and beneficial to all.
 
 Jur’s distinctive and powerful Layer-1 blockchain is built with Substrate, and will join the Polkadot Relay Chain as a parachain through Cumulus.
+
+## 🏆 Requirements
+
+- Prepare your development environment ([Instructions](https://docs.substrate.io/install/))
