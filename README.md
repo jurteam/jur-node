@@ -75,3 +75,108 @@ $ mkdir data
 // Use of that folder to store the chain state
 $ ./target/release/jur-node --dev --base-path ./data
 ```
+
+## 💡 Jur Testnet Ecosystem (Multi-Node)
+
+The multi-node testnet environment provides a playground for developers to experiment with Jur chain features in a real scenario.
+
+In order to set up the testnet, it is important to understand some key concepts. The following table summarizes the most common concepts and their descriptions:
+
+| Node Type | What it does |
+| --- | --- |
+| Validator node | Processes the validating proofs to finalize a block |
+| Boot node | Provides a static address and peer-to-peer (libp2p) public key that is used to bootstrap a node onto the network’s distributed hash table and to find peer nodes. |
+| RPC node | Exposes an RPC interface over HTTP or WebSocket ports, so that users can read the blockchain state and submit transactions. There are often multiple RPC nodes behind a load balancer. |
+| Archive node | Maintains all blocks starting from the genesis block with complete state available for every block. |
+| Full node | Synchronizes with the chain to store the most recent block state and block headers for older blocks. |
+| Aura Key | In the Aura consensus mechanism, a set of validators take turns proposing new blocks in a deterministic order. Each validator has an associated Aura key, and the validator whose turn it is to propose a block uses their Aura key to sign the block. This ensures a predictable and secure block creation process, as validators take turns being the leader. |
+| Grandpa Key | Grandpa is responsible for finalizing blocks and ensuring the overall security of the blockchain. The Grandpa mechanism enhances the security and reliability of the blockchain by ensuring that once a block is finalized, it cannot be reverted. |
+
+Proof of Authority (PoA) is a consensus algorithm used in the Jur Node to validate and confirm transactions. In a PoA system, network participants, known as validators or nodes, are pre-approved and identified entities with recognized authority or reputation.
+
+We need to generate Aura and Grandpa keys to set up or join a multi-node Jur chain. Here are the commands to generate both keys:
+
+**Generate Aura Key:**
+
+```
+./target/release/jur-node key generate --scheme Sr25519 --password-interactive -w 24
+```
+
+**Generate Grandpa Key:**
+
+```
+./target/release/jur-node key generate --scheme Ed25519 --password-interactive -w 24
+```
+
+Note: **Store both Aura and Granpa secret phrases in a safe place.**
+
+Alternatively, one could reuse the secret phrase generated earlier and derive a new key using the Ed25519 scheme. The following command does exactly that:
+
+```bash
+./target/release/jur-node key inspect --password-interactive --scheme Ed25519 "escape gift blossom cake produce human copper rain hope embark search solid youth cricket sort dad shed december winter involve dolphin click annual liar"
+```
+
+In Proof of Authority consensus mechanism, validator keys should be specified in [chain_spec](https://github.com/jurteam/jur-node/blob/develop/res/localSpecRaw.json) ([read more](https://docs.substrate.io/tutorials/build-a-blockchain/add-trusted-nodes/)):
+
+**Aura:**
+
+```json
+"aura": { "authorities": [
+   "5CfBuoHDvZ4fd8jkLQicNL8tgjnK8pVG9AiuJrsNrRAx6CNW",
+ ]
+},
+```
+
+**Grandpa:**
+
+```json
+"grandpa": {
+   "authorities": [
+     [
+       "5CuqCGfwqhjGzSqz5mnq36tMe651mU9Ji8xQ4JRuUTvPcjVN",
+       1
+     ]
+   ]
+ },
+```
+
+We need to add the keys to each validator nodes using the command:
+
+```bash
+./target/release/jur-node key insert --base-path  ./data/ \
+--chain ./res/localSpecRaw.json \
+--scheme Sr25519 \
+--suri "<replace-aura-secret-seed>" \
+--key-type aura
+
+
+./target/release/jur-node key insert --base-path  ./data/ \
+--chain ./res/localSpecRaw.json \
+--scheme Ed25519 \
+--suri "<replace-granpa-secret-seed>" \
+--key-type gran
+```
+
+Note: We need to run atleast three nodes in order to start producing and finalizing blocks.
+
+Here is the command to start a node, Run the command in three different terminals by replacing the dynamic fields:
+
+```bash
+./target/release/jur-node \
+  --base-path "<replace-data-path>" \
+  --chain ./res/localSpecRaw.json \
+  --port "<replace-p2p-port>" \
+  --ws-port "<replace-ws-port>" \
+  --rpc-port "<replace-rpc-port>" \
+  --validator \
+  --rpc-methods Unsafe \
+  --name "<replace-node-name>"
+```
+
+We need to specify an additional bootnode parameter on second and third nodes:
+
+```
+ --bootnodes "<replace-boot-node-id>"
+```
+
+You can get bootnode id from log of your first node.
