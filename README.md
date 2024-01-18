@@ -21,3 +21,13 @@ git clone git@github.com:jurteam/jur-node.git
 ```
 source ~/.cargo/env
 ```
+
+## ⛳ Getting Started
+
+Use this **QuickStart** command to build and launch the node:
+
+```bash
+cargo run --release -- --dev
+```
+
+By running the above command, all the necessary components will be pulled and the Jur node will be started in development mode.
