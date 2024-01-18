@@ -10,3 +10,14 @@ Jur’s distinctive and powerful Layer-1 blockchain is built with Substrate, and
 ## 🏆 Requirements
 
 - Prepare your development environment ([Instructions](https://docs.substrate.io/install/))
+- Clone the repository:
+
+```
+git clone git@github.com:jurteam/jur-node.git
+```
+
+- Don't forget to source cargo env file:
+
+```
+source ~/.cargo/env
+```
