@@ -3,9 +3,9 @@
 </p>
 <h1 align="center">Jur Node</h1>
 
-Jur is the robust foundation that fuels Startup Societies, Countries, and Network States across the entire globe. We are breaking the mould of tired, outdated governance systems and ushering in the new: fair, just, collaborative, and beneficial to all.
+Empowering Startup Societies, Countries, and Network States worldwide for progressive governance.
 
-Jur’s distinctive and powerful Layer-1 blockchain is built with Substrate, and will join the Polkadot Relay Chain as a parachain through Cumulus.
+Discover the strength of Jur's unique Layer-1 blockchain, meticulously crafted with Substrate technology ensuring a robust ecosystem for the future of decentralized governance. Join us in shaping a world where governance is dynamic, inclusive, and built to serve the needs of all.
 
 # 🏆 Requirements
 
