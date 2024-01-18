@@ -31,3 +31,11 @@ cargo run --release -- --dev
 ```
 
 By running the above command, all the necessary components will be pulled and the Jur node will be started in development mode.
+
+### List of all commands
+
+The following command can be used to explore all parameters and subcommands:
+
+```
+./target/release/jur-node -h
+```
