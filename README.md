@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">Jur Node</h1>
 
-Empowering Startup Societies, Countries, and Network States worldwide for progressive governance.
+<p align="center">Empowering Startup Societies, Countries, and Network States worldwide for progressive governance.</p>
 
 Discover the strength of Jur's unique Layer-1 blockchain, meticulously crafted with Substrate technology ensuring a robust ecosystem for the future of decentralized governance. Join us in shaping a world where governance is dynamic, inclusive, and built to serve the needs of all.
 
