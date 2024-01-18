@@ -157,7 +157,7 @@ We need to add the keys to each validator nodes using the command:
 --key-type gran
 ```
 
-Note: We need to run atleast three nodes in order to start producing and finalizing blocks.
+📝 Note: We need to run atleast three nodes in order to start producing and finalizing blocks.
 
 Here is the command to start a node, Run the command in three different terminals by replacing the dynamic fields:
 
@@ -180,3 +180,98 @@ We need to specify an additional bootnode parameter on second and third nodes:
 ```
 
 You can get bootnode id from log of your first node.
+
+## 🚀 Mainnet Ecosystem
+
+To become part of the mainnet ecosystem, you can choose between two options:
+
+1. **Archive Node**
+2. **Validator Node**
+
+### 🔰 Archive Node
+
+An Archive Node functioning as a repository of historical blockchain data. By opting for an Archive Node, participants contribute to the network's resilience and accessibility, providing a valuable resource for the community. This role demands significant storage capacity and computational resources.
+
+**Prerequisites (Minimal Setup):**
+
+- 250GB Storage (SSD Preffered)
+- 4GB RAM
+- 2 vCPUs (1 Core)
+- Ubuntu 22.04 LTS
+- Create a user called `node` with optimal permissions
+- Copy binary file to /home/node/bin/jur-node
+- Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to /home/node/jurMainnetSpecRaw.json
+
+Create a `systemd` service file for the archive node. Typically, these files have a .service extension and are stored in the /etc/systemd/system/ directory.
+
+```bash
+sudo nano /etc/systemd/system/jur-node.service
+```
+
+Copy & Paste the following configuration into the file, adjusting the `<PUBLIC_IP>` and `<NAME>` accordingly:
+
+```ini
+# /etc/systemd/system/jur-node.service
+
+[Unit]
+Description=Jur Solochain Archive Node
+After=network.target
+
+[Service]
+Type=simple
+User=node
+WorkingDirectory=/home/node
+ExecStart=/home/node/jur-node --name="<NAME>" --db=rocksdb --pruning=archive \
+        --telemetry-url "wss:/telemetry.polkadot.io/submit/ 1" \
+        --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-max-connections=300 \
+        --public-addr=/ip4/<PUBLIC_IP>/tcp/30333 \
+        --listen-addr=/ip4/0.0.0.0/tcp/30333 \
+        --wasm-execution Compiled --prometheus-external --db-cache 512 \
+        --base-path /home/node/jur-1-data \
+        --chain /home/node/jurMainnetSpecRaw.json \
+        --bootnodes "/ip4/172.27.152.16/tcp/30333/p2p/12D3KooWFYWEbk7AFck5wzEcdqeRfBkdsbWNuvcutHkkoUzNQqY3" \
+        --bootnodes "/ip4/178.32.114.102/tcp/30333/ws/p2p/12D3KooWF8vpQQf1fwvCCLGpKE4rto8po1FpUXuVmZXenmRLzf7x" \
+        --bootnodes "/ip4/178.32.114.155/tcp/30333/ws/p2p/12D3KooW9sMSrA6vsi1ZR4V6499TVvWdxWLHBTHJNpMhpSXV9eUn" \
+        --reserved-nodes "/ip4/172.27.152.16/tcp/30333/p2p/12D3KooWFYWEbk7AFck5wzEcdqeRfBkdsbWNuvcutHkkoUzNQqY3" \
+        --reserved-nodes "/ip4/178.32.114.102/tcp/30333/ws/p2p/12D3KooWF8vpQQf1fwvCCLGpKE4rto8po1FpUXuVmZXenmRLzf7x" \
+        --reserved-nodes "/ip4/178.32.114.155/tcp/30333/ws/p2p/12D3KooW9sMSrA6vsi1ZR4V6499TVvWdxWLHBTHJNpMhpSXV9eUn"
+
+Restart=on-failure
+RestartSec=120
+LimitNOFILE=16384
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Reload the systemd manager to read the new service configuration:
+
+```
+sudo systemctl daemon-reload
+```
+
+Enable the service to start on boot:
+
+```
+sudo systemctl enable jur-node.service
+```
+
+Start the service:
+
+```
+sudo systemctl start jur-node.service
+```
+
+Check the status of the service to ensure it's running without errors:
+
+```
+sudo systemctl status jur-node.service
+```
+
+To see the detailed logs of the running service:
+
+```
+journalctl -f -u jur-node.service
+```
+
+📝 Note: Please be aware that Jur's mainnet ecosystem is currently exclusively admitting identified nodes through the use of the `--reserved-nodes` parameter. To have your node included in the peer list, it is necessary for any existing bootnode to grant permission for your node's IP and ID. Feel free to reach out to the community to request approval for your node.
