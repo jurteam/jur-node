@@ -275,3 +275,25 @@ journalctl -f -u jur-node.service
 ```
 
 📝 Note: Please be aware that Jur's mainnet ecosystem is currently exclusively admitting identified nodes through the use of the `--reserved-nodes` parameter. To have your node included in the peer list, it is necessary for any existing bootnode to grant permission for your node's IP and ID. Feel free to reach out to the community to request approval for your node.
+
+### 🔰 Validator Node
+
+A Validator Node actively participating in the consensus mechanism to validate and finalize transactions. Validator Nodes contribute to the security and integrity of the network.
+
+**Prerequisites (Minimal Setup):**
+
+- 40GB Storage (SSD Preffered)
+- 2GB RAM
+- 2 vCPUs (1 Core)
+- Ubuntu 22.04 LTS
+- Create a user called `node` with optimal permissions
+- Copy binary file to /home/node/bin/jur-node
+- Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to /home/node/jurMainnetSpecRaw.json
+
+Follow the instructions to create a systemd config file from the Archive node section. You need to remove `--pruning=archive` from the config and replace it with:
+
+```ini
+--pruning 1000  --validator
+```
+
+📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the Development Ecosystem. Additionally, these keys must be incorporated into the spec file. However, Substrate currently does not support direct editing of the spec file after the initial addition of keys. To address this limitation, a mechanism should be developed to add keys through a runtime upgrade or an extrinsic call. Please be aware that this feature is currently under consideration, and the community will activate it once it reaches readiness. We appreciate your patience and understanding as we work towards this enhancement.
