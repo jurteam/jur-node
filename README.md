@@ -194,7 +194,7 @@ An Archive Node functioning as a repository of historical blockchain data. By op
 
 **Prerequisites (Minimal Setup):**
 
-- 250GB Storage (SSD Preffered)
+- 250GB Storage (SSD Preferred)
 - 4GB RAM
 - 2 vCPUs (1 Core)
 - Ubuntu 22.04 LTS
@@ -208,7 +208,7 @@ Create a `systemd` service file for the archive node. Typically, these files hav
 sudo nano /etc/systemd/system/jur-node.service
 ```
 
-Copy & Paste the following configuration into the file, adjusting the `<PUBLIC_IP>` and `<NAME>` accordingly:
+Copy and Paste the following configuration into the file, adjusting the `<PUBLIC_IP>` and `<NAME>` accordingly:
 
 ```ini
 # /etc/systemd/system/jur-node.service
@@ -282,7 +282,7 @@ A Validator Node actively participating in the consensus mechanism to validate a
 
 **Prerequisites (Minimal Setup):**
 
-- 40GB Storage (SSD Preffered)
+- 40GB Storage (SSD Preferred)
 - 2GB RAM
 - 2 vCPUs (1 Core)
 - Ubuntu 22.04 LTS
