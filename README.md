@@ -40,7 +40,7 @@ The following command can be used to explore all parameters and subcommands:
 ./target/release/jur-node -h
 ```
 
-## 💻 Development Node (Localhost)
+## 💻 Development Ecosystem (Single Node)
 
 The provided `cargo run` command will launch a temporary node and its state will be discarded after you terminate the process. Use the following command to build the node without launching it:
 
