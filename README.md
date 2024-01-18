@@ -22,7 +22,7 @@ git clone git@github.com:jurteam/jur-node.git
 source ~/.cargo/env
 ```
 
-## ⛳ Getting Started
+# ⛳ Getting Started
 
 Use this **QuickStart** command to build and launch the node:
 
@@ -38,4 +38,40 @@ The following command can be used to explore all parameters and subcommands:
 
 ```
 ./target/release/jur-node -h
+```
+
+## 💻 Development Node (Localhost)
+
+The provided `cargo run` command will launch a temporary node and its state will be discarded after you terminate the process. Use the following command to build the node without launching it:
+
+```
+cargo build --release
+```
+
+After the project has been built, you can see the binary in the location `./target/release/jur-node`.
+
+---
+
+The following command will start the single-node development chain with non-persistent state:
+
+```
+./target/release/jur-node --dev
+```
+
+Start the development chain with detailed logging:
+
+```
+RUST_BACKTRACE=1 ./target/release/jur-node -ldebug --dev
+```
+
+---
+
+In order to maintain the state of the chain between runs, it is necessary to specify a base path where the database can be stored persistently instead of utilizing a temporary location. This allows for the organized storage of different chain databases, with a separate folder being created for each distinct chain run:
+
+```sh
+// Create a folder to use as the db base path
+$ mkdir data
+
+// Use of that folder to store the chain state
+$ ./target/release/jur-node --dev --base-path ./data
 ```
