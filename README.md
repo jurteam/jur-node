@@ -76,7 +76,7 @@ $ mkdir data
 $ ./target/release/jur-node --dev --base-path ./data
 ```
 
-## 💡 Jur Testnet Ecosystem (Multi-Node)
+## 💡 Testnet Ecosystem (Multi-Node)
 
 The multi-node testnet environment provides a playground for developers to experiment with Jur chain features in a real scenario.
 
