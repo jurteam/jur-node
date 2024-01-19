@@ -72,7 +72,9 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it
 	/// depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_whitelist::Config {
+	pub trait Config:
+		frame_system::Config + pallet_whitelist::Config + pallet_balances::Config
+	{
 		/// Because this pallet emits events, it depends on the runtime's
 		/// definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -168,6 +170,11 @@ pub mod pallet {
 	#[pallet::storage]
 	pub type NextCommunityId<T: Config> = StorageValue<_, T::CommunityId, OptionQuery>;
 
+	/// Stores the Required balance to become a founder
+	#[pallet::storage]
+	#[pallet::getter(fn required_founder_balance)]
+	pub type RequiredFounderBalance<T: Config> = StorageValue<_, T::Balance, ValueQuery>;
+
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -187,6 +194,8 @@ pub mod pallet {
 		RemovedMember(T::AccountId),
 		/// Updated Tag And Colors [community]
 		UpdatedTagAndColors(T::CommunityId),
+		/// Updated Required Founder Balance [balance]
+		UpdatedRequiredFounderBalance(T::Balance),
 	}
 
 	// Errors inform users that something went wrong.
@@ -219,6 +228,8 @@ pub mod pallet {
 		BadLogo,
 		/// Community already exist
 		CommunityAlreadyExist,
+		/// Insufficient balance to become a founder
+		InsufficientBalanceToBecomeFounder,
 	}
 
 	#[pallet::hooks]
@@ -261,10 +272,11 @@ pub mod pallet {
 
 			let founder = T::CreateOrigin::ensure_origin(origin, &community_id)?;
 
-			pallet_whitelist::Founders::<T>::get()
-				.binary_search(&founder)
-				.ok()
-				.ok_or(Error::<T>::FounderNotExist)?;
+			let balance = pallet_balances::Pallet::<T>::free_balance(&founder);
+
+			let required_balance = RequiredFounderBalance::<T>::get();
+
+			ensure!(balance >= required_balance, Error::<T>::InsufficientBalanceToBecomeFounder);
 
 			Self::do_create_community(
 				community_id,
@@ -587,6 +599,29 @@ pub mod pallet {
 
 				Ok(())
 			})
+		}
+
+		/// Update required balance to become a founder
+		///
+		/// The origin must be root.
+		///
+		/// Parameters:
+		/// - `balance`: Required balance to become a founder
+		/// Emits `UpdatedRequiredFounderBalance` event when successful.
+		///
+		#[pallet::call_index(8)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::update_required_founder_balance())]
+		pub fn update_required_founder_balance(
+			origin: OriginFor<T>,
+			balance: T::Balance,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			RequiredFounderBalance::<T>::set(balance);
+
+			Self::deposit_event(Event::UpdatedRequiredFounderBalance(balance));
+
+			Ok(())
 		}
 	}
 }
