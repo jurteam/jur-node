@@ -30,8 +30,8 @@ use pallet_referenda::Curve;
 
 // ask parity about the science behind these percentages
 // TODO: adjust accordingly based on the community size
-const APP_ROOT: Curve = Curve::make_reciprocal(4, 14, percent(80), percent(50), percent(100));
-const SUP_ROOT: Curve = Curve::make_linear(14, 14, permill(5), percent(25));
+// const APP_ROOT: Curve = Curve::make_reciprocal(4, 14, percent(80), percent(50), percent(100));
+// const SUP_ROOT: Curve = Curve::make_linear(14, 14, permill(5), percent(25));
 const APP_WHITELISTED_CALLER: Curve =
     Curve::make_reciprocal(16, 28 * 24, percent(96), percent(50), percent(100));
 const SUP_WHITELISTED_CALLER: Curve =
@@ -48,30 +48,16 @@ const SUP_GENERAL_ADMIN: Curve =
     Curve::make_reciprocal(7, 28, percent(10), percent(0), percent(50));
 
 const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 4] = [
-    // (
-    //     0,
-    //     pallet_referenda::TrackInfo {
-    //         name: "sudo",
-    //         max_deciding: 1,
-    //         decision_deposit: 1000 * DOLLARS,
-    //         prepare_period: 2 * HOURS,
-    //         decision_period: 14 * DAYS,
-    //         confirm_period: 3 * HOURS,
-    //         min_enactment_period: 10 * MINUTES,
-    //         min_approval: APP_ROOT,
-    //         min_support: SUP_ROOT,
-    //     },
-    // ),
     (
         1,
         pallet_referenda::TrackInfo {
             name: "whitelisted_caller",
             max_deciding: 100,
             decision_deposit: 1000 * DOLLARS,
-            prepare_period: 30 * MINUTES,
-            decision_period: 14 * DAYS,
+            prepare_period: 5 * MINUTES,
+            decision_period: 20 * MINUTES,
             confirm_period: 0 * MINUTES,
-            min_enactment_period: 24 * HOURS,
+            min_enactment_period: 10 * MINUTES,
             min_approval: APP_WHITELISTED_CALLER,
             min_support: SUP_WHITELISTED_CALLER,
         },

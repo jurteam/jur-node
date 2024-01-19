@@ -35,7 +35,7 @@ impl pallet_conviction_voting::Config for Runtime {
 parameter_types! {
     pub const AlarmInterval: BlockNumber = 1;
     pub const SubmissionDeposit: Balance = 50 * DOLLARS;
-    pub const UndecidingTimeout: BlockNumber = 14 * DAYS;
+    pub const UndecidingTimeout: BlockNumber = 20 * MINUTES;
 }
 
 pub type GeneralAdminOrRoot = EitherOf<EnsureRoot<AccountId>, origins::GeneralAdmin>;
