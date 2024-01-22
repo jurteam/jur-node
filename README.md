@@ -324,3 +324,12 @@ To address this challenge, several approaches can be considered:
 - **Data Migration and Runtime Upgrade:** Explore the option of amending the keys database of the Aura and Grandpa pallets through data migration and runtime upgrade. Note that this solution requires thorough testing before implementation.
 
 Presently, the community is considering on incorporating this feature. Once the feature attains a state of readiness, the community will proceed to activate it. Your patience and understanding are highly valued as we endeavor to enhance this functionality.
+
+# 📦 Resources
+
+- [Jur Telemetry](https://telemetry.polkadot.io/#list/0x58d1393b47b11707978fbc07e77d7b6f7d9aa88d207dc008a52385f7dba6156a)
+- [Jur Explorer](https://jur.io/explorer/jur)
+- [Mainnet ](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fmainnet.jur.io#/explorer)
+- [Testnet](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Ftestnet.jur.io#/explorer)
+- [Mainnet Query Service](https://query.jur.io/)
+- [Testnet Query Service](https://query-staging.jur.io/)
