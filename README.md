@@ -42,7 +42,7 @@ The following command can be used to explore all parameters and subcommands:
 ./target/release/jur-node -h
 ```
 
-# 💻 Development Ecosystem (Single Node)
+# 💻 <a name="dev-ecosystem">Development Ecosystem (Single Node)</a>
 
 The provided `cargo run` command will launch a temporary node and its state will be discarded after you terminate the process. Use the following command to build the node without launching it:
 
@@ -306,4 +306,4 @@ A Validator Node actively participating in the consensus mechanism to validate a
 --pruning 1000  --validator
 ```
 
-📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the Development Ecosystem. Additionally, these keys must be incorporated into the spec file. However, Substrate currently does not support direct editing of the spec file after the initial addition of keys. To address this limitation, a mechanism should be developed to add keys through a runtime upgrade or an extrinsic call. Please be aware that this feature is currently under consideration, and the community will activate it once it reaches readiness. We appreciate your patience and understanding as we work towards this enhancement.
+📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the [Development Ecosystem](#dev-ecosystem). Additionally, these keys must be incorporated into the spec file. However, Substrate currently does not support direct editing of the spec file after the initial addition of keys. To address this limitation, a mechanism should be developed to add keys through a runtime upgrade or an extrinsic call. Please be aware that this feature is currently under consideration, and the community will activate it once it reaches readiness. We appreciate your patience and understanding as we work towards this enhancement.
