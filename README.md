@@ -7,7 +7,7 @@
 
 ---
 
-Discover the strength of Jur's unique Layer-1 blockchain, meticulously crafted with Substrate technology ensuring a robust ecosystem for the future of decentralized governance. Join us in shaping a world where governance is dynamic, inclusive, and built to serve the needs of all.
+Discover the strength of Jur's unique Layer-1 blockchain, meticulously crafted with [Substrate technology](https://substrate.io/) ensuring a robust ecosystem for the future of decentralized governance. Join us in shaping a world where governance is dynamic, inclusive, and built to serve the needs of all.
 
 # 🏆 Requirements
 
