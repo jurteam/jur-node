@@ -282,6 +282,8 @@ sudo systemctl status jur-node.service
 journalctl -f -u jur-node.service
 ```
 
+<img  src="https://github.com/jurteam/jur-node/assets/4173518/304d1e26-259e-47a2-b3c7-7e251e1c7053">
+
 📝 Note: Please be aware that Jur's mainnet ecosystem is currently exclusively admitting identified nodes through the use of the `--reserved-nodes` parameter. To have your node included in the peer list, it is necessary for any existing bootnode to grant permission for your node's IP and ID. Feel free to reach out to the community to request approval for your node.
 
 ### 🔰 <a name="validator-node">Validator Node</a>
@@ -307,6 +309,8 @@ A Validator Node actively participating in the consensus mechanism to validate a
 ```ini
 --pruning 1000  --validator
 ```
+
+<img src="https://github.com/jurteam/jur-node/assets/4173518/b26d1065-b965-43f8-9239-c0185e6d2a2c">
 
 📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the [Testnet Ecosystem](#testnet-ecosystem). Initially, we added 4 validator keys using POA (Proof of Authority) with Aura consensus to select validators from the keys stored on the chain.
 
