@@ -32,6 +32,8 @@ Use this **QuickStart** command to build and launch the node:
 cargo run --release -- --dev
 ```
 
+<img src="https://github.com/jurteam/jur-node/assets/4173518/63d7f831-c6b0-4022-b625-dc91e1c9f117">
+
 By running the above command, all the necessary components will be pulled and the Jur node will be started in development mode.
 
 ### List of all commands
