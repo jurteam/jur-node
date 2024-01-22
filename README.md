@@ -201,7 +201,7 @@ An Archive Node functioning as a repository of historical blockchain data. By op
 - 2 vCPUs (1 Core)
 - Ubuntu 22.04 LTS
 - Create a user called `node` with optimal permissions
-- Copy binary file to /home/node/bin/jur-node
+- Copy binary file to `/home/node/bin/jur-node`
 - Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to /home/node/jurMainnetSpecRaw.json
 
 Create a `systemd` service file for the archive node. Typically, these files have a .service extension and are stored in the /etc/systemd/system/ directory.
@@ -289,7 +289,7 @@ A Validator Node actively participating in the consensus mechanism to validate a
 - 2 vCPUs (1 Core)
 - Ubuntu 22.04 LTS
 - Create a user called `node` with optimal permissions
-- Copy binary file to /home/node/bin/jur-node
+- Copy binary file to `/home/node/bin/jur-node`
 - Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to /home/node/jurMainnetSpecRaw.json
 
 Follow the instructions to create a systemd config file from the Archive node section. You need to remove `--pruning=archive` from the config and replace it with:
