@@ -306,4 +306,15 @@ A Validator Node actively participating in the consensus mechanism to validate a
 --pruning 1000  --validator
 ```
 
-📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the [Testnet Ecosystem](#testnet-ecosystem). Additionally, these keys must be incorporated into the spec file. However, Substrate currently does not support direct editing of the spec file after the initial addition of keys. To address this limitation, a mechanism should be developed to add keys through a runtime upgrade or an extrinsic call. Please be aware that this feature is currently under consideration, and the community will activate it once it reaches readiness. We appreciate your patience and understanding as we work towards this enhancement.
+📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the [Testnet Ecosystem](#testnet-ecosystem). Initially, we added 4 validator keys using POA (Proof of Authority) with Aura consensus to select validators from the keys stored on the chain.
+
+Please be aware that Substrate currently does not support direct editing of the spec file after the initial addition of keys.
+
+To address this challenge, several approaches can be considered:
+
+- **Custom Pallet:** Create a custom pallet to amend the keys storage, allowing for the addition and removal of keys.
+- **Sessions Pallet:** Utilize the sessions pallet to change the consensus mechanism. Migrate keys from Aura to the sessions pallet, which will then handle the addition and removal of keys.
+- **Change Consensus to POS Stake:** Switch the entire consensus to Proof of Stake (POS). This transition will automatically be managed by the respective pallets.
+- **Data Migration and Runtime Upgrade:** Explore the option of amending the keys database of the Aura and Grandpa pallets through data migration and runtime upgrade. Note that this solution requires thorough testing before implementation.
+
+Presently, the community is considering on incorporating this feature. Once the feature attains a state of readiness, the community will proceed to activate it. Your patience and understanding are highly valued as we endeavor to enhance this functionality.
