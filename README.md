@@ -84,7 +84,7 @@ The multi-node testnet environment provides a playground for developers to exper
 
 In order to set up the testnet, it is important to understand some key concepts. The following table summarizes the most common concepts and their descriptions:
 
-| Node Type | What it does |
+| Concept | What it does |
 | --- | --- |
 | Validator node | Processes the validating proofs to finalize a block |
 | Boot node | Provides a static address and peer-to-peer (libp2p) public key that is used to bootstrap a node onto the network’s distributed hash table and to find peer nodes. |
