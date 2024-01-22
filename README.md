@@ -78,7 +78,7 @@ $ mkdir data
 $ ./target/release/jur-node --dev --base-path ./data
 ```
 
-# 💡 Testnet Ecosystem (Multi-Node)
+# 💡 <a name="testnet-ecosystem">Testnet Ecosystem (Multi-Node)</a>
 
 The multi-node testnet environment provides a playground for developers to experiment with Jur Chain features in a real scenario.
 
@@ -306,4 +306,4 @@ A Validator Node actively participating in the consensus mechanism to validate a
 --pruning 1000  --validator
 ```
 
-📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the [Development Ecosystem](#dev-ecosystem). Additionally, these keys must be incorporated into the spec file. However, Substrate currently does not support direct editing of the spec file after the initial addition of keys. To address this limitation, a mechanism should be developed to add keys through a runtime upgrade or an extrinsic call. Please be aware that this feature is currently under consideration, and the community will activate it once it reaches readiness. We appreciate your patience and understanding as we work towards this enhancement.
+📝 Note: For a validator node, it is essential to configure Aura and Grandpa keys following the guidelines outlined in the [Testnet Ecosystem](#testnet-ecosystem). Additionally, these keys must be incorporated into the spec file. However, Substrate currently does not support direct editing of the spec file after the initial addition of keys. To address this limitation, a mechanism should be developed to add keys through a runtime upgrade or an extrinsic call. Please be aware that this feature is currently under consideration, and the community will activate it once it reaches readiness. We appreciate your patience and understanding as we work towards this enhancement.
