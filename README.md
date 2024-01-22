@@ -80,7 +80,7 @@ $ ./target/release/jur-node --dev --base-path ./data
 
 # 💡 Testnet Ecosystem (Multi-Node)
 
-The multi-node testnet environment provides a playground for developers to experiment with Jur chain features in a real scenario.
+The multi-node testnet environment provides a playground for developers to experiment with Jur Chain features in a real scenario.
 
 In order to set up the testnet, it is important to understand some key concepts. The following table summarizes the most common concepts and their descriptions:
 
@@ -96,7 +96,7 @@ In order to set up the testnet, it is important to understand some key concepts.
 
 Proof of Authority (PoA) is a consensus algorithm used in the Jur Node to validate and confirm transactions. In a PoA system, network participants, known as validators or nodes, are pre-approved and identified entities with recognized authority or reputation.
 
-We need to generate Aura and Grandpa keys to set up or join a multi-node Jur chain. Here are the commands to generate both keys:
+We need to generate Aura and Grandpa keys to set up or join a multi-node Jur Chain. Here are the commands to generate both keys:
 
 **Generate Aura Key:**
 
@@ -159,7 +159,7 @@ We need to add the keys to each validator nodes using the command:
 --key-type gran
 ```
 
-📝 Note: We need to run atleast three nodes in order to start producing and finalizing blocks.
+📝 Note: We need to run at least three nodes in order to start producing and finalizing blocks.
 
 Here is the command to start a node, Run the command in three different terminals by replacing the dynamic fields:
 
