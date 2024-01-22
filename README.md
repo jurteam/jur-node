@@ -190,7 +190,7 @@ To become part of the mainnet ecosystem, you can choose between two options:
 1. **Archive Node**
 2. **Validator Node**
 
-### 🔰 [Archive Node](#archive-node)
+### 🔰 <a name="archive-node">Archive Node</a>
 
 An Archive Node functioning as a repository of historical blockchain data. By opting for an Archive Node, participants contribute to the network's resilience and accessibility, providing a valuable resource for the community. This role demands significant storage capacity and computational resources.
 
@@ -282,7 +282,7 @@ journalctl -f -u jur-node.service
 
 📝 Note: Please be aware that Jur's mainnet ecosystem is currently exclusively admitting identified nodes through the use of the `--reserved-nodes` parameter. To have your node included in the peer list, it is necessary for any existing bootnode to grant permission for your node's IP and ID. Feel free to reach out to the community to request approval for your node.
 
-### 🔰 [Validator Node](#validator-node)
+### 🔰 <a name="validator-node">Validator Node</a>
 
 A Validator Node actively participating in the consensus mechanism to validate and finalize transactions. Validator Nodes contribute to the security and integrity of the network.
 
@@ -300,7 +300,7 @@ A Validator Node actively participating in the consensus mechanism to validate a
 1. Create a user called `node` with optimal permissions
 2. Copy binary file to `/home/node/bin/jur-node`
 3. Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to `/home/node/jurMainnetSpecRaw.json`
-4. Follow the instructions to create a systemd config file from the [Archive node section](#archive-node). You need to remove `--pruning=archive` from the config and replace it with:
+4. Follow the instructions to create a systemd config file from the [Archive Node section](#archive-node). You need to remove `--pruning=archive` from the config and replace it with:
 
 ```ini
 --pruning 1000  --validator
