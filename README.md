@@ -190,27 +190,31 @@ To become part of the mainnet ecosystem, you can choose between two options:
 1. **Archive Node**
 2. **Validator Node**
 
-### 🔰 Archive Node
+### 🔰 [Archive Node](#archive-node)
 
 An Archive Node functioning as a repository of historical blockchain data. By opting for an Archive Node, participants contribute to the network's resilience and accessibility, providing a valuable resource for the community. This role demands significant storage capacity and computational resources.
 
 **Prerequisites (Minimal Setup):**
 
-- 250GB Storage (SSD Preferred)
-- 4GB RAM
-- 2 vCPUs (1 Core)
-- Ubuntu 22.04 LTS
-- Create a user called `node` with optimal permissions
-- Copy binary file to `/home/node/bin/jur-node`
-- Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to /home/node/jurMainnetSpecRaw.json
+| Component | Configuration         |
+| --------- | --------------------- |
+| CPU       | 2 vCPUs (1 Core)      |
+| RAM       | 4GB                   |
+| Storage   | 250GB - SSD Preferred |
+| OS        | Ubuntu 22.04 LTS      |
 
-Create a `systemd` service file for the archive node. Typically, these files have a .service extension and are stored in the /etc/systemd/system/ directory.
+**Run Node**
+
+1.  Create a user called `node` with optimal permissions
+2.  Copy binary file to `/home/node/bin/jur-node`
+3.  Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to `/home/node/jurMainnetSpecRaw.json`
+4.  Create a `systemd` service file for the archive node. Typically, these files have a .service extension and are stored in the /etc/systemd/system/ directory.
 
 ```bash
 sudo nano /etc/systemd/system/jur-node.service
 ```
 
-Copy and Paste the following configuration into the file, adjusting the `<PUBLIC_IP>` and `<NAME>` accordingly:
+5. Copy and Paste the following configuration into the file, adjusting the `<PUBLIC_IP>` and `<NAME>` accordingly:
 
 ```ini
 # /etc/systemd/system/jur-node.service
@@ -246,31 +250,31 @@ LimitNOFILE=16384
 WantedBy=multi-user.target
 ```
 
-Reload the systemd manager to read the new service configuration:
+6. Reload the systemd manager to read the new service configuration:
 
 ```
 sudo systemctl daemon-reload
 ```
 
-Enable the service to start on boot:
+7. Enable the service to start on boot:
 
 ```
 sudo systemctl enable jur-node.service
 ```
 
-Start the service:
+8. Start the service:
 
 ```
 sudo systemctl start jur-node.service
 ```
 
-Check the status of the service to ensure it's running without errors:
+9. Check the status of the service to ensure it's running without errors:
 
 ```
 sudo systemctl status jur-node.service
 ```
 
-To see the detailed logs of the running service:
+10. To see the detailed logs of the running service:
 
 ```
 journalctl -f -u jur-node.service
@@ -278,21 +282,25 @@ journalctl -f -u jur-node.service
 
 📝 Note: Please be aware that Jur's mainnet ecosystem is currently exclusively admitting identified nodes through the use of the `--reserved-nodes` parameter. To have your node included in the peer list, it is necessary for any existing bootnode to grant permission for your node's IP and ID. Feel free to reach out to the community to request approval for your node.
 
-### 🔰 Validator Node
+### 🔰 [Validator Node](#validator-node)
 
 A Validator Node actively participating in the consensus mechanism to validate and finalize transactions. Validator Nodes contribute to the security and integrity of the network.
 
 **Prerequisites (Minimal Setup):**
 
-- 40GB Storage (SSD Preferred)
-- 2GB RAM
-- 2 vCPUs (1 Core)
-- Ubuntu 22.04 LTS
-- Create a user called `node` with optimal permissions
-- Copy binary file to `/home/node/bin/jur-node`
-- Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to /home/node/jurMainnetSpecRaw.json
+| Component | Configuration        |
+| --------- | -------------------- |
+| CPU       | 2 vCPUs (1 Core)     |
+| RAM       | 2GB                  |
+| Storage   | 40GB - SSD Preferred |
+| OS        | Ubuntu 22.04 LTS     |
 
-Follow the instructions to create a systemd config file from the Archive node section. You need to remove `--pruning=archive` from the config and replace it with:
+**Run Node**
+
+1. Create a user called `node` with optimal permissions
+2. Copy binary file to `/home/node/bin/jur-node`
+3. Copy [spec file](https://github.com/jurteam/jur-node/blob/fix/readme/res/jurMainnetSpecRaw.json) to `/home/node/jurMainnetSpecRaw.json`
+4. Follow the instructions to create a systemd config file from the [Archive node section](#archive-node). You need to remove `--pruning=archive` from the config and replace it with:
 
 ```ini
 --pruning 1000  --validator
