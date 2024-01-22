@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">Jur Node</h1>
 
-<p align="center">Empowering Startup Societies, Countries, and Network States worldwide for progressive governance.</p>
+<p align="center">Empowering Startup Societies, Countries, and Network States with on-chain and transparent governance.</p>
 
 ---
 
