@@ -612,12 +612,7 @@ impl pallet_preimage::Config for Runtime {
 	type Currency = Balances;
 	type ManagerOrigin = EnsureRoot<AccountId>;
 
-	type Consideration = HoldConsideration<
-		AccountId,
-		Balances,
-		(),
-		LinearStoragePrice<PreimageBaseDeposit, PreimageByteDeposit, Balance>,
-	>;
+	type Consideration = ();
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

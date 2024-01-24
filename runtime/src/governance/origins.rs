@@ -31,7 +31,7 @@ pub mod pallet_custom_origins {
     #[derive(PartialEq, Eq, Clone, MaxEncodedLen, Encode, Decode, TypeInfo, RuntimeDebug)]
     #[pallet::origin]
     pub enum Origin {
-        // Sudo,
+        Sudo,
         WhitelistedCaller,
         ReferendumCanceller,
         ReferendumKiller,
@@ -68,7 +68,7 @@ pub mod pallet_custom_origins {
 		() => {}
      }
     decl_unit_ensures!(
-        // Sudo,
+        Sudo,
         ReferendumCanceller,
         ReferendumKiller,
         WhitelistedCaller,
