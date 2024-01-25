@@ -103,8 +103,8 @@ pub mod opaque {
 	}
 }
 
-pub const MILLICENTS: Balance = 1_000_000_000;
-pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
+pub const MILLICENTS: Balance = 1_000_000_000_000_0;
+pub const CENTS: Balance = 1_000 * MILLICENTS;
 pub const DOLLARS: Balance = 100 * CENTS;
 
 pub const fn deposit(items: u32, bytes: u32) -> Balance {

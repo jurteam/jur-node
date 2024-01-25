@@ -32,10 +32,12 @@ pub mod pallet_custom_origins {
     #[pallet::origin]
     pub enum Origin {
         Sudo,
+		Treasurer,
         WhitelistedCaller,
         ReferendumCanceller,
         ReferendumKiller,
-        GeneralAdmin,
+		Tips,
+		Proposal,
     }
     macro_rules! decl_unit_ensures {
         ( $name:ident: $success_type:ty = $success:expr ) => {
@@ -69,9 +71,11 @@ pub mod pallet_custom_origins {
      }
     decl_unit_ensures!(
         Sudo,
+		Treasurer,
         ReferendumCanceller,
         ReferendumKiller,
         WhitelistedCaller,
-        GeneralAdmin,
+        Tips,
+		Proposal,
     );
 }

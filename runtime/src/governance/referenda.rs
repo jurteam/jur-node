@@ -26,7 +26,7 @@ impl pallet_conviction_voting::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type VoteLockingPeriod = VoteLockingPeriod;
-    type MaxVotes = ConstU32<512>;
+    type MaxVotes = ConstU32<20>;
     type MaxTurnout =
     frame_support::traits::tokens::currency::ActiveIssuanceOf<Balances, Self::AccountId>;
     type Polls = Referenda;
@@ -38,7 +38,7 @@ parameter_types! {
     pub const UndecidingTimeout: BlockNumber = 20 * MINUTES;
 }
 
-pub type GeneralAdminOrRoot = EitherOf<EnsureRoot<AccountId>, origins::GeneralAdmin>;
+// pub type GeneralAdminOrRoot = EitherOf<EnsureRoot<AccountId>, origins::GeneralAdmin>;
 
 impl pallet_custom_origins::Config for Runtime {}
 

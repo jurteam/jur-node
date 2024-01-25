@@ -28,10 +28,14 @@ const fn permill(x: i32) -> sp_runtime::FixedI64 {
 use primitives::BlockNumber;
 use pallet_referenda::Curve;
 
-// ask parity about the science behind these percentages
 // TODO: adjust accordingly based on the community size
 const APP_ROOT: Curve = Curve::make_reciprocal(4, 14, percent(80), percent(50), percent(100));
 const SUP_ROOT: Curve = Curve::make_linear(14, 14, permill(5), percent(25));
+const APP_TREASURER: Curve =
+    Curve::make_reciprocal(16, 28 * 24, percent(96), percent(50), percent(100));
+const SUP_TREASURER: Curve =
+    Curve::make_reciprocal(1, 28, percent(20), percent(5), percent(50));
+
 const APP_WHITELISTED_CALLER: Curve =
     Curve::make_reciprocal(16, 28 * 24, percent(96), percent(50), percent(100));
 const SUP_WHITELISTED_CALLER: Curve =
@@ -42,22 +46,27 @@ const SUP_REFERENDUM_CANCELLER: Curve =
 const APP_REFERENDUM_KILLER: Curve = Curve::make_linear(17, 28, percent(50), percent(100));
 const SUP_REFERENDUM_KILLER: Curve =
     Curve::make_reciprocal(12, 28, percent(1), percent(0), percent(50));
-const APP_GENERAL_ADMIN: Curve =
+const APP_TIPS: Curve =
     Curve::make_reciprocal(4, 28, percent(80), percent(50), percent(100));
-const SUP_GENERAL_ADMIN: Curve =
+const SUP_TIPS: Curve =
+    Curve::make_reciprocal(7, 28, percent(10), percent(0), percent(50));
+const APP_PROPOSAL: Curve =
+    Curve::make_reciprocal(4, 28, percent(80), percent(50), percent(100));
+const SUP_PROPOSAL: Curve =
     Curve::make_reciprocal(7, 28, percent(10), percent(0), percent(50));
 
-const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5] = [
+
+const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7] = [
     (
         0,
         pallet_referenda::TrackInfo {
             name: "sudo",
             max_deciding: 1,
-            decision_deposit: 1000 * DOLLARS,
+            decision_deposit: 2_512_500 * DOLLARS,
             prepare_period: 2 * HOURS,
-            decision_period: 14 * DAYS,
-            confirm_period: 3 * HOURS,
-            min_enactment_period: 10 * MINUTES,
+            decision_period: 28 * DAYS,
+            confirm_period: 24 * HOURS,
+            min_enactment_period: 24 * MINUTES,
             min_approval: APP_ROOT,
             min_support: SUP_ROOT,
         },
@@ -65,9 +74,23 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
     (
         1,
         pallet_referenda::TrackInfo {
+            name: "treasurer",
+            max_deciding: 10,
+            decision_deposit: 25_000 * DOLLARS,
+            prepare_period: 5 * MINUTES,
+            decision_period: 20 * MINUTES,
+            confirm_period: 0 * MINUTES,
+            min_enactment_period: 10 * MINUTES,
+            min_approval: APP_TREASURER,
+            min_support: SUP_TREASURER,
+        },
+    ),
+    (
+        1,
+        pallet_referenda::TrackInfo {
             name: "whitelisted_caller",
             max_deciding: 100,
-            decision_deposit: 1000 * DOLLARS,
+            decision_deposit: 1_000 * DOLLARS,
             prepare_period: 5 * MINUTES,
             decision_period: 20 * MINUTES,
             confirm_period: 0 * MINUTES,
@@ -80,12 +103,12 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
         3,
         pallet_referenda::TrackInfo {
             name: "referendum_canceller",
-            max_deciding: 20,
-            decision_deposit: 1000 * DOLLARS,
-            prepare_period: 1 * HOURS,
-            decision_period: 14 * DAYS,
+            max_deciding: 1000,
+            decision_deposit: 2_51_000 * DOLLARS,
+            prepare_period: 2 * HOURS,
+            decision_period: 7 * DAYS,
             confirm_period: 3 * HOURS,
-            min_enactment_period: 10 * MINUTES,
+            min_enactment_period: 1 * HOURS,
             min_approval: APP_REFERENDUM_CANCELLER,
             min_support: SUP_REFERENDUM_CANCELLER,
         },
@@ -94,12 +117,12 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
         4,
         pallet_referenda::TrackInfo {
             name: "referendum_killer",
-            max_deciding: 100,
-            decision_deposit: 2000 * DOLLARS,
-            prepare_period: 1 * HOURS,
-            decision_period: 14 * DAYS,
+            max_deciding: 1000,
+            decision_deposit: 6_28_000 * DOLLARS,
+            prepare_period: 2 * HOURS,
+            decision_period: 28 * DAYS,
             confirm_period: 3 * HOURS,
-            min_enactment_period: 10 * MINUTES,
+            min_enactment_period: 1 * HOURS,
             min_approval: APP_REFERENDUM_KILLER,
             min_support: SUP_REFERENDUM_KILLER,
         },
@@ -107,15 +130,29 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
     (
         5,
         pallet_referenda::TrackInfo {
-            name: "general_admin",
-            max_deciding: 10,
-            decision_deposit: 500 * DOLLARS,
+            name: "tips",
+            max_deciding: 100,
+            decision_deposit: 6_300 * DOLLARS,
             prepare_period: 1 * HOURS,
-            decision_period: 14 * DAYS,
-            confirm_period: 1 * DAYS,
-            min_enactment_period: 10 * MINUTES,
-            min_approval: APP_GENERAL_ADMIN,
-            min_support: SUP_GENERAL_ADMIN,
+            decision_period: 7 * DAYS,
+            confirm_period: 1 * HOURS,
+            min_enactment_period: 1 * HOURS,
+            min_approval: APP_TIPS,
+            min_support: SUP_TIPS,
+        },
+    ),
+    (
+        6,
+        pallet_referenda::TrackInfo {
+            name: "proposal",
+            max_deciding: 25,
+            decision_deposit: 8_800 * DOLLARS,
+            prepare_period: 4 * HOURS,
+            decision_period: 28 * DAYS,
+            confirm_period: 12 * HOURS,
+            min_enactment_period: 24 * HOURS,
+            min_approval: APP_PROPOSAL,
+            min_support: SUP_PROPOSAL,
         },
     ),
 ];
@@ -146,10 +183,12 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
         } else if let Ok(custom_origin) = origins::Origin::try_from(id.clone()) {
             match custom_origin {
                 origins::Origin::Sudo => Ok(1),
-                origins::Origin::WhitelistedCaller => Ok(2),
-                origins::Origin::ReferendumCanceller => Ok(3),
-                origins::Origin::ReferendumKiller => Ok(4),
-                origins::Origin::GeneralAdmin => Ok(5),
+                origins::Origin::Treasurer => Ok(2),
+                origins::Origin::WhitelistedCaller => Ok(3),
+                origins::Origin::ReferendumCanceller => Ok(4),
+                origins::Origin::ReferendumKiller => Ok(5),
+                origins::Origin::Tips => Ok(6),
+                origins::Origin::Proposal => Ok(7),
             }
         } else {
             Err(())
