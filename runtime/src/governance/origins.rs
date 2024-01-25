@@ -20,26 +20,26 @@ pub use pallet_custom_origins::*;
 
 #[frame_support::pallet]
 pub mod pallet_custom_origins {
-    use frame_support::pallet_prelude::*;
+	use frame_support::pallet_prelude::*;
 
-    #[pallet::config]
-    pub trait Config: frame_system::Config {}
+	#[pallet::config]
+	pub trait Config: frame_system::Config {}
 
-    #[pallet::pallet]
-    pub struct Pallet<T>(_);
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
 
-    #[derive(PartialEq, Eq, Clone, MaxEncodedLen, Encode, Decode, TypeInfo, RuntimeDebug)]
-    #[pallet::origin]
-    pub enum Origin {
-        Sudo,
+	#[derive(PartialEq, Eq, Clone, MaxEncodedLen, Encode, Decode, TypeInfo, RuntimeDebug)]
+	#[pallet::origin]
+	pub enum Origin {
+		Sudo,
 		Treasurer,
-        WhitelistedCaller,
-        ReferendumCanceller,
-        ReferendumKiller,
+		WhitelistedCaller,
+		ReferendumCanceller,
+		ReferendumKiller,
 		Tips,
 		Proposal,
-    }
-    macro_rules! decl_unit_ensures {
+	}
+	macro_rules! decl_unit_ensures {
         ( $name:ident: $success_type:ty = $success:expr ) => {
 			pub struct $name;
 			impl<O: Into<Result<Origin, O>> + From<Origin>>
@@ -69,13 +69,13 @@ pub mod pallet_custom_origins {
 		};
 		() => {}
      }
-    decl_unit_ensures!(
-        Sudo,
+	decl_unit_ensures!(
+		Sudo,
 		Treasurer,
-        ReferendumCanceller,
-        ReferendumKiller,
-        WhitelistedCaller,
-        Tips,
+		ReferendumCanceller,
+		ReferendumKiller,
+		WhitelistedCaller,
+		Tips,
 		Proposal,
-    );
+	);
 }

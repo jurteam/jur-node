@@ -9,7 +9,9 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use frame_support::{
 	genesis_builder_helper::{build_config, create_default_config},
 	pallet_prelude::DispatchClass,
-	traits::{fungible::HoldConsideration, AsEnsureOriginWithArg, LockIdentifier, LinearStoragePrice},
+	traits::{
+		fungible::HoldConsideration, AsEnsureOriginWithArg, LinearStoragePrice, LockIdentifier,
+	},
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
@@ -32,6 +34,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
@@ -47,14 +50,13 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 pub use frame_system::Call as SystemCall;
+use governance::pallet_custom_origins;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
-use governance::pallet_custom_origins;
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
@@ -580,9 +582,9 @@ impl pallet_utility::Config for Runtime {
 }
 
 parameter_types! {
-    pub MaximumSchedulerWeight: Weight = RuntimeBlockWeights::get().max_block;
-    pub const MaxScheduledPerBlock: u32 = 50;
-    pub const NoPreimagePostponement: Option<u32> = Some(10);
+	pub MaximumSchedulerWeight: Weight = RuntimeBlockWeights::get().max_block;
+	pub const MaxScheduledPerBlock: u32 = 50;
+	pub const NoPreimagePostponement: Option<u32> = Some(10);
 }
 
 impl pallet_scheduler::Config for Runtime {
@@ -643,12 +645,12 @@ construct_runtime!(
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 
 		// OpenGov pallets
-        Preimage: pallet_preimage,
-        Scheduler: pallet_scheduler,
-        Origins: pallet_custom_origins::{Origin},
-        ConvictionVoting: pallet_conviction_voting,
-        Referenda: pallet_referenda,
-        Safelist: pallet_safelist,
+		Preimage: pallet_preimage,
+		Scheduler: pallet_scheduler,
+		Origins: pallet_custom_origins::{Origin},
+		ConvictionVoting: pallet_conviction_voting,
+		Referenda: pallet_referenda,
+		Safelist: pallet_safelist,
 	}
 );
 

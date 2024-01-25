@@ -18,24 +18,24 @@ use super::*;
 use frame_support::traits::EitherOf;
 
 parameter_types! {
-    pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
+	pub const VoteLockingPeriod: BlockNumber = 1 * DAYS;
 }
 
 impl pallet_conviction_voting::Config for Runtime {
-    type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Runtime>;
-    type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
-    type VoteLockingPeriod = VoteLockingPeriod;
-    type MaxVotes = ConstU32<20>;
-    type MaxTurnout =
-    frame_support::traits::tokens::currency::ActiveIssuanceOf<Balances, Self::AccountId>;
-    type Polls = Referenda;
+	type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Runtime>;
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type VoteLockingPeriod = VoteLockingPeriod;
+	type MaxVotes = ConstU32<20>;
+	type MaxTurnout =
+		frame_support::traits::tokens::currency::ActiveIssuanceOf<Balances, Self::AccountId>;
+	type Polls = Referenda;
 }
 
 parameter_types! {
-    pub const AlarmInterval: BlockNumber = 1;
-    pub const SubmissionDeposit: Balance = 50 * DOLLARS;
-    pub const UndecidingTimeout: BlockNumber = 20 * MINUTES;
+	pub const AlarmInterval: BlockNumber = 1;
+	pub const SubmissionDeposit: Balance = 50 * DOLLARS;
+	pub const UndecidingTimeout: BlockNumber = 20 * MINUTES;
 }
 
 // pub type GeneralAdminOrRoot = EitherOf<EnsureRoot<AccountId>, origins::GeneralAdmin>;
@@ -43,12 +43,12 @@ parameter_types! {
 impl pallet_custom_origins::Config for Runtime {}
 
 impl pallet_safelist::Config for Runtime {
-    type WeightInfo = pallet_safelist::weights::SubstrateWeight<Runtime>;
-    type RuntimeCall = RuntimeCall;
-    type RuntimeEvent = RuntimeEvent;
-    type WhitelistOrigin = EnsureRoot<Self::AccountId>;
-    type DispatchWhitelistedOrigin = EitherOf<EnsureRoot<Self::AccountId>, WhitelistedCaller>;
-    type Preimages = Preimage;
+	type WeightInfo = pallet_safelist::weights::SubstrateWeight<Runtime>;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WhitelistOrigin = EnsureRoot<Self::AccountId>;
+	type DispatchWhitelistedOrigin = EitherOf<EnsureRoot<Self::AccountId>, WhitelistedCaller>;
+	type Preimages = Preimage;
 }
 
 // The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
@@ -57,21 +57,21 @@ impl pallet_safelist::Config for Runtime {
 pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
 
 impl pallet_referenda::Config for Runtime {
-    type WeightInfo = pallet_referenda::weights::SubstrateWeight<Runtime>;
-    type RuntimeCall = RuntimeCall;
-    type RuntimeEvent = RuntimeEvent;
-    type Scheduler = Scheduler;
-    type Currency = Balances;
-    type SubmitOrigin = EnsureSigned<AccountId>;
-    type CancelOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumCanceller>;
-    type KillOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumKiller>;
-    type Slash = ();
-    type Votes = pallet_conviction_voting::VotesOf<Runtime>;
-    type Tally = pallet_conviction_voting::TallyOf<Runtime>;
-    type SubmissionDeposit = SubmissionDeposit;
-    type MaxQueued = ConstU32<100>;
-    type UndecidingTimeout = UndecidingTimeout;
-    type AlarmInterval = AlarmInterval;
-    type Tracks = TracksInfo;
-    type Preimages = Preimage;
+	type WeightInfo = pallet_referenda::weights::SubstrateWeight<Runtime>;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type Scheduler = Scheduler;
+	type Currency = Balances;
+	type SubmitOrigin = EnsureSigned<AccountId>;
+	type CancelOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumCanceller>;
+	type KillOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumKiller>;
+	type Slash = ();
+	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
+	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
+	type SubmissionDeposit = SubmissionDeposit;
+	type MaxQueued = ConstU32<100>;
+	type UndecidingTimeout = UndecidingTimeout;
+	type AlarmInterval = AlarmInterval;
+	type Tracks = TracksInfo;
+	type Preimages = Preimage;
 }
