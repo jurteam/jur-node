@@ -52,7 +52,7 @@ const SUP_PROPOSAL: Curve = Curve::make_reciprocal(7, 28, percent(10), percent(0
 
 const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7] = [
 	(
-		0,
+		1,
 		pallet_referenda::TrackInfo {
 			name: "sudo",
 			max_deciding: 1,
@@ -66,7 +66,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 		},
 	),
 	(
-		1,
+		2,
 		pallet_referenda::TrackInfo {
 			name: "treasurer",
 			max_deciding: 10,
@@ -80,7 +80,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 		},
 	),
 	(
-		1,
+		3,
 		pallet_referenda::TrackInfo {
 			name: "whitelisted_caller",
 			max_deciding: 100,
@@ -94,7 +94,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 		},
 	),
 	(
-		3,
+		4,
 		pallet_referenda::TrackInfo {
 			name: "referendum_canceller",
 			max_deciding: 1000,
@@ -108,7 +108,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 		},
 	),
 	(
-		4,
+		5,
 		pallet_referenda::TrackInfo {
 			name: "referendum_killer",
 			max_deciding: 1000,
@@ -122,7 +122,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 		},
 	),
 	(
-		5,
+		6,
 		pallet_referenda::TrackInfo {
 			name: "tips",
 			max_deciding: 100,
@@ -136,7 +136,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 		},
 	),
 	(
-		6,
+		7,
 		pallet_referenda::TrackInfo {
 			name: "proposal",
 			max_deciding: 25,
