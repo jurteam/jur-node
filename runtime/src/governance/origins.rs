@@ -33,7 +33,6 @@ pub mod pallet_custom_origins {
 	pub enum Origin {
 		Sudo,
 		Treasurer,
-		WhitelistedCaller,
 		ReferendumCanceller,
 		ReferendumKiller,
 		Tips,
@@ -74,7 +73,6 @@ pub mod pallet_custom_origins {
 		Treasurer,
 		ReferendumCanceller,
 		ReferendumKiller,
-		WhitelistedCaller,
 		Tips,
 		Proposal,
 	);

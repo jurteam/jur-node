@@ -47,7 +47,7 @@ impl pallet_safelist::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type WhitelistOrigin = EnsureRoot<Self::AccountId>;
-	type DispatchWhitelistedOrigin = EitherOf<EnsureRoot<Self::AccountId>, WhitelistedCaller>;
+	type DispatchWhitelistedOrigin = EnsureRoot<Self::AccountId>;
 	type Preimages = Preimage;
 }
 
