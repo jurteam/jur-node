@@ -1,0 +1,57 @@
+[package]
+name = "pallet-token-swap"
+version = "1.0.0"
+description = "Jur Token Swap Pallet"
+authors = ["Jur Team <https://github.com/jurteam>"]
+homepage = "https://jur.io/"
+edition = "2021"
+license = "Unlicense"
+publish = false
+repository = "https://github.com/jurteam/jur-node/"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+parity-scale-codec = { default-features = false, features = ["derive"] }
+primitives = { package = 'jur-primitives', path = '../../primitives', default-features = false }
+scale-info = { version = "2.9.0", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0"}
+frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0", optional = true }
+sp-std = { default-features = false, version = "8.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+sp-runtime = { default-features = false, version = "24.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+serde_derive = { version = "1.0.117", optional = true }
+rustc-hex = { version = "2.1.0", default-features = false }
+sp-io = { default-features = false, version = "23.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+sp-core = { default-features = false, version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+bs58 = { default-features = false, version = '0.5.0',features=['alloc']}
+hex-literal = "0.4.1"
+
+[dev-dependencies]
+pallet-assets = { version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-balances = { version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+libsecp256k1 = { version = "0.7.0", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"parity-scale-codec/std",
+	"scale-info/std",
+	"frame-support/std",
+	"frame-system/std",
+	"frame-benchmarking/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"rustc-hex/std",
+	"serde_derive",
+	"serde_json/std",
+	"primitives/std",
+	"sp-io/std",
+	"sp-core/std",
+	"bs58/std",
+]
+
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+try-runtime = ["frame-support/try-runtime"]

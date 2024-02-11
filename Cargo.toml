@@ -8,6 +8,7 @@ members = [
     "pallets/passport",
     "pallets/proposal",
     "pallets/token-swap",
+    "pallets/safelist",
     "runtime",
 ]
 [profile.release]
