@@ -35,7 +35,7 @@ impl pallet_conviction_voting::Config for Runtime {
 parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;
 	pub const SubmissionDeposit: Balance = 50 * DOLLARS;
-	pub const UndecidingTimeout: BlockNumber = 20 * MINUTES;
+	pub const UndecidingTimeout: BlockNumber = 7 * DAYS;
 }
 
 // pub type GeneralAdminOrRoot = EitherOf<EnsureRoot<AccountId>, origins::GeneralAdmin>;
@@ -65,7 +65,7 @@ impl pallet_referenda::Config for Runtime {
 	type SubmitOrigin = EnsureSigned<AccountId>;
 	type CancelOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumCanceller>;
 	type KillOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumKiller>;
-	type Slash = ();
+	type Slash = Treasury;
 	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
 	type SubmissionDeposit = SubmissionDeposit;
