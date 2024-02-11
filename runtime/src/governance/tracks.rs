@@ -28,34 +28,23 @@ const fn permill(x: i32) -> sp_runtime::FixedI64 {
 use pallet_referenda::Curve;
 use primitives::BlockNumber;
 
-// TODO: adjust accordingly based on the community size
-const APP_ROOT: Curve =
-	Curve::make_reciprocal(1, 28, percent(80), percent(1), percent(100));
-const SUP_ROOT: Curve =
-	Curve::make_linear(28, 28, permill(5), percent(1));
-const APP_TREASURER: Curve =
-	Curve::make_reciprocal(1, 1, percent(0), percent(0), percent(10));
-const SUP_TREASURER: Curve =
-	Curve::make_reciprocal(1, 1, percent(0), percent(0), percent(10));
+// TODO: keep adjust accordingly based on the community size
+const APP_ROOT: Curve = Curve::make_reciprocal(1, 28, percent(80), percent(50), percent(100));
+const SUP_ROOT: Curve = Curve::make_linear(28, 28, permill(15), percent(50));
 const APP_REFERENDUM_CANCELLER: Curve =
-	Curve::make_linear(1, 7, percent(50), percent(100));
-const SUP_REFERENDUM_CANCELLER: Curve =
-	Curve::make_reciprocal(1, 7, percent(1), percent(0), percent(50));
-const APP_REFERENDUM_KILLER: Curve = Curve::make_linear(1, 28, percent(50), percent(100));
-const SUP_REFERENDUM_KILLER: Curve =
-	Curve::make_reciprocal(1, 28, percent(1), percent(0), percent(50));
-const APP_TIPS: Curve =
-	Curve::make_reciprocal(1, 7, percent(80), percent(50), percent(100));
-const SUP_TIPS: Curve =
-	Curve::make_reciprocal(7, 7, percent(1), percent(0), percent(50));
-const APP_PROPOSAL: Curve =
-	Curve::make_reciprocal(4, 28, percent(80), percent(50), percent(100));
-const SUP_PROPOSAL: Curve =
-	Curve::make_reciprocal(7, 28, percent(10), percent(0), percent(50));
+	Curve::make_reciprocal(1, 7, percent(96), percent(50), percent(100));
+const SUP_REFERENDUM_CANCELLER: Curve = Curve::make_linear(1, 7, percent(0), percent(50));
+const APP_REFERENDUM_KILLER: Curve =
+	Curve::make_reciprocal(1, 28, percent(96), percent(50), percent(100));
+const SUP_REFERENDUM_KILLER: Curve = Curve::make_linear(1, 28, percent(0), percent(50));
+const APP_TIPS: Curve = Curve::make_reciprocal(1, 7, percent(80), percent(50), percent(100));
+const SUP_TIPS: Curve = Curve::make_reciprocal(7, 7, percent(10), percent(0), percent(50));
+const APP_PROPOSAL: Curve = Curve::make_reciprocal(4, 28, percent(80), percent(50), percent(100));
+const SUP_PROPOSAL: Curve = Curve::make_reciprocal(7, 28, percent(10), percent(0), percent(50));
 
-const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 6] = [
+const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5] = [
 	(
-		1,
+		0,
 		pallet_referenda::TrackInfo {
 			name: "sudo",
 			max_deciding: 1,
@@ -69,21 +58,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 6]
 		},
 	),
 	(
-		2,
-		pallet_referenda::TrackInfo {
-			name: "treasurer",
-			max_deciding: 10,
-			decision_deposit: 25_000 * DOLLARS,
-			prepare_period: 5 * MINUTES,
-			decision_period: 20 * MINUTES,
-			confirm_period: 0 * MINUTES,
-			min_enactment_period: 10 * MINUTES,
-			min_approval: APP_TREASURER,
-			min_support: SUP_TREASURER,
-		},
-	),
-	(
-		3,
+		1,
 		pallet_referenda::TrackInfo {
 			name: "referendum_canceller",
 			max_deciding: 1000,
@@ -97,7 +72,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 6]
 		},
 	),
 	(
-		4,
+		2,
 		pallet_referenda::TrackInfo {
 			name: "referendum_killer",
 			max_deciding: 1000,
@@ -111,7 +86,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 6]
 		},
 	),
 	(
-		5,
+		3,
 		pallet_referenda::TrackInfo {
 			name: "tips",
 			max_deciding: 100,
@@ -125,7 +100,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 6]
 		},
 	),
 	(
-		6,
+		4,
 		pallet_referenda::TrackInfo {
 			name: "proposal",
 			max_deciding: 25,
@@ -166,12 +141,11 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 			}
 		} else if let Ok(custom_origin) = origins::Origin::try_from(id.clone()) {
 			match custom_origin {
-				origins::Origin::Sudo => Ok(1),
-				origins::Origin::Treasurer => Ok(2),
-				origins::Origin::ReferendumCanceller => Ok(3),
-				origins::Origin::ReferendumKiller => Ok(4),
-				origins::Origin::Tips => Ok(5),
-				origins::Origin::Proposal => Ok(6),
+				origins::Origin::Sudo => Ok(0),
+				origins::Origin::ReferendumCanceller => Ok(1),
+				origins::Origin::ReferendumKiller => Ok(2),
+				origins::Origin::Tips => Ok(3),
+				origins::Origin::Proposal => Ok(4),
 			}
 		} else {
 			Err(())

@@ -32,7 +32,6 @@ pub mod pallet_custom_origins {
 	#[pallet::origin]
 	pub enum Origin {
 		Sudo,
-		Treasurer,
 		ReferendumCanceller,
 		ReferendumKiller,
 		Tips,
@@ -68,12 +67,5 @@ pub mod pallet_custom_origins {
 		};
 		() => {}
      }
-	decl_unit_ensures!(
-		Sudo,
-		Treasurer,
-		ReferendumCanceller,
-		ReferendumKiller,
-		Tips,
-		Proposal,
-	);
+	decl_unit_ensures!(Sudo, ReferendumCanceller, ReferendumKiller, Tips, Proposal,);
 }
