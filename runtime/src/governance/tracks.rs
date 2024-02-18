@@ -61,7 +61,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 		1,
 		pallet_referenda::TrackInfo {
 			name: "referendum_canceller",
-			max_deciding: 1000,
+			max_deciding: 500,
 			decision_deposit: 2_51_000 * DOLLARS,
 			prepare_period: 2 * HOURS,
 			decision_period: 7 * DAYS,
@@ -75,7 +75,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 		2,
 		pallet_referenda::TrackInfo {
 			name: "referendum_killer",
-			max_deciding: 1000,
+			max_deciding: 500,
 			decision_deposit: 6_28_000 * DOLLARS,
 			prepare_period: 2 * HOURS,
 			decision_period: 28 * DAYS,
@@ -92,8 +92,8 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			max_deciding: 100,
 			decision_deposit: 6_300 * DOLLARS,
 			prepare_period: 1 * HOURS,
-			decision_period: 7 * DAYS,
-			confirm_period: 1 * HOURS,
+			decision_period: 14 * DAYS,
+			confirm_period: 3 * HOURS,
 			min_enactment_period: 1 * HOURS,
 			min_approval: APP_TIPS,
 			min_support: SUP_TIPS,
