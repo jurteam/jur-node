@@ -52,7 +52,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			prepare_period: 2 * HOURS,
 			decision_period: 28 * DAYS,
 			confirm_period: 24 * HOURS,
-			min_enactment_period: 24 * MINUTES,
+			min_enactment_period: 24 * HOURS,
 			min_approval: APP_ROOT,
 			min_support: SUP_ROOT,
 		},
