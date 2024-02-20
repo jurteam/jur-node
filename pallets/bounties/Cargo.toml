@@ -32,7 +32,7 @@ pallet-passport = { package = 'pallet-passport', path = '../passport', default-f
 pallet-whitelist = { package = 'pallet-whitelist', path = '../whitelist', default-features = false }
 
 [dev-dependencies]
-serde = { version = "1.0.196" }
+serde = { version = "1.0.197" }
 
 # Substrate
 sp-core = { git = "https://github.com/paritytech/polkadot-sdk", default-features = false, branch = "release-polkadot-v1.2.0" }
