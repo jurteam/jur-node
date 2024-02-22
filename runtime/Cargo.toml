@@ -25,6 +25,7 @@ pallet-treasury = { version = "4.0.0-dev", default-features = false, git = "http
 pallet-authorship = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 pallet-insecure-randomness-collective-flip = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 pallet-utility = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-session = { version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.2.0", features = ["historical"] }
 
 frame-executive = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
@@ -114,7 +115,8 @@ std = [
 	"pallet-treasury/std",
 	"pallet-authorship/std",
 	"pallet-insecure-randomness-collective-flip/std",
-	"sp-storage/std"
+	"sp-storage/std",
+	"pallet-session/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
