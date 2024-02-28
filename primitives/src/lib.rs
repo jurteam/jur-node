@@ -31,6 +31,8 @@ pub type ChoiceId = u32;
 
 pub type VechainHash = [u8; 32];
 
+pub type BlockNumber = u32;
+
 // Native Token
 pub const JUR: CurrencyId = 0;
 
