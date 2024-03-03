@@ -348,7 +348,7 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> RuntimeGenesisConfig {
-	let session_authorities = chain_spec_session_authorities(initial_authorities.clone());
+	let session_authorities = chain_spec_session_authorities(initial_authorities);
 	RuntimeGenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -363,16 +363,8 @@ fn testnet_genesis(
 				.map(|k| (k, 1 << 60))
 				.collect(),
 		},
-		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		},
-		grandpa: GrandpaConfig {
-			authorities: initial_authorities
-				.iter()
-				.map(|x| (x.1.clone(), 1))
-				.collect(),
-			..Default::default()
-		},
+		aura: AuraConfig { authorities: Default::default() },
+		grandpa: GrandpaConfig { authorities: Default::default(), ..Default::default() },
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
