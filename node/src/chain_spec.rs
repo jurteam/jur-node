@@ -320,6 +320,25 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 	))
 }
 
+// // To get a validator AccountId the aura key is just converted to ss58 encoding for simplicity.
+// // Note that this is not the best solution, and you can input a different ss58 encoding key.
+// fn chain_spec_session_authorities(
+// 	initial_authorities: Vec<(AuraId, GrandpaId)>,
+// ) -> Vec<(AccountId, AccountId, SessionKeys)> {
+// 	initial_authorities
+// 		.iter()
+// 		.map(|auth| {
+// 			let account_id = AccountId::from_ss58check(&auth.0.to_ss58check()).unwrap();
+// 			let key = (
+// 				account_id.clone(),
+// 				account_id,
+// 				SessionKeys { aura: auth.0.clone(), grandpa: auth.1.clone() },
+// 			);
+// 			key
+// 		})
+// 		.collect()
+// }
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
 	wasm_binary: &[u8],
@@ -359,5 +378,6 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 		assets: Default::default(),
 		treasury: Default::default(),
+		session: Default::default(),
 	}
 }
