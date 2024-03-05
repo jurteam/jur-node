@@ -48,6 +48,7 @@ pallet-referenda = { default-features = false, git = "https://github.com/parityt
 pallet-conviction-voting = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 pallet-scheduler = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
 pallet-preimage = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
+pallet-vesting = { version = "4.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk.git", default-features = false, branch = "release-polkadot-v1.2.0"}
 
 # Used for the node token-swap's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk.git", branch = "release-polkadot-v1.2.0" }
@@ -127,6 +128,7 @@ std = [
 	"pallet-insecure-randomness-collective-flip/std",
 	"sp-storage/std",
 	"pallet-session/std",
+	"pallet-vesting/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

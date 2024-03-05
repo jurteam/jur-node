@@ -3409,6 +3409,7 @@ dependencies = [
  "pallet-treasury",
  "pallet-user",
  "pallet-utility",
+ "pallet-vesting",
  "pallet-whitelist",
  "parity-scale-codec",
  "scale-info",
@@ -5164,6 +5165,21 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.2.0#63d7f90f778ae4aba0d82326cf7bba7087d96be4"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
  "sp-runtime",
  "sp-std",
 ]

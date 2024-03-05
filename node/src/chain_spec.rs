@@ -360,5 +360,6 @@ fn testnet_genesis(
 		assets: Default::default(),
 		treasury: Default::default(),
 		session: Default::default(),
+		vesting: Default::default(),
 	}
 }
