@@ -11,9 +11,7 @@ mod validator_manager;
 use frame_support::{
 	genesis_builder_helper::{build_config, create_default_config},
 	pallet_prelude::DispatchClass,
-	traits::{
-		AsEnsureOriginWithArg, LockIdentifier, WithdrawReasons,
-	},
+	traits::{AsEnsureOriginWithArg, LockIdentifier, WithdrawReasons},
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
@@ -29,8 +27,8 @@ use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys,
-		Verify, ConvertInto,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, IdentifyAccount, NumberFor,
+		OpaqueKeys, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
@@ -584,8 +582,8 @@ impl OnUnbalanced<NegativeImbalance> for DealWithFees {
 pub struct AuraAccountAdapter;
 impl frame_support::traits::FindAuthor<AccountId> for AuraAccountAdapter {
 	fn find_author<'a, I>(digests: I) -> Option<AccountId>
-		where
-			I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+	where
+		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
 		pallet_aura::AuraAuthorId::<Runtime>::find_author(digests)
 			.and_then(|k| AccountId::try_from(k.as_ref()).ok())
@@ -742,7 +740,7 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
