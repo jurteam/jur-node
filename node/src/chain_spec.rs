@@ -1,7 +1,8 @@
 use hex_literal::hex;
+use jur_node_runtime::opaque::SessionKeys;
 use jur_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, Block, GrandpaConfig, RuntimeGenesisConfig, Signature,
-	SudoConfig, SystemConfig, WASM_BINARY,
+	AccountId, AuraConfig, BalancesConfig, Block, GrandpaConfig, RuntimeGenesisConfig,
+	SessionConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_chain_spec::ChainSpecExtension;
 use sc_service::ChainType;
@@ -9,7 +10,7 @@ use sc_service::Properties;
 use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
-use sp_core::crypto::UncheckedInto;
+use sp_core::crypto::{Ss58Codec, UncheckedInto};
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
@@ -320,6 +321,25 @@ pub fn jur_mainnet_config() -> Result<ChainSpec, String> {
 	))
 }
 
+// To get a validator AccountId the aura key is just converted to ss58 encoding for simplicity.
+// Note that this is not the best solution, and you can input a different ss58 encoding key.
+fn chain_spec_session_authorities(
+	initial_authorities: Vec<(AuraId, GrandpaId)>,
+) -> Vec<(AccountId, AccountId, SessionKeys)> {
+	initial_authorities
+		.iter()
+		.map(|auth| {
+			let account_id = AccountId::from_ss58check(&auth.0.to_ss58check()).unwrap();
+			let key = (
+				account_id.clone(),
+				account_id,
+				SessionKeys { aura: auth.0.clone(), grandpa: auth.1.clone() },
+			);
+			key
+		})
+		.collect()
+}
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
 	wasm_binary: &[u8],
@@ -328,6 +348,7 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> RuntimeGenesisConfig {
+	let session_authorities = chain_spec_session_authorities(initial_authorities);
 	RuntimeGenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
@@ -342,16 +363,8 @@ fn testnet_genesis(
 				.map(|k| (k, 1 << 60))
 				.collect(),
 		},
-		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		},
-		grandpa: GrandpaConfig {
-			authorities: initial_authorities
-				.iter()
-				.map(|x| (x.1.clone(), 1))
-				.collect(),
-			..Default::default()
-		},
+		aura: AuraConfig { authorities: Default::default() },
+		grandpa: GrandpaConfig { authorities: Default::default(), ..Default::default() },
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
@@ -359,6 +372,6 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 		assets: Default::default(),
 		treasury: Default::default(),
-		session: Default::default(),
+		session: SessionConfig { keys: session_authorities },
 	}
 }
