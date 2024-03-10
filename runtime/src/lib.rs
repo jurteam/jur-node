@@ -11,12 +11,15 @@ mod validator_manager;
 use frame_support::{
 	genesis_builder_helper::{build_config, create_default_config},
 	pallet_prelude::DispatchClass,
-	traits::{AsEnsureOriginWithArg, LockIdentifier},
+	traits::{
+		fungible::HoldConsideration, AsEnsureOriginWithArg, LinearStoragePrice, LockIdentifier,
+	},
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot, EnsureSigned,
 };
+pub mod governance;
 use hex_literal::hex;
 use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_session::historical as session_historical;
@@ -37,6 +40,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
@@ -52,14 +56,13 @@ pub use frame_support::{
 	PalletId, StorageValue,
 };
 pub use frame_system::Call as SystemCall;
+use governance::pallet_custom_origins;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Percent, Permill};
-
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced};
 
 /// Import the token-swap pallet.
 pub use pallet_token_swap;
@@ -108,8 +111,8 @@ pub mod opaque {
 	}
 }
 
-pub const MILLICENTS: Balance = 1_000_000_000;
-pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
+pub const MILLICENTS: Balance = 1_000_000_000_000_0;
+pub const CENTS: Balance = 1_000 * MILLICENTS;
 pub const DOLLARS: Balance = 100 * CENTS;
 
 pub const DEFAULT_SESSION_PERIOD: u32 = 600;
@@ -628,6 +631,42 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	pub MaximumSchedulerWeight: Weight = RuntimeBlockWeights::get().max_block;
+	pub const MaxScheduledPerBlock: u32 = 50;
+	pub const NoPreimagePostponement: Option<u32> = Some(10);
+}
+
+impl pallet_scheduler::Config for Runtime {
+	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeEvent = RuntimeEvent;
+	type PalletsOrigin = OriginCaller;
+	type RuntimeCall = RuntimeCall;
+	type MaximumWeight = MaximumSchedulerWeight;
+	// The goal of having ScheduleOrigin include AuctionAdmin is to allow the auctions track of
+	// OpenGov to schedule periodic auctions.
+	type ScheduleOrigin = EnsureRoot<AccountId>;
+	type MaxScheduledPerBlock = MaxScheduledPerBlock;
+	type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
+	type OriginPrivilegeCmp = EqualPrivilegeOnly;
+	type Preimages = Preimage;
+}
+
+parameter_types! {
+	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
+	pub const PreimageByteDeposit: Balance = 1 * CENTS;
+	pub const PreimageHoldReason: RuntimeHoldReason = RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
+}
+
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = pallet_preimage::weights::SubstrateWeight<Runtime>;
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type ManagerOrigin = EnsureRoot<AccountId>;
+
+	type Consideration = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime {
@@ -656,6 +695,14 @@ construct_runtime!(
 		Utility: pallet_utility,
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
+
+		// OpenGov pallets
+		Preimage: pallet_preimage,
+		Scheduler: pallet_scheduler,
+		Origins: pallet_custom_origins::{Origin},
+		ConvictionVoting: pallet_conviction_voting,
+		Referenda: pallet_referenda,
+		Safelist: pallet_safelist,
 	}
 );
 
