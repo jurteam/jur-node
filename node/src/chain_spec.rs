@@ -373,5 +373,6 @@ fn testnet_genesis(
 		assets: Default::default(),
 		treasury: Default::default(),
 		session: SessionConfig { keys: session_authorities },
+		vesting: Default::default(),
 	}
 }

@@ -11,9 +11,7 @@ mod validator_manager;
 use frame_support::{
 	genesis_builder_helper::{build_config, create_default_config},
 	pallet_prelude::DispatchClass,
-	traits::{
-		fungible::HoldConsideration, AsEnsureOriginWithArg, LinearStoragePrice, LockIdentifier,
-	},
+	traits::{AsEnsureOriginWithArg, LockIdentifier, WithdrawReasons},
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
@@ -29,8 +27,8 @@ use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
-		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys,
-		Verify,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, IdentifyAccount, NumberFor,
+		OpaqueKeys, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
@@ -667,6 +665,22 @@ impl pallet_preimage::Config for Runtime {
 	type Consideration = ();
 }
 
+parameter_types! {
+	pub const MinVestedTransfer: Balance = 10_000 * DOLLARS;
+	pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons =
+		WithdrawReasons::except(WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE);
+}
+
+impl pallet_vesting::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type BlockNumberToBalance = ConvertInto;
+	type MinVestedTransfer = MinVestedTransfer;
+	type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
+	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
+	const MAX_VESTING_SCHEDULES: u32 = 100;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime {
@@ -695,6 +709,7 @@ construct_runtime!(
 		Utility: pallet_utility,
 		Multisig: pallet_multisig::{Pallet, Call, Storage, Event<T>},
 		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
+		Vesting: pallet_vesting,
 
 		// OpenGov pallets
 		Preimage: pallet_preimage,
